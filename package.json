@@ -1,0 +1,23 @@
+{
+  "name": "subql-wormhole",
+  "version": "1.0.0",
+  "description": "",
+  "private": "true",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "workspaces": [
+    "crab",
+    "darwinia",
+    "pangolin",
+    "pangoro"
+  ],
+  "devDependencies": {
+    "@polkadot/api": "^6",
+    "@subql/types": "latest",
+    "typescript": "^4.1.3",
+    "@subql/cli": "latest"
+  },
+  "author": "",
+  "license": "ISC"
+}
