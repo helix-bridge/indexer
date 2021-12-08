@@ -2,21 +2,21 @@
   "name": "subql-wormhole",
   "version": "1.0.0",
   "description": "",
-  "private": "true",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:pangoro": "cd pangoro && yarn build",
+    "clean:pangoro": "rm -rf ./pangoro/dist ./pangoro/.data",
+    "start:pangoro": "cd pangoro && yarn start",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier **/src/**/*.ts --config='./prettier.config.js'  --write"
   },
-  "workspaces": [
-    "crab",
-    "darwinia",
-    "pangolin",
-    "pangoro"
-  ],
   "devDependencies": {
     "@polkadot/api": "^6",
+    "@subql/cli": "latest",
     "@subql/types": "latest",
-    "typescript": "^4.1.3",
-    "@subql/cli": "latest"
+    "prettier": "^2.5.1",
+    "prettier-quick": "^0.0.5",
+    "pretty-quick": "^3.1.2",
+    "typescript": "^4.1.3"
   },
   "author": "",
   "license": "ISC"
