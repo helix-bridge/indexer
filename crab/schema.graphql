@@ -1,17 +1,16 @@
-type StarterEntity @entity {
+type Block @jsonField {
+  number: Int!
+  specVersion: Int!
+  hash: String!
+}
 
-  id: ID! #id is a required field
+type BridgeDispatchEvent @entity {
+  id: ID!
 
-  field1: Int!
+  method: String!
+  data: String!
+  index: Int!
+  messageId: String!
 
-  field2: String #filed2 is an optional field
-
-  field3: BigInt
-
-  field4: Date
-
-  field5: Boolean
-
-
-
+  block: Block
 }

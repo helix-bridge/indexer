@@ -1,4 +1,4 @@
-import { SubstrateBlock, SubstrateEvent } from '@subql/types';
+import { SubstrateEvent } from '@subql/types';
 import { EventHandler } from '../handlers';
 
 // export async function handleBlock(block: SubstrateBlock): Promise<void> {
