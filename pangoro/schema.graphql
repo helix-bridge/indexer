@@ -1,8 +1,7 @@
-type Block @entity {
-  id: ID! # block hash
-
-  number: BigInt
-  specVersion: Int
+type Block @jsonField {
+  number: Int!
+  specVersion: Int!
+  hash: String!
 }
 
 type S2SEvent @entity {

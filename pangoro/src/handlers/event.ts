@@ -1,6 +1,5 @@
 import { SubstrateEvent } from '@subql/types';
-import { BridgeDispatchEvent, S2SEvent } from '../types';
-import { BlockHandler } from './block';
+import { Block, BridgeDispatchEvent, S2SEvent } from '../types';
 
 export class EventHandler {
   private event: SubstrateEvent;
@@ -14,7 +13,7 @@ export class EventHandler {
   }
 
   get blockNumber() {
-    return this.event.block.block.header.number.toBigInt();
+    return this.event.block.block.header.number.toNumber();
   }
 
   get blockHash() {
@@ -48,14 +47,12 @@ export class EventHandler {
   }
 
   public async save() {
-    await BlockHandler.ensureBlock(this.blockHash);
-
     if (this.section === 'substrate2SubstrateBacking') {
-      this.handleS2SEvent();
+      await this.handleS2SEvent();
     }
 
     if (this.section === 'bridgePangolinDispatch') {
-      this.handleBridgeDispatchEvent();
+      await this.handleBridgeDispatchEvent();
     }
   }
 
@@ -66,7 +63,7 @@ export class EventHandler {
     event.index = this.index;
     event.method = this.method;
     event.data = this.data;
-    event.blockId = this.blockHash;
+    event.block = this.simpleBlock();
     event.messageId = this.s2sEventId(laneId, nonce);
 
     await event.save();
@@ -98,7 +95,7 @@ export class EventHandler {
       event.result = 0;
       event.endTimestamp = null;
       event.responseTxHash = null;
-      event.blockId = this.blockHash;
+      event.block = this.simpleBlock();
 
       await event.save();
     }
@@ -119,7 +116,7 @@ export class EventHandler {
         event.responseTxHash = this.extrinsicHash;
         event.endTimestamp = this.timestamp;
         event.result = confirmResult ? 1 : 2;
-        event.blockId = this.blockHash;
+        event.block = this.simpleBlock();
 
         await event.save();
       }
@@ -149,9 +146,17 @@ export class EventHandler {
         event.startTimestamp = this.timestamp;
         event.endTimestamp = this.timestamp;
         event.result = 1;
-        event.blockId = this.blockHash;
+        event.block = this.simpleBlock();
       }
     }
+  }
+
+  private simpleBlock(): Block {
+    return {
+      hash: this.blockHash,
+      number: this.blockNumber,
+      specVersion: this.event.block.specVersion,
+    };
   }
 
   private s2sEventId(laneId: string, nonce: bigint): string {
