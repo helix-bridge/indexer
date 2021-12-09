@@ -6,6 +6,9 @@
     "build:pangoro": "cd pangoro && yarn build",
     "clean:pangoro": "rm -rf ./pangoro/dist ./pangoro/.data",
     "start:pangoro": "cd pangoro && yarn start",
+    "build:pangolin": "cd pangolin && yarn build",
+    "clean:pangolin": "rm -rf ./pangolin/dist ./pangolin/.data",
+    "start:pangolin": "cd pangolin && yarn start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier **/src/**/*.ts --config='./prettier.config.js'  --write"
   },
