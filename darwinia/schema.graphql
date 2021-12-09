@@ -1,17 +1,34 @@
-type StarterEntity @entity {
+type Block @jsonField {
+  number: Int!
+  specVersion: Int!
+  hash: String!
+}
 
-  id: ID! #id is a required field
+type S2SEvent @entity {
+  id: ID! # laneId + 0x + nonce
 
-  field1: Int!
+  laneId: String!
+  nonce: BigInt!
+  requestTxHash: String! # TokenLocked tx hash
+  responseTxHash: String # TokenLockedConfirmed tx hash
+  sender: String!
+  result: Int! # 0 TokenLocked 1 TokenLockedConfirmed success 2 TokenLockedConfirmed fail
+  recipient: String!
+  token: String! # token address
+  amount: String!
+  startTimestamp: Date!
+  endTimestamp: Date
 
-  field2: String #filed2 is an optional field
+  block: Block
+}
 
-  field3: BigInt
+type BridgeDispatchEvent @entity {
+  id: ID!
 
-  field4: Date
+  method: String!
+  data: String!
+  index: Int!
+  messageId: String!
 
-  field5: Boolean
-
-
-
+  block: Block
 }
