@@ -1,5 +1,5 @@
 specVersion: 0.2.0
-name: pangoro
+name: wormhole-pangoro
 version: 1.0.0
 description: ''
 repository: git@github.com:darwinia-network/subql-wormhole.git
