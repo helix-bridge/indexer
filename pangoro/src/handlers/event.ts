@@ -58,7 +58,7 @@ export class EventHandler {
 
   public async handleBridgeDispatchEvent() {
     const event = new BridgeDispatchEvent(`${this.blockNumber}-${this.index}`);
-    const [laneId, nonce] = JSON.parse(this.data) as [string, bigint];
+    const [_, [laneId, nonce]] = JSON.parse(this.data) as [string, [string, bigint]];
 
     event.index = this.index;
     event.method = this.method;
@@ -160,6 +160,6 @@ export class EventHandler {
   }
 
   private s2sEventId(laneId: string, nonce: bigint): string {
-    return `${laneId}0x${nonce.toString(16)}`;
+    return `${laneId}${nonce}`;
   }
 }
