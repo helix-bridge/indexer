@@ -28,7 +28,6 @@ type BridgeDispatchEvent @entity {
   method: String!
   data: String!
   index: Int!
-  messageId: String!
 
   block: Block
 }
