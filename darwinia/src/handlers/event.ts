@@ -47,9 +47,7 @@ export class EventHandler {
   }
 
   public async save() {
-    const s2sSections = ['substrate2SubstrateBacking', 'toCrabBacking', 'toPangolinBacking', 'toDarwiniaBacking', 'toPangoroBacking'];
-
-    if (s2sSections.includes(this.section)) {
+    if (this.section === 'toCrabBacking') {
       await this.handleS2SEvent();
     }
 

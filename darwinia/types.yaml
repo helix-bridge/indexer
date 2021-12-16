@@ -504,3 +504,15 @@ typesBundle:
             Unbonding:
               amount: Balance
               moment: BlockNumber
+        - minmax:
+            - 1160
+          types:
+            AccountInfo: AccountInfoWithTripleRefCount
+            AccountInfoWithTripleRefCount:
+              consumers: RefCount
+              data: AccountData
+              nonce: Index
+              providers: RefCount
+            Address: MultiAddress
+            LookupSource: MultiAddress
+            MultiAddress: GenericMultiAddress
