@@ -132,21 +132,19 @@ export class EventHandler {
         number
       ];
 
-      const event = await S2SEvent.get(this.s2sEventId(laneId, nonce));
+      const event = new S2SEvent(this.s2sEventId(laneId, nonce));
 
-      if (event) {
-        event.laneId = laneId;
-        event.nonce = nonce;
-        event.recipient = recipient;
-        event.requestTxHash = this.extrinsicHash;
-        event.responseTxHash = this.extrinsicHash;
-        event.amount = amount;
-        event.token = typeof token === 'string' ? token : token.native.address;
-        event.startTimestamp = this.timestamp;
-        event.endTimestamp = this.timestamp;
-        event.result = 1;
-        event.block = this.simpleBlock();
-      }
+      event.laneId = laneId;
+      event.nonce = nonce;
+      event.recipient = recipient;
+      event.requestTxHash = this.extrinsicHash;
+      event.responseTxHash = this.extrinsicHash;
+      event.amount = amount;
+      event.token = typeof token === 'string' ? token : token.native.address;
+      event.startTimestamp = this.timestamp;
+      event.endTimestamp = this.timestamp;
+      event.result = 1;
+      event.block = this.simpleBlock();
     }
   }
 
