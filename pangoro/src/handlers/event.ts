@@ -136,6 +136,7 @@ export class EventHandler {
 
       event.laneId = laneId;
       event.nonce = nonce;
+      event.sender = '';
       event.recipient = recipient;
       event.requestTxHash = this.extrinsicHash;
       event.responseTxHash = this.extrinsicHash;
