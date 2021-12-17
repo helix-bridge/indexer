@@ -145,6 +145,8 @@ export class EventHandler {
       event.endTimestamp = this.timestamp;
       event.result = 1;
       event.block = this.simpleBlock();
+
+      await event.save();
     }
   }
 
