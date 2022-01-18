@@ -33,18 +33,20 @@ services:
       - -f=/app
       - --db-schema=app
     healthcheck:
-      test: ["CMD-SHELL", "exit 0"]
-      interval: 5s
+      test: ["CMD", "curl", "-f", "http://subquery-node:3000/ready"]
+      interval: 3s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   graphql-engine:
     image: onfinality/subql-query:latest
     ports:
       - 3000:3000
     depends_on:
-      - "postgres"
-      - "subquery-node"
+      "postgres":
+        condition: service_healthy
+      "subquery-node":
+        condition: service_healthy
     restart: always
     environment:
       DB_USER: postgres
