@@ -1,5 +1,13 @@
 import { SubstrateEvent } from '@subql/types';
-import { Block, BridgeDispatchEvent } from '../types';
+import { Block, BridgeDispatchEvent, Transfer } from '../types';
+import { AccountHandler } from './account';
+import { TokenHandler } from './token';
+
+enum FeePosition {
+  'DepositRing',
+  'Deposit',
+}
+
 
 export class EventHandler {
   private event: SubstrateEvent;
@@ -42,6 +50,10 @@ export class EventHandler {
     return i === 'null' ? undefined : i;
   }
 
+  get evenHash() {
+    return this.event.event.hash.toString();
+  }
+
   get timestamp() {
     return this.event.block.timestamp;
   }
@@ -49,6 +61,10 @@ export class EventHandler {
   public async save() {
     if (this.section === 'bridgePangoroDispatch') {
       await this.handleBridgeDispatchEvent();
+    }
+    
+    if (this.method === 'Transfer') {
+      await this.handleTransfer();
     }
   }
 
@@ -64,11 +80,53 @@ export class EventHandler {
     await event.save();
   }
 
+  private async handleTransfer() { 
+    const [from, to, amount] = JSON.parse(this.data);
+
+    await AccountHandler.ensureAccount(to);
+    await AccountHandler.updateTransferStatistic(to);
+    await AccountHandler.ensureAccount(from);
+    await AccountHandler.updateTransferStatistic(from);
+    await TokenHandler.ensureToken(this.section);
+
+    const transfer = new Transfer(this.evenHash);
+
+    transfer.toId = to;
+    transfer.fromId = from;
+    transfer.tokenId = this.section;
+    transfer.amount = BigInt(amount);
+    transfer.timestamp = this.timestamp;
+    transfer.block = this.simpleBlock();
+    transfer.fee = this.events.reduce((total, cur) => {
+      const method = cur.event.method;
+      let fee = BigInt(0);
+
+      if ([FeePosition[0], FeePosition[1]].includes(method)) {
+        try {
+          fee = BigInt(
+            parseInt(JSON.parse(cur.event.data.toString())[FeePosition[cur.event.method]])
+          );
+        } catch (err) {}
+
+        return total + BigInt(fee);
+      }
+
+      return total;
+    }, BigInt(0));
+
+    try {
+      await transfer.save();
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
   private simpleBlock(): Block {
     return {
-      hash: this.blockHash,
+      blockHash: this.blockHash,
       number: this.blockNumber,
       specVersion: this.event.block.specVersion,
+      extrinsicHash: this.extrinsicHash,
     };
   }
 
