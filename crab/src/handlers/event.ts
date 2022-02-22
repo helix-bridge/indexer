@@ -50,7 +50,7 @@ export class EventHandler {
     return i === 'null' ? undefined : i;
   }
 
-  get evenHash() {
+  get eventHash() {
     return this.event.event.hash.toString();
   }
 
@@ -89,7 +89,7 @@ export class EventHandler {
     await AccountHandler.updateTransferStatistic(from);
     await TokenHandler.ensureToken(this.section);
 
-    const transfer = new Transfer(this.evenHash);
+    const transfer = new Transfer(this.eventHash);
 
     transfer.toId = to;
     transfer.fromId = from;
