@@ -59,7 +59,7 @@ export class EventHandler {
   }
 
   public async save() {
-    if (this.section === 'bridgePangoroDispatch') {
+    if (this.section === 'bridgeDarwiniaDispatch') {
       await this.handleBridgeDispatchEvent();
     }
     

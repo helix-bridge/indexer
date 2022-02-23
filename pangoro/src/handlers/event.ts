@@ -86,84 +86,16 @@ export class EventHandler {
 
   public async handleS2SEvent() {
     // data structure: https://github.com/darwinia-network/darwinia-common/blob/master/frame/wormhole/backing/s2s/src/lib.rs
-
     if (this.method === 'TokenLocked') {
-      // [lane_id, message_nonce, token address, sender, recipient, amount]
-      const [laneId, nonce, token, sender, recipient, value] = JSON.parse(this.data) as [
-        string,
-        bigint,
-        string | Record<string, any>,
-        string,
-        string,
-        number
-      ];
-      const event = new S2SEvent(this.s2sEventId(laneId, nonce));
-
-      event.laneId = laneId;
-      event.nonce = nonce;
-      event.requestTxHash = this.extrinsicHash;
-      event.startTimestamp = this.timestamp;
-      event.sender = sender;
-      event.recipient = recipient;
-      event.token = typeof token === 'string' ? token : token.native.address;
-      event.amount = value.toString();
-      event.result = 0;
-      event.endTimestamp = null;
-      event.responseTxHash = null;
-      event.block = this.simpleBlock();
-
-      await event.save();
+      await this.handleTokenLocked();
     }
 
     if (this.method === 'TokenLockedConfirmed') {
-      // [lane_id, message_nonce, user, amount, result]
-      const [laneId, nonce, _1, _2, confirmResult] = JSON.parse(this.data) as [
-        string,
-        bigint,
-        string | Record<string, any>,
-        string,
-        boolean
-      ];
-
-      const event = await S2SEvent.get(this.s2sEventId(laneId, nonce));
-
-      if (event) {
-        event.responseTxHash = this.extrinsicHash;
-        event.endTimestamp = this.timestamp;
-        event.result = confirmResult ? 1 : 2;
-        event.block = this.simpleBlock();
-
-        await event.save();
-      }
+      await this.handleTokenLockedConfirmed();
     }
 
     if (this.method === 'TokenUnlocked') {
-      // [lane_id, message_nonce, token_address, recipient, amount]
-      const [laneId, nonce, token, recipient, amount] = JSON.parse(this.data) as [
-        string,
-        bigint,
-        string | Record<string, any>,
-        string,
-        string,
-        number
-      ];
-
-      const event = new S2SEvent(this.s2sEventId(laneId, nonce));
-
-      event.laneId = laneId;
-      event.nonce = nonce;
-      event.sender = '';
-      event.recipient = recipient;
-      event.requestTxHash = this.extrinsicHash;
-      event.responseTxHash = this.extrinsicHash;
-      event.amount = amount;
-      event.token = typeof token === 'string' ? token : token.native.address;
-      event.startTimestamp = this.timestamp;
-      event.endTimestamp = this.timestamp;
-      event.result = 1;
-      event.block = this.simpleBlock();
-
-      await event.save();
+      await this.handleTokenUnlocked();
     }
   }
 
@@ -206,6 +138,85 @@ export class EventHandler {
     } catch (error) {
       console.log(error.message);
     }
+  }
+
+  private async handleTokenLocked() {
+    // [lane_id, message_nonce, token address, sender, recipient, amount]
+    const [laneId, nonce, token, sender, recipient, value] = JSON.parse(this.data) as [
+      string,
+      bigint,
+      string | Record<string, any>,
+      string,
+      string,
+      number
+    ];
+    const event = new S2SEvent(this.s2sEventId(laneId, nonce));
+
+    event.laneId = laneId;
+    event.nonce = nonce;
+    event.requestTxHash = this.extrinsicHash;
+    event.startTimestamp = this.timestamp;
+    event.sender = sender;
+    event.recipient = recipient;
+    event.token = typeof token === 'string' ? token : token.native.address;
+    event.amount = value.toString();
+    event.result = 0;
+    event.endTimestamp = null;
+    event.responseTxHash = null;
+    event.block = this.simpleBlock();
+
+    await event.save();
+  }
+
+  private async handleTokenLockedConfirmed() {
+    // [lane_id, message_nonce, user, amount, result]
+    const [laneId, nonce, _1, _2, confirmResult] = JSON.parse(this.data) as [
+      string,
+      bigint,
+      string | Record<string, any>,
+      string,
+      boolean
+    ];
+
+    const event = await S2SEvent.get(this.s2sEventId(laneId, nonce));
+
+    if (event) {
+      event.responseTxHash = this.extrinsicHash;
+      event.endTimestamp = this.timestamp;
+      event.result = confirmResult ? 1 : 2;
+      event.block = this.simpleBlock();
+
+      await event.save();
+    }
+  }
+
+  private async handleTokenUnlocked() {
+    // [lane_id, message_nonce, token_address, recipient, amount]
+    const [laneId, nonce, token, recipient, amount] = JSON.parse(this.data) as [
+      string,
+      bigint,
+      string | Record<string, any>,
+      string,
+      string,
+      number
+    ];
+
+    const event = new S2SEvent(this.s2sEventId(laneId, nonce));
+
+    event.laneId = laneId;
+    event.nonce = nonce;
+    event.sender = '';
+    event.recipient = recipient;
+    event.requestTxHash = this.extrinsicHash;
+    event.responseTxHash = this.extrinsicHash;
+    event.amount = amount;
+    event.token = typeof token === 'string' ? token : token.native.address;
+    event.startTimestamp = this.timestamp;
+    event.endTimestamp = this.timestamp;
+    event.result = 1;
+    event.block = this.simpleBlock();
+
+    await event.save();
   }
 
   private simpleBlock(): Block {
