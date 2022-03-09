@@ -8,7 +8,6 @@ enum FeePosition {
   'Deposit',
 }
 
-
 export class EventHandler {
   private event: SubstrateEvent;
 
@@ -93,10 +92,6 @@ export class EventHandler {
     if (this.method === 'TokenLockedConfirmed') {
       await this.handleTokenLockedConfirmed();
     }
-
-    if (this.method === 'TokenUnlocked') {
-      await this.handleTokenUnlocked();
-    }
   }
 
   private async handleTransfer() {
@@ -156,7 +151,7 @@ export class EventHandler {
     event.nonce = nonce;
     event.requestTxHash = this.extrinsicHash;
     event.startTimestamp = this.timestamp;
-    event.sender = sender;
+    event.senderId = sender;
     event.recipient = recipient;
     event.token = typeof token === 'string' ? token : token.native.address;
     event.amount = value.toString();
@@ -165,16 +160,17 @@ export class EventHandler {
     event.responseTxHash = null;
     event.block = this.simpleBlock();
 
+    await AccountHandler.ensureAccount(sender);
     await event.save();
   }
 
   private async handleTokenLockedConfirmed() {
     // [lane_id, message_nonce, user, amount, result]
-    const [laneId, nonce, _1, _2, confirmResult] = JSON.parse(this.data) as [
+    const [laneId, nonce, sender, amount, confirmResult] = JSON.parse(this.data) as [
       string,
       bigint,
-      string | Record<string, any>,
       string,
+      bigint,
       boolean
     ];
 
@@ -187,36 +183,11 @@ export class EventHandler {
       event.block = this.simpleBlock();
 
       await event.save();
+
+      if (confirmResult) {
+          await AccountHandler.updateS2SLockedStatistic(sender, amount);
+      }
     }
-  }
-
-  private async handleTokenUnlocked() {
-    // [lane_id, message_nonce, token_address, recipient, amount]
-    const [laneId, nonce, token, recipient, amount] = JSON.parse(this.data) as [
-      string,
-      bigint,
-      string | Record<string, any>,
-      string,
-      string,
-      number
-    ];
-
-    const event = new S2SEvent(this.s2sEventId(laneId, nonce));
-
-    event.laneId = laneId;
-    event.nonce = nonce;
-    event.sender = '';
-    event.recipient = recipient;
-    event.requestTxHash = this.extrinsicHash;
-    event.responseTxHash = this.extrinsicHash;
-    event.amount = amount;
-    event.token = typeof token === 'string' ? token : token.native.address;
-    event.startTimestamp = this.timestamp;
-    event.endTimestamp = this.timestamp;
-    event.result = 1;
-    event.block = this.simpleBlock();
-
-    await event.save();
   }
 
   private simpleBlock(): Block {

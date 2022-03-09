@@ -12,7 +12,7 @@ type S2SEvent @entity {
   nonce: BigInt!
   requestTxHash: String! # TokenLocked tx hash
   responseTxHash: String # TokenLockedConfirmed tx hash
-  sender: String!
+  sender: Account!
   result: Int! # 0 TokenLocked 1 TokenLockedConfirmed success 2 TokenLockedConfirmed fail
   recipient: String!
   token: String! # token address
@@ -36,10 +36,15 @@ type BridgeDispatchEvent @entity {
 type Account @entity {
   id: ID!
 
+  # smart app
   transferTotalCount: Int
-
   transferIn: [Transfer] @derivedFrom(field: "to")
   transferOut: [Transfer] @derivedFrom(field: "from")
+
+  # s2s
+  s2sLockedTotalCount: Int
+  s2sLockedTotalAmount: BigInt
+  s2sLocked: [S2SEvent] @derivedFrom(field: "sender")
 }
 
 type Token @entity {
