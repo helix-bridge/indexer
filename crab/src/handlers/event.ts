@@ -1,13 +1,6 @@
 import { SubstrateEvent } from '@subql/types';
 import { Block, BridgeDispatchEvent, Transfer } from '../types';
 import { AccountHandler } from './account';
-import { TokenHandler } from './token';
-
-enum FeePosition {
-  'DepositRing',
-  'Deposit',
-}
-
 
 export class EventHandler {
   private event: SubstrateEvent;
@@ -62,9 +55,13 @@ export class EventHandler {
     if (this.section === 'bridgeDarwiniaDispatch') {
       await this.handleBridgeDispatchEvent();
     }
-    
-    if (this.method === 'Transfer') {
-      await this.handleTransfer();
+
+    if (this.method === 'Transfer' && (this.section === 'balances' || this.section === 'kton')) {
+      await this.handleMainToSmartTransfer();
+    }
+
+    if (this.method === 'Endowed' && this.section === 'balances') {
+      await this.handleSmartToMainTransfer();
     }
   }
 
@@ -80,39 +77,23 @@ export class EventHandler {
     await event.save();
   }
 
-  private async handleTransfer() { 
-    const [from, to, amount] = JSON.parse(this.data);
-
+  private async handleTransfer(from: string, to: string, amount: number) {
     await AccountHandler.ensureAccount(to);
     await AccountHandler.updateTransferStatistic(to);
     await AccountHandler.ensureAccount(from);
     await AccountHandler.updateTransferStatistic(from);
-    await TokenHandler.ensureToken(this.section);
 
-    const transfer = new Transfer(this.eventHash);
+    const transfer = new Transfer(this.extrinsicHash);
 
     transfer.toId = to;
     transfer.fromId = from;
-    transfer.tokenId = this.section;
-    transfer.amount = BigInt(amount);
+
+    transfer.section = this.section;
+    transfer.method = this.method;
+    transfer.amount = BigInt(amount ?? 0);
     transfer.timestamp = this.timestamp;
+
     transfer.block = this.simpleBlock();
-    transfer.fee = this.events.reduce((total, cur) => {
-      const method = cur.event.method;
-      let fee = BigInt(0);
-
-      if ([FeePosition[0], FeePosition[1]].includes(method)) {
-        try {
-          fee = BigInt(
-            parseInt(JSON.parse(cur.event.data.toString())[FeePosition[cur.event.method]])
-          );
-        } catch (err) {}
-
-        return total + BigInt(fee);
-      }
-
-      return total;
-    }, BigInt(0));
 
     try {
       await transfer.save();
@@ -121,6 +102,18 @@ export class EventHandler {
     }
   }
 
+  private async handleMainToSmartTransfer() {
+    const [from, to, amount] = JSON.parse(this.data);
+
+    await this.handleTransfer(from, to, amount);
+  }
+
+  private async handleSmartToMainTransfer() {
+    const [to, amount] = JSON.parse(this.data);
+    const from = '0x0000000000000000000000000000000000000015';
+
+    await this.handleTransfer(from, to, amount);
+  }
   private simpleBlock(): Block {
     return {
       blockHash: this.blockHash,

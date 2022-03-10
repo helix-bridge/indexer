@@ -24,22 +24,15 @@ type Account @entity {
   transferOut: [Transfer] @derivedFrom(field: "from")
 }
 
-type Token @entity {
-  id: ID!
-
-  decimal: Int
-  name: String
-}
-
 type Transfer @entity {
   id: ID!
 
   from: Account
   to: Account
-  token: Token
   amount: BigInt
+  section: String
+  method: String
   timestamp: Date
-  fee: BigInt
 
   block: Block
 }

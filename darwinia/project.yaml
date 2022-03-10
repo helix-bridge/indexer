@@ -54,4 +54,22 @@ dataSources:
           kind: substrate/EventHandler
           filter:
             module: balances
-            method: Transfer
+            method: Transfer # ring: mainnet -> dvm
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: kton
+            method: Transfer # kton: mainnet -> dvm
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: balances
+            method: Endowed # ring: dvm -> mainnet
+
+        # - handler: handleEvent
+        #   kind: substrate/EventHandler
+        #   filter:
+        #     module: balances
+        #     method: Transfer
