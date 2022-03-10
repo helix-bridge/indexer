@@ -20,9 +20,9 @@
   "author": "sxlwar",
   "license": "MIT",
   "devDependencies": {
-    "@polkadot/api": "^7.8.1",
-    "@subql/types": "0.14.0",
-    "typescript": "4.2.4",
-    "@subql/cli": "0.20.1"
+    "@polkadot/api": "^7",
+    "@subql/types": "latest",
+    "typescript": "^4.2.4",
+    "@subql/cli": "latest"
   }
 }
