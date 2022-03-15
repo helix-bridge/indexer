@@ -93,15 +93,18 @@ export class EventHandler {
   }
 
   private async handleTransfer(from: string, to: string, amount: number) {
-    await AccountHandler.ensureAccount(to);
-    await AccountHandler.updateTransferStatistic(to);
-    await AccountHandler.ensureAccount(from);
-    await AccountHandler.updateTransferStatistic(from);
+    const sender = AccountHandler.formatAddress(from);
+    const recipient = AccountHandler.formatAddress(to);
+
+    await AccountHandler.ensureAccount(recipient);
+    await AccountHandler.updateTransferStatistic(recipient);
+    await AccountHandler.ensureAccount(sender);
+    await AccountHandler.updateTransferStatistic(sender);
 
     const transfer = new Transfer(this.extrinsicHash);
 
-    transfer.toId = to;
-    transfer.fromId = from;
+    transfer.recipientId = recipient;
+    transfer.senderId = sender;
 
     transfer.section = this.section;
     transfer.method = this.method;
@@ -132,7 +135,7 @@ export class EventHandler {
 
   private async handleTokenLocked() {
     // [lane_id, message_nonce, token address, sender, recipient, amount]
-    const [laneId, nonce, token, sender, recipient, value] = JSON.parse(this.data) as [
+    const [laneId, nonce, token, from, to, value] = JSON.parse(this.data) as [
       string,
       bigint,
       string | Record<string, any>,
@@ -141,6 +144,8 @@ export class EventHandler {
       number
     ];
     const event = new S2SEvent(this.s2sEventId(laneId, nonce));
+    const sender = AccountHandler.formatAddress(from);
+    const recipient = AccountHandler.formatAddress(to);
 
     event.laneId = laneId;
     event.nonce = nonce;
@@ -161,14 +166,14 @@ export class EventHandler {
 
   private async handleTokenLockedConfirmed() {
     // [lane_id, message_nonce, user, amount, result]
-    const [laneId, nonce, sender, amount, confirmResult] = JSON.parse(this.data) as [
+    const [laneId, nonce, from, amount, confirmResult] = JSON.parse(this.data) as [
       string,
       bigint,
       string,
       bigint,
       boolean
     ];
-
+    const sender = AccountHandler.formatAddress(from);
     const event = await S2SEvent.get(this.s2sEventId(laneId, nonce));
 
     if (event) {

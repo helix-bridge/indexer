@@ -38,8 +38,8 @@ type Account @entity {
 
   # smart app
   transferTotalCount: Int
-  transferIn: [Transfer] @derivedFrom(field: "to")
-  transferOut: [Transfer] @derivedFrom(field: "from")
+  transferIn: [Transfer] @derivedFrom(field: "recipient")
+  transferOut: [Transfer] @derivedFrom(field: "sender")
 
   # s2s
   s2sLockedTotalCount: Int
@@ -50,8 +50,8 @@ type Account @entity {
 type Transfer @entity {
   id: ID!
 
-  from: Account
-  to: Account
+  sender: Account
+  recipient: Account
   amount: BigInt
   section: String
   method: String
