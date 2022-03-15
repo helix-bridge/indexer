@@ -2,11 +2,6 @@ import { SubstrateEvent } from '@subql/types';
 import { Block, BridgeDispatchEvent, S2SEvent, Transfer } from '../types';
 import { AccountHandler } from './account';
 
-enum FeePosition {
-  'DepositRing',
-  'Deposit',
-}
-
 export class EventHandler {
   private event: SubstrateEvent;
 
