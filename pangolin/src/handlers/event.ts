@@ -2,11 +2,6 @@ import { SubstrateEvent } from '@subql/types';
 import { Block, BridgeDispatchEvent, Transfer } from '../types';
 import { AccountHandler } from './account';
 
-enum FeePosition {
-  'DepositRing',
-  'Deposit',
-}
-
 export class EventHandler {
   private event: SubstrateEvent;
 
@@ -83,15 +78,18 @@ export class EventHandler {
   }
 
   private async handleTransfer(from: string, to: string, amount: number) {
-    await AccountHandler.ensureAccount(to);
-    await AccountHandler.updateTransferStatistic(to);
-    await AccountHandler.ensureAccount(from);
-    await AccountHandler.updateTransferStatistic(from);
+    const sender = AccountHandler.formatAddress(from);
+    const recipient = AccountHandler.formatAddress(to);
+
+    await AccountHandler.ensureAccount(recipient);
+    await AccountHandler.updateTransferStatistic(recipient);
+    await AccountHandler.ensureAccount(sender);
+    await AccountHandler.updateTransferStatistic(sender);
 
     const transfer = new Transfer(this.extrinsicHash);
 
-    transfer.toId = to;
-    transfer.fromId = from;
+    transfer.recipientId = recipient;
+    transfer.senderId = sender;
 
     transfer.section = this.section;
     transfer.method = this.method;

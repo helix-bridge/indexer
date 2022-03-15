@@ -1,6 +1,20 @@
 import { Account } from '../types';
+import { decodeAddress } from '@polkadot/util-crypto';
+import { u8aToHex, isHex } from '@polkadot/util';
 
 export class AccountHandler {
+  static formatAddress(address: string) {
+    if (isHex(address)) {
+      return address;
+    }
+
+    if (!address) {
+      return '';
+    }
+
+    return u8aToHex(decodeAddress(address));
+  }
+
   static async ensureAccount(id: string) {
     const account = await Account.get(id);
 
@@ -42,9 +56,10 @@ export class AccountHandler {
 
   static async updateS2SLockedStatistic(id: string, amount: bigint) {
     const account = await this.getAccountById(id);
+
     await this.updateAccount(id, {
-        s2sLockedTotalCount: account.s2sLockedTotalCount + 1,
-        s2sLockedTotalAmount: account.s2sLockedTotalAmount + BigInt(amount)
+      s2sLockedTotalCount: account.s2sLockedTotalCount + 1,
+      s2sLockedTotalAmount: account.s2sLockedTotalAmount + BigInt(amount),
     });
   }
 }

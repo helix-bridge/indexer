@@ -20,15 +20,15 @@ type Account @entity {
 
   transferTotalCount: Int
 
-  transferIn: [Transfer] @derivedFrom(field: "to")
-  transferOut: [Transfer] @derivedFrom(field: "from")
+  transferIn: [Transfer] @derivedFrom(field: "recipient")
+  transferOut: [Transfer] @derivedFrom(field: "sender")
 }
 
 type Transfer @entity {
   id: ID!
 
-  from: Account
-  to: Account
+  sender: Account
+  recipient: Account
   amount: BigInt
   section: String
   method: String
