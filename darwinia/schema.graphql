@@ -59,3 +59,10 @@ type Transfer @entity {
 
   block: Block
 }
+
+type S2sDailyStatistics @entity {
+  id: ID!
+  dailyVolume: BigInt
+  dailyCount: Int
+}
+
