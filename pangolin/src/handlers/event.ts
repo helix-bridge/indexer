@@ -5,6 +5,7 @@ import { AccountHandler } from './account';
 export class EventHandler {
   private dvmKtonContract = '0x8809f9b3acef1da309f49b5ab97a4c0faa64e6ae';
   private dvmWithdrawAddress = '0x0000000000000000000000000000000000000015';
+  private dvmWithdrawSS58Format = '5elrpqut7c3mwtjeo28dtksbya7pgzyrtvbrsfrue9efu7jj';
 
   private event: SubstrateEvent;
 
@@ -114,12 +115,34 @@ export class EventHandler {
     await this.handleTransfer(from, to, amount);
   }
 
+  /**
+   *  ring transfer 1 -> from: eth to
+   */
+
   private async handleSmartToMainTransfer() {
-    const [from, to, amount] = JSON.parse(this.data);
-    const formattedFrom =
-      AccountHandler.convertToEthereumFormat(from) || AccountHandler.convertToDVMAddress(from);
-    const formattedTo =
-      AccountHandler.convertToEthereumFormat(to) || AccountHandler.convertToDVMAddress(to);
+    const [from, to, amount] = JSON.parse(this.data) as [string, string, string];
+    let formattedFrom = from;
+    let formattedTo = to;
+
+    if (this.method === 'DVMTransfer') {
+      if (to.toLowerCase() === this.dvmWithdrawSS58Format) {
+        formattedFrom = AccountHandler.convertToEthereumFormat(from);
+      }
+
+      if (from.toLowerCase() === this.dvmWithdrawSS58Format) {
+        formattedTo = AccountHandler.convertToDVMAddress(to);
+      }
+    }
+
+    if (this.method === 'KtonDVMTransfer') {
+      if (to.toLowerCase() === this.dvmKtonContract) {
+        formattedFrom = AccountHandler.convertToEthereumFormat(from);
+      }
+
+      if (from.toLowerCase() === this.dvmKtonContract) {
+        formattedTo = AccountHandler.convertToDVMAddress(to);
+      }
+    }
 
     const transfer = await Transfer.get(this.extrinsicHash);
 
