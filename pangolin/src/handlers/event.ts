@@ -1,7 +1,6 @@
 import { SubstrateEvent } from '@subql/types';
 import { Block, BridgeDispatchEvent, Transfer } from '../types';
 import { AccountHandler } from './account';
-import { TransferHandler } from './transfer';
 
 export class EventHandler {
   private dvmKtonContract = '0x8809f9b3acef1da309f49b5ab97a4c0faa64e6ae';
@@ -90,7 +89,7 @@ export class EventHandler {
     await AccountHandler.ensureAccount(sender);
     await AccountHandler.updateTransferStatistic(sender);
 
-    const transfer = await TransferHandler.ensureTransfer(this.extrinsicHash);
+    const transfer = new Transfer(this.extrinsicHash);
 
     transfer.recipientId = recipient;
     transfer.senderId = sender;
@@ -150,7 +149,9 @@ export class EventHandler {
       return;
     }
 
-    await this.handleTransfer(formattedFrom, formattedTo, amount);
+    if (this.method === 'DVMTransfer' || this.method === 'KtonDVMTransfer') {
+      await this.handleTransfer(formattedFrom, formattedTo, amount);
+    }
   }
 
   private simpleBlock(): Block {
