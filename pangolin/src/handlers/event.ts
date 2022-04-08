@@ -1,8 +1,12 @@
 import { SubstrateEvent } from '@subql/types';
 import { Block, BridgeDispatchEvent, Transfer } from '../types';
 import { AccountHandler } from './account';
+import { TransferHandler } from './transfer';
 
 export class EventHandler {
+  private dvmKtonContract = '0x8809f9b3acef1da309f49b5ab97a4c0faa64e6ae';
+  private dvmWithdrawAddress = '0x0000000000000000000000000000000000000015';
+
   private event: SubstrateEvent;
 
   constructor(event: SubstrateEvent) {
@@ -60,7 +64,7 @@ export class EventHandler {
       await this.handleMainToSmartTransfer();
     }
 
-    if (this.method === 'Endowed' && this.section === 'balances') {
+    if (this.section === 'ethereum') {
       await this.handleSmartToMainTransfer();
     }
   }
@@ -77,16 +81,16 @@ export class EventHandler {
     await event.save();
   }
 
-  private async handleTransfer(from: string, to: string, amount: number) {
-    const sender = AccountHandler.formatAddress(from);
-    const recipient = AccountHandler.formatAddress(to);
+  private async handleTransfer(from: string, to: string, amount: number | string) {
+    const sender = AccountHandler.convertToDVMAddress(from);
+    const recipient = AccountHandler.convertToDVMAddress(to);
 
     await AccountHandler.ensureAccount(recipient);
     await AccountHandler.updateTransferStatistic(recipient);
     await AccountHandler.ensureAccount(sender);
     await AccountHandler.updateTransferStatistic(sender);
 
-    const transfer = new Transfer(this.extrinsicHash);
+    const transfer = await TransferHandler.ensureTransfer(this.extrinsicHash);
 
     transfer.recipientId = recipient;
     transfer.senderId = sender;
@@ -112,10 +116,41 @@ export class EventHandler {
   }
 
   private async handleSmartToMainTransfer() {
-    const [to, amount] = JSON.parse(this.data);
-    const from = '0x0000000000000000000000000000000000000015';
+    const [from, to, amount] = JSON.parse(this.data);
+    const formattedFrom =
+      AccountHandler.convertToEthereumFormat(from) || AccountHandler.convertToDVMAddress(from);
+    const formattedTo =
+      AccountHandler.convertToEthereumFormat(to) || AccountHandler.convertToDVMAddress(to);
 
-    await this.handleTransfer(from, to, amount);
+    const transfer = await Transfer.get(this.extrinsicHash);
+
+    /**
+     * transfer to wkton contract KtonDVMTransfer(who, WKTON_ADDRESS, U256)
+     * withdraw from wkton contract KtonDVMTransfer(WKTON_ADDRESS, to, U256)
+     */
+    if (transfer && formattedFrom.toLowerCase() === this.dvmWithdrawAddress) {
+      await AccountHandler.ensureAccount(formattedTo);
+      await AccountHandler.updateTransferStatistic(formattedTo);
+
+      transfer.recipientId = formattedTo;
+
+      await transfer.save();
+
+      return;
+    }
+
+    if (transfer && this.method === 'Executed') {
+      await AccountHandler.ensureAccount(formattedFrom);
+      await AccountHandler.updateTransferStatistic(formattedFrom);
+
+      transfer.senderId = formattedFrom;
+
+      await transfer.save();
+
+      return;
+    }
+
+    await this.handleTransfer(formattedFrom, formattedTo, amount);
   }
 
   private simpleBlock(): Block {

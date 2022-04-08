@@ -16,7 +16,7 @@ network:
 
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 119850
+    startBlock: 1848600
     mapping:
       file: ./dist/index.js
       handlers:
@@ -47,11 +47,19 @@ dataSources:
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: balances
-            method: Endowed # ring: dvm -> mainnet
+            module: ethereum
+            method: DVMTransfer # ring: dvm -> mainnet
 
-        # - handler: handleEvent
-        #   kind: substrate/EventHandler
-        #   filter:
-        #     module: balances
-        #     method: Transfer
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: ethereum
+            method: KtonDVMTransfer # kton dvm -> mainnet
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: ethereum
+            method: Executed
+
+ 
