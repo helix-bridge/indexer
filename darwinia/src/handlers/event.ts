@@ -1,6 +1,7 @@
 import { SubstrateEvent } from '@subql/types';
 import { Block, BridgeDispatchEvent, S2SEvent, Transfer } from '../types';
 import { AccountHandler } from './account';
+import { S2sDailyStatisticsHandler } from './daily';
 
 export class EventHandler {
   private event: SubstrateEvent;
@@ -186,6 +187,10 @@ export class EventHandler {
 
       if (confirmResult) {
         await AccountHandler.updateS2SLockedStatistic(sender, amount);
+        // 86400000 = 24 * 60 * 60
+        // ms=>s
+        const daily = Math.floor(event.startTimestamp.getTime()/86400000) * 86400;
+        await S2sDailyStatisticsHandler.updateS2sDailyVolume(daily.toString(), amount);
       }
     }
   }

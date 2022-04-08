@@ -24,7 +24,7 @@ export class AccountHandler {
       acc.transferTotalCount = 0;
       acc.s2sLockedTotalCount = 0;
       acc.s2sLockedTotalAmount = BigInt(0);
-      acc.save();
+      await acc.save();
 
       return acc;
     }
