@@ -1,5 +1,5 @@
 import { SubstrateEvent } from '@subql/types';
-import { Block, BridgeDispatchEvent, S2SEvent, Transfer } from '../types';
+import { Block, BridgeDispatchEvent, S2SEvent, S2sUnlocked, Transfer } from '../types';
 import { AccountHandler } from './account';
 import { S2sDailyStatisticsHandler } from './daily';
 
@@ -94,6 +94,10 @@ export class EventHandler {
 
     if (this.method === 'TokenLockedConfirmed') {
       await this.handleTokenLockedConfirmed();
+    }
+
+    if (this.method == "TokenUnlocked") {
+      await this.handleTokenUnlocked()
     }
   }
 
@@ -199,6 +203,30 @@ export class EventHandler {
         await S2sDailyStatisticsHandler.updateS2sDailyVolume(daily.toString(), amount);
       }
     }
+  }
+
+  private async handleTokenUnlocked() {
+    // [lane_id, message_nonce, token address, recipient, amount]
+    const [laneId, nonce, token, to, amount] = JSON.parse(this.data) as [
+      string,
+      bigint,
+      string | Record<string, any>,
+      string,
+      number
+    ];
+    const unlockedEvent = new S2sUnlocked(this.s2sEventId(laneId, nonce));
+    const recipient = AccountHandler.formatAddress(to);
+
+    unlockedEvent.laneId = laneId;
+    unlockedEvent.nonce = nonce;
+    unlockedEvent.txHash = this.extrinsicHash;
+    unlockedEvent.timestamp = this.timestamp;
+    unlockedEvent.recipient = recipient;
+    unlockedEvent.token = typeof token === 'string' ? token : token.native.address;
+    unlockedEvent.amount = amount.toString();
+    unlockedEvent.block = this.simpleBlock();
+
+    await unlockedEvent.save();
   }
 
   private simpleBlock(): Block {

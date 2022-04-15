@@ -67,3 +67,17 @@ type S2sDailyStatistics @entity {
   dailyCount: Int
 }
 
+type S2sUnlocked @entity {
+  id: ID! # laneId + 0x + nonce
+
+  laneId: String!
+  nonce: BigInt!
+  txHash: String
+  recipient: String!
+  token: String! # token address
+  amount: String!
+  timestamp: Date
+
+  block: Block
+}
+
