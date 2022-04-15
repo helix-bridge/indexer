@@ -19,6 +19,7 @@ type S2SEvent @entity {
   amount: String!
   startTimestamp: Date!
   endTimestamp: Date
+  fee: String!
 
   block: Block
 }

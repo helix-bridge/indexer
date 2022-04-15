@@ -154,6 +154,7 @@ export class EventHandler {
       await AccountHandler.ensureAccount(formattedTo);
       await AccountHandler.updateTransferStatistic(formattedTo);
 
+      transfer.mediatorId = transfer.recipientId;
       transfer.recipientId = formattedTo;
 
       await transfer.save();
@@ -165,6 +166,8 @@ export class EventHandler {
       await AccountHandler.ensureAccount(formattedFrom);
       await AccountHandler.updateTransferStatistic(formattedFrom);
 
+      // FIXME: if this event belongs to a cross-chain operation, the mediatorId equals to the senderId
+      transfer.mediatorId = transfer.senderId;
       transfer.senderId = formattedFrom;
 
       await transfer.save();

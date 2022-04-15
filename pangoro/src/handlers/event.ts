@@ -37,6 +37,10 @@ export class EventHandler {
     return this.event.event.data.toString();
   }
 
+  get args() {
+    return this.event.extrinsic.extrinsic.args.toString().split(',');
+  }
+
   get extrinsicHash() {
     const i = this.event?.extrinsic?.extrinsic?.hash?.toString();
 
@@ -146,6 +150,7 @@ export class EventHandler {
     const event = new S2SEvent(this.s2sEventId(laneId, nonce));
     const sender = AccountHandler.formatAddress(from);
     const recipient = AccountHandler.formatAddress(to);
+    const [_specVersion, _weight, _value, fee, _recipient] = this.args;
 
     event.laneId = laneId;
     event.nonce = nonce;
@@ -159,6 +164,7 @@ export class EventHandler {
     event.endTimestamp = null;
     event.responseTxHash = null;
     event.block = this.simpleBlock();
+    event.fee = fee;
 
     await AccountHandler.ensureAccount(sender);
     await event.save();

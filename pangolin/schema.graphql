@@ -33,6 +33,7 @@ type Transfer @entity {
   section: String
   method: String
   timestamp: Date
+  mediator: Account
 
   block: Block
 }
