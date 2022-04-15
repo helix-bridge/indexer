@@ -1,3 +1,3 @@
-# Subql wormhole
+# Helix Subql
 
-Subql indexer for [wormhole](https://github.com/darwinia-network/wormhole-ui)
+Subql indexer for [helix](https://github.com/helix-bridge/helix-ui)
