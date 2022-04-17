@@ -1,5 +1,5 @@
 {
-  "name": "subql-wormhole",
+  "name": "helix-indexer",
   "version": "1.0.0",
   "description": "",
   "scripts": {
@@ -15,7 +15,10 @@
     "build:darwinia": "cd darwinia && yarn build",
     "clean:darwinia": "rm -rf ./darwinia/dist ./darwinia/.data",
     "start:darwinia": "cd darwinia && yarn start",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:server": "cd server && yarn start",
+    "start:server:dev": "cd server && yarn start:dev",
+    "start:server:debug": "cd server && yarn start:debug",
+    "build:server": "cd server && yarn build",
     "format": "prettier **/src/**/*.ts --config='./prettier.config.js'  --write"
   },
   "devDependencies": {
