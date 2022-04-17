@@ -51,7 +51,9 @@ export class AccountHandler {
   static async updateTransferStatistic(id: string) {
     const account = await this.getAccountById(id);
 
-    await this.updateAccount(id, { transferTotalCount: account.transferTotalCount + 1 });
+    await this.updateAccount(id, {
+      transferTotalCount: account.transferTotalCount + 1,
+    });
   }
 
   static async updateS2SLockedStatistic(id: string, amount: bigint) {

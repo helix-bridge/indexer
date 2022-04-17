@@ -96,8 +96,8 @@ export class EventHandler {
       await this.handleTokenLockedConfirmed();
     }
 
-    if (this.method == "TokenUnlocked") {
-      await this.handleTokenUnlocked()
+    if (this.method == 'TokenUnlocked') {
+      await this.handleTokenUnlocked();
     }
   }
 
@@ -199,7 +199,7 @@ export class EventHandler {
         await AccountHandler.updateS2SLockedStatistic(sender, amount);
         // 86400000 = 24 * 60 * 60
         // ms=>s
-        const daily = Math.floor(event.startTimestamp.getTime()/86400000) * 86400;
+        const daily = Math.floor(event.startTimestamp.getTime() / 86400000) * 86400;
         await S2sDailyStatisticsHandler.updateS2sDailyVolume(daily.toString(), amount);
       }
     }

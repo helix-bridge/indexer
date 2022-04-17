@@ -1,0 +1,4 @@
+server/src/graphql.ts
+**/src/types/
+**/dist/
+**/node_modules/

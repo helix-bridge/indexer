@@ -19,11 +19,11 @@ export class AccountHandler {
     if (!address) {
       return '';
     }
-  
+
     const startAt = 2;
     const result = u8aToHex(decodeAddress(address)).slice(startAt);
     const PREFIX = '64766d3a00000000000000';
-  
+
     // eslint-disable-next-line no-magic-numbers
     return result.startsWith(PREFIX) ? '0x' + result.slice(-42, -2) : null;
   }
@@ -62,6 +62,8 @@ export class AccountHandler {
   static async updateTransferStatistic(id: string) {
     const account = await this.getAccountById(id);
 
-    await this.updateAccount(id, { transferTotalCount: account.transferTotalCount + 1 });
+    await this.updateAccount(id, {
+      transferTotalCount: account.transferTotalCount + 1,
+    });
   }
 }

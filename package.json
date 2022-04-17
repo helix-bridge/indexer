@@ -15,17 +15,22 @@
     "build:darwinia": "cd darwinia && yarn build",
     "clean:darwinia": "rm -rf ./darwinia/dist ./darwinia/.data",
     "start:darwinia": "cd darwinia && yarn start",
-    "start:server": "cd server && yarn start",
-    "start:server:dev": "cd server && yarn start:dev",
-    "start:server:debug": "cd server && yarn start:debug",
-    "build:server": "cd server && yarn build",
-    "format": "prettier **/src/**/*.ts --config='./prettier.config.js'  --write"
+    "start:server": "cd indexer && yarn start",
+    "start:server:dev": "cd indexer && yarn start:dev",
+    "start:server:debug": "cd indexer && yarn start:debug",
+    "build:server": "cd indexer && yarn build",
+    "lint": "cd indexer && yarn lint",
+    "format": "prettier **/src/**/*.ts --write"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^8.0.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "husky": "^7.0.4",
     "prettier": "^2.5.1",
-    "prettier-quick": "^0.0.5",
-    "pretty-quick": "^3.1.2",
-    "typescript": "4.2.4"
+    "typescript": "^4.2.4"
   },
   "author": "",
   "license": "ISC"
