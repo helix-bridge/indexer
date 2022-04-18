@@ -27,3 +27,4 @@ yarn-error.log*
 .vscode/
 **/src/types
 **/.data
+apollo/src/graphql.ts

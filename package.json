@@ -15,11 +15,11 @@
     "build:darwinia": "cd darwinia && yarn build",
     "clean:darwinia": "rm -rf ./darwinia/dist ./darwinia/.data",
     "start:darwinia": "cd darwinia && yarn start",
-    "start:server": "cd indexer && yarn start",
-    "start:server:dev": "cd indexer && yarn start:dev",
-    "start:server:debug": "cd indexer && yarn start:debug",
-    "build:server": "cd indexer && yarn build",
-    "lint": "cd indexer && yarn lint",
+    "start:server": "cd apollo && yarn start",
+    "start:server:dev": "cd apollo && yarn start:dev",
+    "start:server:debug": "cd apollo && yarn start:debug",
+    "build:server": "cd apollo && yarn build",
+    "lint": "cd apollo && yarn lint",
     "format": "prettier **/src/**/*.ts --write"
   },
   "devDependencies": {
