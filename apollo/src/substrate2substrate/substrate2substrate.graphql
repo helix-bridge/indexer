@@ -22,7 +22,7 @@ type S2sEvent {
   nonce: String!
   requestTxHash: String! # TokenLocked tx hash
   responseTxHash: String # TokenLockedConfirmed tx hash
-  sender: String!
+  senderId: String!
   result: Int! # 0 TokenLocked 1 TokenLockedConfirmed success 2 TokenLockedConfirmed fail
   recipient: String!
   token: String! # token address
@@ -47,8 +47,8 @@ type S2sRecord {
   recipient: String!
   token: String!
   amount: String!
-  startTime: String!
-  endTime: String
+  startTime: Int!
+  endTime: Int
   result: Int!
   fee: String!
 }
@@ -66,16 +66,16 @@ type BurnRecordEntity_filter {
 type Query {
   burnRecordEntities(
     first: Int
-    start_timestamp: Int
+    startTime: Int
     sender: String
     recipient: String
   ): [BurnRecordEntity]
   lockRecordEntities(
     first: Int
-    start_timestamp: Int
+    startTime: Int
     sender: String
     recipient: String
   ): [S2sEvent]
-  s2sRecords(first: Int, start_timestamp: Int, sender: String): [S2sRecord]
+  s2sRecords(first: Int, startTime: Int, sender: String): [S2sRecord]
   dailyStatistics(first: Int, timepast: Int, chain: String): [DailyStatistic]
 }

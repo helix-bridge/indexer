@@ -10,13 +10,13 @@ export class BurnRecordEntitiesResolver {
     @Args('first') first: number,
     @Args('sender') sender: string,
     @Args('recipient') recipient: string,
-    @Args('start_timestamp') start_timestamp: number
+    @Args('startTime') startTime: number
   ) {
     return this.substrate2SubstrateService.burnRecordEntities({
       first,
       sender,
       recipient,
-      start_timestamp,
+      startTime,
     });
   }
 }
@@ -30,13 +30,13 @@ export class LockRecordEntitiesResolver {
     @Args('first') first: number,
     @Args('sender') sender: string,
     @Args('recipient') recipient: string,
-    @Args('start_timestamp') start_timestamp: number
+    @Args('startTime') startTime: number
   ) {
     return this.substrate2SubstrateService.lockRecordEntities({
       first,
       sender,
       recipient,
-      start_timestamp,
+      startTime,
     });
   }
 }
@@ -49,12 +49,14 @@ export class S2sRecordsResolver {
   async s2sRecords(
     @Args('first') first: number,
     @Args('sender') sender: string,
-    @Args('start_timestamp') start_timestamp: number
+    @Args('recipient') recipient: string,
+    @Args('startTime') startTime: number
   ) {
     return this.substrate2SubstrateService.s2sRecords({
       first,
-      start_timestamp,
+      startTime,
       sender,
+      recipient,
     });
   }
 }
