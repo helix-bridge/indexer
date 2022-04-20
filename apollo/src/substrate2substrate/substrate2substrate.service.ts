@@ -110,7 +110,9 @@ export class Substrate2substrateService {
     sender,
     recipient,
   }: RecordsRequest): Promise<{ data: { s2sEvents: { nodes: S2sEvent[] } } }> {
-    const startTimeQuery = `startTimestamp: { lessThan: \"${toISOString(startTime * 1000)}\" }`;
+    const startTimeQuery = `startTimestamp: { lessThan: \"${new Date(
+      startTime * 1000
+    ).toISOString()}\" }`;
     const accountQuery = this.subqlAccountFilter({ sender, recipient });
 
     const filter = accountQuery
