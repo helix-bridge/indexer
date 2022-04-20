@@ -2,7 +2,14 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { getUnixTime } from 'date-fns';
 import { isEmpty, omitBy } from 'lodash';
-import { BurnRecordEntity, DailyStatistic, S2sEvent, S2sRecord } from '../graphql';
+import {
+  BurnRecordEntity,
+  DailyStatistic,
+  DVMLockRecord,
+  S2sEvent,
+  S2sRecord,
+  UnlockRecord,
+} from '../graphql';
 
 interface RecordsRequest {
   first: number;
@@ -13,47 +20,49 @@ interface RecordsRequest {
 
 const toISOString = (timestamp: number) => new Date(timestamp * 1000).toISOString().slice(0, 19);
 
-const burnRecordToS2SRecord = (burnRecord: BurnRecordEntity): S2sRecord => ({
-  id: burnRecord.id,
-  fromChain: 'crab',
-  fromChainMode: 'dvm',
-  toChain: 'darwinia',
-  toChainMode: 'native',
-  bridge: 'helix',
-  laneId: burnRecord.lane_id,
-  nonce: burnRecord.nonce,
-  requestTxHash: burnRecord.request_transaction,
-  responseTxHash: burnRecord.response_transaction,
-  sender: burnRecord.sender,
-  recipient: burnRecord.recipient,
-  token: burnRecord.token,
-  amount: burnRecord.amount,
-  startTime: burnRecord.start_timestamp,
-  endTime: burnRecord.end_timestamp,
-  result: burnRecord.result,
-  fee: burnRecord.fee.toString(),
-});
+const burnRecordToS2SRecord = (burnRecord: BurnRecordEntity | null): S2sRecord =>
+  burnRecord && {
+    id: burnRecord.id,
+    fromChain: 'crab',
+    fromChainMode: 'dvm',
+    toChain: 'darwinia',
+    toChainMode: 'native',
+    bridge: 'helix',
+    laneId: burnRecord.lane_id,
+    nonce: burnRecord.nonce,
+    requestTxHash: burnRecord.request_transaction,
+    responseTxHash: burnRecord.response_transaction,
+    sender: burnRecord.sender,
+    recipient: burnRecord.recipient,
+    token: burnRecord.token,
+    amount: burnRecord.amount,
+    startTime: burnRecord.start_timestamp,
+    endTime: burnRecord.end_timestamp,
+    result: burnRecord.result,
+    fee: burnRecord.fee.toString(),
+  };
 
-const s2sEventTos2sRecord = (s2sEvent: S2sEvent): S2sRecord => ({
-  id: s2sEvent.id,
-  fromChain: 'darwinia',
-  fromChainMode: 'native',
-  toChain: 'crab',
-  toChainMode: 'dvm',
-  bridge: 'helix',
-  laneId: s2sEvent.laneId,
-  nonce: s2sEvent.nonce,
-  requestTxHash: s2sEvent.requestTxHash,
-  responseTxHash: s2sEvent.responseTxHash,
-  sender: s2sEvent.senderId,
-  recipient: s2sEvent.recipient,
-  token: s2sEvent.token,
-  amount: s2sEvent.amount,
-  startTime: getUnixTime(new Date(s2sEvent.startTimestamp)),
-  endTime: getUnixTime(new Date(s2sEvent.endTimestamp)),
-  result: s2sEvent.result,
-  fee: s2sEvent.fee,
-});
+const s2sEventTos2sRecord = (s2sEvent: S2sEvent | null): S2sRecord =>
+  s2sEvent && {
+    id: s2sEvent.id,
+    fromChain: 'darwinia',
+    fromChainMode: 'native',
+    toChain: 'crab',
+    toChainMode: 'dvm',
+    bridge: 'helix',
+    laneId: s2sEvent.laneId,
+    nonce: s2sEvent.nonce,
+    requestTxHash: s2sEvent.requestTxHash,
+    responseTxHash: s2sEvent.responseTxHash,
+    sender: s2sEvent.senderId,
+    recipient: s2sEvent.recipient,
+    token: s2sEvent.token,
+    amount: s2sEvent.amount,
+    startTime: getUnixTime(new Date(s2sEvent.startTimestamp)),
+    endTime: getUnixTime(new Date(s2sEvent.endTimestamp)),
+    result: s2sEvent.result,
+    fee: s2sEvent.fee,
+  };
 
 @Injectable()
 export class Substrate2substrateService {
@@ -102,6 +111,40 @@ export class Substrate2substrateService {
     return data.data.burnRecordEntities;
   }
 
+  async burnRecord(id: string): Promise<S2sRecord> {
+    const res = await axios.post(this.backingUrl, {
+      query: `query { burnRecordEntity(id: "${id}") {id, lane_id, nonce, amount, start_timestamp, end_timestamp, request_transaction, response_transaction, result, token, sender, recipient, fee}}`,
+      variables: null,
+    });
+
+    return burnRecordToS2SRecord(res.data.data.burnRecordEntity);
+  }
+
+  async dvmLockedRecord(id: string): Promise<DVMLockRecord | null> {
+    const res = await axios.post(this.backingUrl, {
+      query: `query { lockRecordEntity(id: "${id}") { id, lane_id, nonce, mapping_token, recipient, amount, transaction } }`,
+      variables: null,
+    });
+
+    const data = res.data.data.lockRecordEntity;
+
+    if (!data) {
+      return null;
+    }
+
+    const { lane_id, nonce, mapping_token, recipient, amount, transaction } = data;
+
+    return {
+      id,
+      laneId: lane_id,
+      nonce,
+      token: mapping_token,
+      recipient,
+      amount,
+      txHash: transaction,
+    };
+  }
+
   /* ---------------------------------------- subql section --------------------------------- */
 
   async indexLockRecords({
@@ -142,6 +185,32 @@ export class Substrate2substrateService {
     const data = await this.indexLockRecords(request);
 
     return data.data.s2sEvents.nodes;
+  }
+
+  async lockRecord(id: string): Promise<S2sRecord> {
+    const res = await axios.post(this.issuingUrl, {
+      query: `query { s2sEvent(id: "${id}") {id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, token, senderId, recipient, fee}}`,
+      variables: null,
+    });
+
+    return s2sEventTos2sRecord(res.data.data.s2sEvent);
+  }
+
+  async unlockRecord(id: string): Promise<UnlockRecord | null> {
+    const res = await axios.post(this.issuingUrl, {
+      query: `query { s2sUnlocked(id: "${id}") { id, laneId, nonce, txHash, recipient, token, amount, timestamp, block } }`,
+      variables: null,
+    });
+
+    const data = res.data.data.s2sUnlocked;
+
+    if (!data) {
+      return null;
+    }
+
+    const { timestamp, ...rest } = data;
+
+    return { ...rest, timestamp: getUnixTime(new Date(timestamp)) };
   }
 
   /* ---------------------------------------- public api --------------------------------- */

@@ -6,7 +6,7 @@ export class BurnRecordEntitiesResolver {
   constructor(private substrate2SubstrateService: Substrate2substrateService) {}
 
   @Query()
-  async burnRecordEntities(
+  async burnRecords(
     @Args('first') first: number,
     @Args('sender') sender: string,
     @Args('recipient') recipient: string,
@@ -19,6 +19,16 @@ export class BurnRecordEntitiesResolver {
       startTime,
     });
   }
+
+  @Query()
+  async burnRecord(@Args('id') id: string) {
+    return this.substrate2SubstrateService.burnRecord(id);
+  }
+
+  @Query()
+  async dvmLockRecord(@Args('id') id: string) {
+    return this.substrate2SubstrateService.dvmLockedRecord(id);
+  }
 }
 
 @Resolver('lockRecordEntities')
@@ -26,7 +36,7 @@ export class LockRecordEntitiesResolver {
   constructor(private substrate2SubstrateService: Substrate2substrateService) {}
 
   @Query()
-  async lockRecordEntities(
+  async lockRecords(
     @Args('first') first: number,
     @Args('sender') sender: string,
     @Args('recipient') recipient: string,
@@ -38,6 +48,16 @@ export class LockRecordEntitiesResolver {
       recipient,
       startTime,
     });
+  }
+
+  @Query()
+  async lockRecord(@Args('id') id: string) {
+    return this.substrate2SubstrateService.lockRecord(id);
+  }
+
+  @Query()
+  async unlockRecord(@Args('id') id: string) {
+    return this.substrate2SubstrateService.unlockRecord(id);
   }
 }
 

@@ -1,4 +1,6 @@
 scalar BigInt
+scalar ID
+scalar JSON
 
 type BurnRecordEntity {
   id: ID!
@@ -16,6 +18,16 @@ type BurnRecordEntity {
   fee: Int
 }
 
+type DVMLockRecord {
+  id: ID!
+  laneId: String!
+  nonce: BigInt!
+  token: String!
+  recipient: String!
+  amount: BigInt!
+  txHash: String!
+}
+
 type S2sEvent {
   id: ID!
   laneId: String!
@@ -30,6 +42,17 @@ type S2sEvent {
   startTimestamp: String!
   endTimestamp: String
   fee: String!
+}
+type UnlockRecord {
+  id: ID!
+  laneId: String!
+  nonce: Int!
+  txHash: String
+  recipient: String!
+  token: String!
+  amount: String!
+  timestamp: Int
+  block: JSON
 }
 
 type S2sRecord {
@@ -64,18 +87,12 @@ type BurnRecordEntity_filter {
 }
 
 type Query {
-  burnRecordEntities(
-    first: Int
-    startTime: Int
-    sender: String
-    recipient: String
-  ): [BurnRecordEntity]
-  lockRecordEntities(
-    first: Int
-    startTime: Int
-    sender: String
-    recipient: String
-  ): [S2sEvent]
+  burnRecords(first: Int, startTime: Int, sender: String, recipient: String): [BurnRecordEntity]
+  burnRecord(id: ID!): S2sRecord
+  dvmLockRecord(id: ID!): DVMLockRecord
+  lockRecords(first: Int, startTime: Int, sender: String, recipient: String): [S2sEvent]
+  lockRecord(id: ID!): S2sRecord
+  unlockRecord(id: ID!): UnlockRecord
   s2sRecords(first: Int, startTime: Int, sender: String): [S2sRecord]
   dailyStatistics(first: Int, timepast: Int, chain: String): [DailyStatistic]
 }
