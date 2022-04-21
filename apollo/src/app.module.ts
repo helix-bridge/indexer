@@ -1,8 +1,10 @@
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule, Scalar } from '@nestjs/graphql';
 import BigInt from 'apollo-type-bigint';
 import { join } from 'path';
+import { AccountModule } from './account/account.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Substrate2substrateModule } from './substrate2substrate/substrate2substrate.module';
@@ -21,6 +23,8 @@ export class BigIntScalar extends BigInt {}
       },
     }),
     Substrate2substrateModule,
+    AccountModule,
+    ConfigModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService, BigIntScalar],

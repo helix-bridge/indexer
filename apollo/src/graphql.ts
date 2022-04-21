@@ -7,6 +7,30 @@
 
 /* tslint:disable */
 /* eslint-disable */
+export class Accounts {
+    total: number;
+}
+
+export abstract class IQuery {
+    abstract accounts(chain?: Nullable<string>): Nullable<Accounts> | Promise<Nullable<Accounts>>;
+
+    abstract burnRecords(first?: Nullable<number>, startTime?: Nullable<number>, sender?: Nullable<string>, recipient?: Nullable<string>): Nullable<Nullable<BurnRecordEntity>[]> | Promise<Nullable<Nullable<BurnRecordEntity>[]>>;
+
+    abstract burnRecord(id: string): Nullable<S2sRecord> | Promise<Nullable<S2sRecord>>;
+
+    abstract dvmLockRecord(id: string): Nullable<DVMLockRecord> | Promise<Nullable<DVMLockRecord>>;
+
+    abstract lockRecords(first?: Nullable<number>, startTime?: Nullable<number>, sender?: Nullable<string>, recipient?: Nullable<string>): Nullable<Nullable<S2sEvent>[]> | Promise<Nullable<Nullable<S2sEvent>[]>>;
+
+    abstract lockRecord(id: string): Nullable<S2sRecord> | Promise<Nullable<S2sRecord>>;
+
+    abstract unlockRecord(id: string): Nullable<UnlockRecord> | Promise<Nullable<UnlockRecord>>;
+
+    abstract s2sRecords(first?: Nullable<number>, startTime?: Nullable<number>, sender?: Nullable<string>, recipient?: Nullable<string>): Nullable<Nullable<S2sRecord>[]> | Promise<Nullable<Nullable<S2sRecord>[]>>;
+
+    abstract dailyStatistics(first?: Nullable<number>, timepast?: Nullable<number>, chain?: Nullable<string>): Nullable<Nullable<DailyStatistic>[]> | Promise<Nullable<Nullable<DailyStatistic>[]>>;
+}
+
 export class BurnRecordEntity {
     id: string;
     lane_id: string;
@@ -90,24 +114,6 @@ export class DailyStatistic {
 
 export class BurnRecordEntity_filter {
     start_timestamp_lt?: Nullable<number>;
-}
-
-export abstract class IQuery {
-    abstract burnRecords(first?: Nullable<number>, startTime?: Nullable<number>, sender?: Nullable<string>, recipient?: Nullable<string>): Nullable<Nullable<BurnRecordEntity>[]> | Promise<Nullable<Nullable<BurnRecordEntity>[]>>;
-
-    abstract burnRecord(id: string): Nullable<S2sRecord> | Promise<Nullable<S2sRecord>>;
-
-    abstract dvmLockRecord(id: string): Nullable<DVMLockRecord> | Promise<Nullable<DVMLockRecord>>;
-
-    abstract lockRecords(first?: Nullable<number>, startTime?: Nullable<number>, sender?: Nullable<string>, recipient?: Nullable<string>): Nullable<Nullable<S2sEvent>[]> | Promise<Nullable<Nullable<S2sEvent>[]>>;
-
-    abstract lockRecord(id: string): Nullable<S2sRecord> | Promise<Nullable<S2sRecord>>;
-
-    abstract unlockRecord(id: string): Nullable<UnlockRecord> | Promise<Nullable<UnlockRecord>>;
-
-    abstract s2sRecords(first?: Nullable<number>, startTime?: Nullable<number>, sender?: Nullable<string>, recipient?: Nullable<string>): Nullable<Nullable<S2sRecord>[]> | Promise<Nullable<Nullable<S2sRecord>[]>>;
-
-    abstract dailyStatistics(first?: Nullable<number>, timepast?: Nullable<number>, chain?: Nullable<string>): Nullable<Nullable<DailyStatistic>[]> | Promise<Nullable<Nullable<DailyStatistic>[]>>;
 }
 
 export type BigInt = any;

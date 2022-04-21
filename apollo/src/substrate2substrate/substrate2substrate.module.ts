@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import {
   BurnRecordEntitiesResolver,
   DailyStatisticsResolver,
@@ -8,6 +9,7 @@ import {
 import { Substrate2substrateService } from './substrate2substrate.service';
 
 @Module({
+  imports: [ConfigModule],
   providers: [
     Substrate2substrateService,
     BurnRecordEntitiesResolver,
