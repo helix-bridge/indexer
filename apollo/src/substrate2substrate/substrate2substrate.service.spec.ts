@@ -12,10 +12,6 @@ describe('Substrate2SubstrateService', () => {
     service = module.get<Substrate2substrateService>(Substrate2substrateService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
   it('subql account filter should return undefined', () => {
     const res1 = service.subqlAccountFilter({ sender: '', recipient: '' });
     expect(res1).toEqual(undefined);
@@ -35,7 +31,7 @@ describe('Substrate2SubstrateService', () => {
     });
 
     expect(res).toEqual(
-      `or: [ { senderId: { equalTo: ${account} } }, { recipient: { equalTo: ${account} } } ]`
+      `or: [ { senderId: { equalTo: "${account}" } }, { recipient: { equalTo: "${account}" } } ]`
     );
   });
 
@@ -43,11 +39,11 @@ describe('Substrate2SubstrateService', () => {
     const account = '0x245B4775082C144C22a4874B0fBa8c70c510c5AE';
     const res1 = service.subqlAccountFilter({ sender: account, recipient: '' });
 
-    expect(res1).toEqual(`senderId: { equalTo: ${account} }`);
+    expect(res1).toEqual(`senderId: { equalTo: "${account}" }`);
 
     const res2 = service.subqlAccountFilter({ sender: '', recipient: account });
 
-    expect(res2).toEqual(`recipient: { equalTo: ${account} }`);
+    expect(res2).toEqual(`recipient: { equalTo: "${account}" }`);
   });
 
   it('theGraph account filter should return undefined', () => {

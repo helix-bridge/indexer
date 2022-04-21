@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { getUnixTime } from 'date-fns';
 import { isEmpty, omitBy } from 'lodash';
@@ -86,23 +86,31 @@ export class Substrate2substrateService {
       filter = `${filter}, where: { ${accountQuery} }`;
     }
 
-    const res = await axios.post(this.backingUrl, {
-      query: `query { burnRecordEntities (first: ${first}, orderBy: nonce, orderDirection: desc, ${filter}) {id, lane_id, nonce, amount, start_timestamp, end_timestamp, request_transaction, response_transaction, result, token, sender, recipient, fee}}`,
-      variables: null,
-    });
+    try {
+      const res = await axios.post(this.backingUrl, {
+        query: `query { burnRecordEntities (first: ${first}, orderBy: nonce, orderDirection: desc, ${filter}) {id, lane_id, nonce, amount, start_timestamp, end_timestamp, request_transaction, response_transaction, result, token, sender, recipient, fee}}`,
+        variables: null,
+      });
 
-    return res.data;
+      return res.data;
+    } catch {
+      throw new HttpException('Query burn records failed', 500);
+    }
   }
 
   private async indexMappingDailyStatistics(
     filter: string
   ): Promise<{ data: { burnDailyStatistics: DailyStatistic[] } }> {
-    const res = await axios.post(this.backingUrl, {
-      query: `query { burnDailyStatistics (orderBy: id, orderDirection: desc, ${filter}) {id, dailyVolume, dailyCount}}`,
-      variables: null,
-    });
+    try {
+      const res = await axios.post(this.backingUrl, {
+        query: `query { burnDailyStatistics (orderBy: id, orderDirection: desc, ${filter}) {id, dailyVolume, dailyCount}}`,
+        variables: null,
+      });
 
-    return res.data;
+      return res.data;
+    } catch {
+      throw new HttpException(`Query burn daily statistics failed, filter: ${filter}`, 500);
+    }
   }
 
   async burnRecordEntities(request: RecordsRequest) {
@@ -112,37 +120,45 @@ export class Substrate2substrateService {
   }
 
   async burnRecord(id: string): Promise<S2sRecord> {
-    const res = await axios.post(this.backingUrl, {
-      query: `query { burnRecordEntity(id: "${id}") {id, lane_id, nonce, amount, start_timestamp, end_timestamp, request_transaction, response_transaction, result, token, sender, recipient, fee}}`,
-      variables: null,
-    });
+    try {
+      const res = await axios.post(this.backingUrl, {
+        query: `query { burnRecordEntity(id: "${id}") {id, lane_id, nonce, amount, start_timestamp, end_timestamp, request_transaction, response_transaction, result, token, sender, recipient, fee}}`,
+        variables: null,
+      });
 
-    return burnRecordToS2SRecord(res.data.data.burnRecordEntity);
+      return burnRecordToS2SRecord(res.data.data.burnRecordEntity);
+    } catch {
+      throw new HttpException(`Query burn record failed`, 500);
+    }
   }
 
   async dvmLockedRecord(id: string): Promise<DVMLockRecord | null> {
-    const res = await axios.post(this.backingUrl, {
-      query: `query { lockRecordEntity(id: "${id}") { id, lane_id, nonce, mapping_token, recipient, amount, transaction } }`,
-      variables: null,
-    });
+    try {
+      const res = await axios.post(this.backingUrl, {
+        query: `query { lockRecordEntity(id: "${id}") { id, lane_id, nonce, mapping_token, recipient, amount, transaction } }`,
+        variables: null,
+      });
 
-    const data = res.data.data.lockRecordEntity;
+      const data = res.data.data.lockRecordEntity;
 
-    if (!data) {
-      return null;
+      if (!data) {
+        return null;
+      }
+
+      const { lane_id, nonce, mapping_token, recipient, amount, transaction } = data;
+
+      return {
+        id,
+        laneId: lane_id,
+        nonce,
+        token: mapping_token,
+        recipient,
+        amount,
+        txHash: transaction,
+      };
+    } catch {
+      throw new HttpException(`Query lock record entity failed`, 500);
     }
-
-    const { lane_id, nonce, mapping_token, recipient, amount, transaction } = data;
-
-    return {
-      id,
-      laneId: lane_id,
-      nonce,
-      token: mapping_token,
-      recipient,
-      amount,
-      txHash: transaction,
-    };
   }
 
   /* ---------------------------------------- subql section --------------------------------- */
@@ -162,23 +178,31 @@ export class Substrate2substrateService {
       ? `filter: { ${startTimeQuery}, ${accountQuery} }`
       : `filter: { ${startTimeQuery} }`;
 
-    const res = await axios.post(this.issuingUrl, {
-      query: `query { s2sEvents (first: ${first}, orderBy: NONCE_DESC, ${filter}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, token, senderId, recipient, fee}}}`,
-      variables: null,
-    });
+    try {
+      const res = await axios.post(this.issuingUrl, {
+        query: `query { s2sEvents (first: ${first}, orderBy: NONCE_DESC, ${filter}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, token, senderId, recipient, fee}}}`,
+        variables: null,
+      });
 
-    return res.data;
+      return res.data;
+    } catch {
+      throw new HttpException(`Query lock records failed, filter: ${filter}`, 500);
+    }
   }
 
   async indexIssuingDailyStatistics(
     filter: string
   ): Promise<{ data: { s2sDailyStatistics: { nodes: DailyStatistic[] } } }> {
-    const res = await axios.post(this.issuingUrl, {
-      query: `query { s2sDailyStatistics (orderBy: ID_DESC, ${filter}) {nodes{id, dailyVolume, dailyCount}}}`,
-      variables: null,
-    });
+    try {
+      const res = await axios.post(this.issuingUrl, {
+        query: `query { s2sDailyStatistics (orderBy: ID_DESC, ${filter}) {nodes{id, dailyVolume, dailyCount}}}`,
+        variables: null,
+      });
 
-    return res.data;
+      return res.data;
+    } catch {
+      throw new HttpException(`Query s2s daily statistics failed, filter: ${filter}`, 500);
+    }
   }
 
   async lockRecordEntities(request: RecordsRequest): Promise<S2sEvent[]> {
@@ -188,29 +212,37 @@ export class Substrate2substrateService {
   }
 
   async lockRecord(id: string): Promise<S2sRecord> {
-    const res = await axios.post(this.issuingUrl, {
-      query: `query { s2sEvent(id: "${id}") {id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, token, senderId, recipient, fee}}`,
-      variables: null,
-    });
+    try {
+      const res = await axios.post(this.issuingUrl, {
+        query: `query { s2sEvent(id: "${id}") {id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, token, senderId, recipient, fee}}`,
+        variables: null,
+      });
 
-    return s2sEventTos2sRecord(res.data.data.s2sEvent);
+      return s2sEventTos2sRecord(res.data.data.s2sEvent);
+    } catch {
+      throw new HttpException(`Query s2s event failed`, 500);
+    }
   }
 
   async unlockRecord(id: string): Promise<UnlockRecord | null> {
-    const res = await axios.post(this.issuingUrl, {
-      query: `query { s2sUnlocked(id: "${id}") { id, laneId, nonce, txHash, recipient, token, amount, timestamp, block } }`,
-      variables: null,
-    });
+    try {
+      const res = await axios.post(this.issuingUrl, {
+        query: `query { s2sUnlocked(id: "${id}") { id, laneId, nonce, txHash, recipient, token, amount, timestamp, block } }`,
+        variables: null,
+      });
 
-    const data = res.data.data.s2sUnlocked;
+      const data = res.data.data.s2sUnlocked;
 
-    if (!data) {
-      return null;
+      if (!data) {
+        return null;
+      }
+
+      const { timestamp, ...rest } = data;
+
+      return { ...rest, timestamp: getUnixTime(new Date(timestamp)) };
+    } catch {
+      throw new HttpException(`Query s2s unlock failed`, 500);
     }
-
-    const { timestamp, ...rest } = data;
-
-    return { ...rest, timestamp: getUnixTime(new Date(timestamp)) };
   }
 
   /* ---------------------------------------- public api --------------------------------- */
@@ -224,8 +256,8 @@ export class Substrate2substrateService {
     ]);
 
     const s2sRecordList = [];
-    const left = burnRecords.data.burnRecordEntities;
-    const right = lockRecords.data.s2sEvents.nodes;
+    const left = burnRecords.data?.burnRecordEntities ?? [];
+    const right = lockRecords.data?.s2sEvents.nodes ?? [];
 
     while (left.length && right.length) {
       const record =
@@ -346,8 +378,8 @@ export class Substrate2substrateService {
     sender,
     recipient,
   }: Pick<RecordsRequest, 'sender' | 'recipient'>): string | undefined {
-    const senderQuery = `senderId: { equalTo: ${sender} }`;
-    const recipientQuery = `recipient: { equalTo: ${recipient} }`;
+    const senderQuery = `senderId: { equalTo: "${sender}" }`;
+    const recipientQuery = `recipient: { equalTo: "${recipient}" }`;
     let accountQuery: string;
 
     if (sender && recipient) {

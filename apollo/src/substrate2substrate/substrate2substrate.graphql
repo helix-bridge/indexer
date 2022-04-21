@@ -93,6 +93,6 @@ type Query {
   lockRecords(first: Int, startTime: Int, sender: String, recipient: String): [S2sEvent]
   lockRecord(id: ID!): S2sRecord
   unlockRecord(id: ID!): UnlockRecord
-  s2sRecords(first: Int, startTime: Int, sender: String): [S2sRecord]
+  s2sRecords(first: Int, startTime: Int, sender: String, recipient: String): [S2sRecord]
   dailyStatistics(first: Int, timepast: Int, chain: String): [DailyStatistic]
 }
