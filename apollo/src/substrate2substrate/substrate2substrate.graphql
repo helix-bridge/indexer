@@ -1,4 +1,6 @@
 scalar BigInt
+scalar ID
+scalar JSON
 
 type BurnRecordEntity {
   id: ID!
@@ -16,13 +18,23 @@ type BurnRecordEntity {
   fee: Int
 }
 
+type DVMLockRecord {
+  id: ID!
+  laneId: String!
+  nonce: BigInt!
+  token: String!
+  recipient: String!
+  amount: BigInt!
+  txHash: String!
+}
+
 type S2sEvent {
   id: ID!
   laneId: String!
   nonce: String!
   requestTxHash: String! # TokenLocked tx hash
   responseTxHash: String # TokenLockedConfirmed tx hash
-  sender: String!
+  senderId: String!
   result: Int! # 0 TokenLocked 1 TokenLockedConfirmed success 2 TokenLockedConfirmed fail
   recipient: String!
   token: String! # token address
@@ -30,6 +42,17 @@ type S2sEvent {
   startTimestamp: String!
   endTimestamp: String
   fee: String!
+}
+type UnlockRecord {
+  id: ID!
+  laneId: String!
+  nonce: Int!
+  txHash: String
+  recipient: String!
+  token: String!
+  amount: String!
+  timestamp: Int
+  block: JSON
 }
 
 type S2sRecord {
@@ -47,8 +70,8 @@ type S2sRecord {
   recipient: String!
   token: String!
   amount: String!
-  startTime: String!
-  endTime: String
+  startTime: Int!
+  endTime: Int
   result: Int!
   fee: String!
 }
@@ -64,18 +87,12 @@ type BurnRecordEntity_filter {
 }
 
 type Query {
-  burnRecordEntities(
-    first: Int
-    start_timestamp: Int
-    sender: String
-    recipient: String
-  ): [BurnRecordEntity]
-  lockRecordEntities(
-    first: Int
-    start_timestamp: Int
-    sender: String
-    recipient: String
-  ): [S2sEvent]
-  s2sRecords(first: Int, start_timestamp: Int, sender: String): [S2sRecord]
+  burnRecords(first: Int, startTime: Int, sender: String, recipient: String): [BurnRecordEntity]
+  burnRecord(id: ID!): S2sRecord
+  dvmLockRecord(id: ID!): DVMLockRecord
+  lockRecords(first: Int, startTime: Int, sender: String, recipient: String): [S2sEvent]
+  lockRecord(id: ID!): S2sRecord
+  unlockRecord(id: ID!): UnlockRecord
+  s2sRecords(first: Int, startTime: Int, sender: String, recipient: String): [S2sRecord]
   dailyStatistics(first: Int, timepast: Int, chain: String): [DailyStatistic]
 }

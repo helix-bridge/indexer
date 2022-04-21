@@ -6,18 +6,28 @@ export class BurnRecordEntitiesResolver {
   constructor(private substrate2SubstrateService: Substrate2substrateService) {}
 
   @Query()
-  async burnRecordEntities(
+  async burnRecords(
     @Args('first') first: number,
     @Args('sender') sender: string,
     @Args('recipient') recipient: string,
-    @Args('start_timestamp') start_timestamp: number
+    @Args('startTime') startTime: number
   ) {
     return this.substrate2SubstrateService.burnRecordEntities({
       first,
       sender,
       recipient,
-      start_timestamp,
+      startTime,
     });
+  }
+
+  @Query()
+  async burnRecord(@Args('id') id: string) {
+    return this.substrate2SubstrateService.burnRecord(id);
+  }
+
+  @Query()
+  async dvmLockRecord(@Args('id') id: string) {
+    return this.substrate2SubstrateService.dvmLockedRecord(id);
   }
 }
 
@@ -26,18 +36,28 @@ export class LockRecordEntitiesResolver {
   constructor(private substrate2SubstrateService: Substrate2substrateService) {}
 
   @Query()
-  async lockRecordEntities(
+  async lockRecords(
     @Args('first') first: number,
     @Args('sender') sender: string,
     @Args('recipient') recipient: string,
-    @Args('start_timestamp') start_timestamp: number
+    @Args('startTime') startTime: number
   ) {
     return this.substrate2SubstrateService.lockRecordEntities({
       first,
       sender,
       recipient,
-      start_timestamp,
+      startTime,
     });
+  }
+
+  @Query()
+  async lockRecord(@Args('id') id: string) {
+    return this.substrate2SubstrateService.lockRecord(id);
+  }
+
+  @Query()
+  async unlockRecord(@Args('id') id: string) {
+    return this.substrate2SubstrateService.unlockRecord(id);
   }
 }
 
@@ -49,12 +69,14 @@ export class S2sRecordsResolver {
   async s2sRecords(
     @Args('first') first: number,
     @Args('sender') sender: string,
-    @Args('start_timestamp') start_timestamp: number
+    @Args('recipient') recipient: string,
+    @Args('startTime') startTime: number
   ) {
     return this.substrate2SubstrateService.s2sRecords({
       first,
-      start_timestamp,
+      startTime,
       sender,
+      recipient,
     });
   }
 }
