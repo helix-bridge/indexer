@@ -1,3 +1,4 @@
+import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Substrate2substrateService } from './substrate2substrate.service';
 
@@ -6,6 +7,7 @@ describe('Substrate2SubstrateService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [ConfigModule],
       providers: [Substrate2substrateService],
     }).compile();
 

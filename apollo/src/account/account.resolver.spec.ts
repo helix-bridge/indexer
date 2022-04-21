@@ -1,12 +1,15 @@
+import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AccountResolver } from './account.resolver';
+import { AccountService } from './account.service';
 
 describe('AccountResolver', () => {
   let resolver: AccountResolver;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AccountResolver],
+      imports: [ConfigModule],
+      providers: [AccountResolver, AccountService],
     }).compile();
 
     resolver = module.get<AccountResolver>(AccountResolver);
