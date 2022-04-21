@@ -1,4 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { getUnixTime } from 'date-fns';
 import { isEmpty, omitBy } from 'lodash';
@@ -66,10 +67,11 @@ const s2sEventTos2sRecord = (s2sEvent: S2sEvent | null): S2sRecord =>
 
 @Injectable()
 export class Substrate2substrateService {
-  readonly backingUrl =
-    'https://crab-thegraph.darwinia.network/subgraphs/name/wormhole/Sub2SubMappingTokenFactory';
+  readonly backingUrl = this.configService.get<string>('THEGRAPH');
 
-  readonly issuingUrl = 'https://api.subquery.network/sq/helix-bridge/darwinia';
+  readonly issuingUrl = this.configService.get<string>('SUBQL') + 'darwinia';
+
+  constructor(private configService: ConfigService) {}
 
   /* ---------------------------------------- the graph section --------------------------------- */
 
@@ -232,6 +234,10 @@ export class Substrate2substrateService {
       });
 
       const data = res.data.data.s2sUnlocked;
+      console.log(
+        '🚀 ~ file: substrate2substrate.service.ts ~ line 237 ~ Substrate2substrateService ~ unlockRecord ~ data',
+        data
+      );
 
       if (!data) {
         return null;

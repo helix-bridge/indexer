@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { Accounts } from '../graphql';
 
 @Injectable()
 export class AccountService {
+  constructor(private configService: ConfigService) {}
+
   async getAccounts(chain?: string): Promise<Accounts | null> {
-    const subql = 'https://api.subquery.network/sq/helix-bridge/';
+    const subql = this.configService.get<string>('SUBQL');
 
     const query = (chain: string) =>
       axios.post(subql + chain, {
