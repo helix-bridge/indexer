@@ -12,7 +12,6 @@ jobs:
   publish-apollo:
     name: Publish apollo
     runs-on: ubuntu-latest
-    workdir: apollo
     steps:
       - uses: actions/checkout@v2
 
@@ -29,4 +28,4 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Build apollo
-        run: yarn build
+        run: yarn build:apollo
