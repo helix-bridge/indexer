@@ -33,11 +33,7 @@ jobs:
 
       - name: Build apollo
         working-directory: apollo
-        run: yarn build
-
-      - name: Prepare
-        working-directory: apollo
-        run: yarn build
+        run: yarn package
 
       - name: Docker login
         uses: docker/login-action@v1
