@@ -62,3 +62,4 @@ jobs:
           tags: |
             quay.io/helix-bridge/apollo:sha-${{ steps.short-sha.outputs.sha }}
 
+
