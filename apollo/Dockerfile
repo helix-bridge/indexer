@@ -1,6 +1,6 @@
 FROM node:14-alpine
 
-COPY dist /opt/apollo
+COPY output /opt/apollo
 
 WORKDIR /opt/apollo
 
