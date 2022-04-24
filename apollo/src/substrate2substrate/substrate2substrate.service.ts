@@ -234,10 +234,6 @@ export class Substrate2substrateService {
       });
 
       const data = res.data.data.s2sUnlocked;
-      console.log(
-        '🚀 ~ file: substrate2substrate.service.ts ~ line 237 ~ Substrate2substrateService ~ unlockRecord ~ data',
-        data
-      );
 
       if (!data) {
         return null;
