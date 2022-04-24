@@ -32,7 +32,8 @@ jobs:
         run: yarn install
 
       - name: Build apollo
-        run: yarn build:apollo
+        working-directory: apollo
+        run: yarn build
 
       - name: Prepare
         working-directory: apollo
