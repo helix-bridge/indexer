@@ -54,6 +54,6 @@ jobs:
           push: true
           tags: |
             quay.io/helix-bridge/apollo:sha-${{ steps.short-sha.outputs.sha }}
-            quay.io/darwinia-network/wormhole-apollo-server:${{ steps.tag-name.outputs.tag }}
+            quay.io/helix-bridge/apollo:${{ steps.tag-name.outputs.tag }}
 
 
