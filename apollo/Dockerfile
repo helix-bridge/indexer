@@ -6,4 +6,4 @@ WORKDIR /opt/apollo
 
 EXPOSE 4002
 
-CMD [ "node", "src/main.js" ]
+CMD [ "node", "index.js" ]
