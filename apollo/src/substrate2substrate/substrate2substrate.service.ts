@@ -261,9 +261,6 @@ export class Substrate2substrateService {
     const left = burnRecords.data?.burnRecordEntities ?? [];
     const right = lockRecords.data?.s2sEvents.nodes ?? [];
 
-    // writeFileSync('./left.json', JSON.stringify(left));
-    // writeFileSync('./right.json', JSON.stringify(right));
-
     while (left.length && right.length) {
       const record =
         toISOString(left[0].start_timestamp) >= right[0].startTimestamp
