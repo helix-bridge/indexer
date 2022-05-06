@@ -85,12 +85,12 @@ export class Substrate2substrateService {
     let filter = `start_timestamp_lt: ${startTime}`;
 
     if (accountQuery) {
-      filter = `${filter}, where: { ${accountQuery} }`;
+      filter = `${filter}, ${accountQuery}`;
     }
 
     try {
       const res = await axios.post(this.backingUrl, {
-        query: `query { burnRecordEntities (first: ${first}, orderBy: nonce, orderDirection: desc, ${filter}) {id, lane_id, nonce, amount, start_timestamp, end_timestamp, request_transaction, response_transaction, result, token, sender, recipient, fee}}`,
+        query: `query { burnRecordEntities (first: ${first}, orderBy: nonce, orderDirection: desc, where: { ${filter} }) {id, lane_id, nonce, amount, start_timestamp, end_timestamp, request_transaction, response_transaction, result, token, sender, recipient, fee}}`,
         variables: null,
       });
 
