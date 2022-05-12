@@ -8,6 +8,9 @@ import { AccountModule } from './account/account.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Substrate2substrateModule } from './substrate2substrate/substrate2substrate.module';
+import { TasksModule } from './tasks/tasks.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { AggregationModule } from './aggregation/aggregation.module';
 
 @Scalar('BigInt')
 export class BigIntScalar extends BigInt {}
@@ -25,6 +28,9 @@ export class BigIntScalar extends BigInt {}
     Substrate2substrateModule,
     AccountModule,
     ConfigModule.forRoot(),
+    ScheduleModule.forRoot(),
+    TasksModule,
+    AggregationModule,
   ],
   controllers: [AppController],
   providers: [AppService, BigIntScalar],

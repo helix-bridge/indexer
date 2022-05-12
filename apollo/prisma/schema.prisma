@@ -1,0 +1,30 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model HistoryRecord {
+  id String @id
+  fromChain String
+  toChain String
+  bridge String
+  laneId String
+  nonce String
+  requestTxHash String
+  responseTxHash String?
+  sender String
+  recipient String
+  token String
+  amount String
+  startTime Int
+  endTime Int?
+  result Int
+  fee String
+}
