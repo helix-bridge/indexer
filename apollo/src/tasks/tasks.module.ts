@@ -4,6 +4,7 @@ import { AggregationModule } from '../aggregation/aggregation.module';
 
 @Module({
   imports: [ AggregationModule ],
-  providers: [TasksService]
+  providers: [TasksService],
+  exports: [TasksService]
 })
 export class TasksModule {}

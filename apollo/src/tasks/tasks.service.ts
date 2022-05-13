@@ -8,7 +8,7 @@ export class TasksService {
     constructor(private schedulerRegistry: SchedulerRegistry, private aggregationService: AggregationService) {}
 
     addInterval(name: string, milliseconds: number, callback: () => void) {
-        this.logger.log('new interval task added name:${name}, ms: ${milliseconds}');
+        this.logger.log(`new interval task added name:${name}, ms: ${milliseconds}`);
         const interval = setInterval(callback, milliseconds);
         this.schedulerRegistry.addInterval(name, interval);
     }

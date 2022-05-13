@@ -11,6 +11,7 @@ import { Substrate2substrateModule } from './substrate2substrate/substrate2subst
 import { TasksModule } from './tasks/tasks.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AggregationModule } from './aggregation/aggregation.module';
+import { Darwinia2crabModule } from './darwinia2crab/darwinia2crab.module';
 
 @Scalar('BigInt')
 export class BigIntScalar extends BigInt {}
@@ -31,6 +32,7 @@ export class BigIntScalar extends BigInt {}
     ScheduleModule.forRoot(),
     TasksModule,
     AggregationModule,
+    Darwinia2crabModule,
   ],
   controllers: [AppController],
   providers: [AppService, BigIntScalar],

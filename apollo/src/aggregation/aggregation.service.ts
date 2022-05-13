@@ -38,6 +38,15 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     });
   }
 
+  async queryHistoryRecordFirst(
+    historyRecordWhereInput: Prisma.HistoryRecordWhereInput,
+  ): Promise<HistoryRecord | null> {
+    return this.historyRecord.findFirst({
+      where: historyRecordWhereInput,
+      orderBy: { startTime: 'desc' }
+    });
+  }
+
   // const count = this.historyRecord.count();
   async queryHistoryRecords(params: {
     skip?: number;

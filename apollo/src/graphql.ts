@@ -54,6 +54,28 @@ export class HistoryRecord {
     fee: string;
 }
 
+export class S2sEvent {
+    id: string;
+    laneId: string;
+    nonce: string;
+    requestTxHash: string;
+    responseTxHash?: Nullable<string>;
+    senderId: string;
+    result: number;
+    recipient: string;
+    token: string;
+    amount: string;
+    startTimestamp: string;
+    endTimestamp?: Nullable<string>;
+    fee: string;
+}
+
+export class DailyStatistic {
+    id: string;
+    dailyVolume?: Nullable<BigInt>;
+    dailyCount?: Nullable<number>;
+}
+
 export class BurnRecordEntity {
     id: string;
     lane_id: string;
@@ -78,22 +100,6 @@ export class DVMLockRecord {
     recipient: string;
     amount: BigInt;
     txHash: string;
-}
-
-export class S2sEvent {
-    id: string;
-    laneId: string;
-    nonce: string;
-    requestTxHash: string;
-    responseTxHash?: Nullable<string>;
-    senderId: string;
-    result: number;
-    recipient: string;
-    token: string;
-    amount: string;
-    startTimestamp: string;
-    endTimestamp?: Nullable<string>;
-    fee: string;
 }
 
 export class UnlockRecord {
@@ -127,12 +133,6 @@ export class S2sRecord {
     endTime?: Nullable<number>;
     result: number;
     fee: string;
-}
-
-export class DailyStatistic {
-    id: string;
-    dailyVolume?: Nullable<BigInt>;
-    dailyCount?: Nullable<number>;
 }
 
 export class BurnRecordEntity_filter {
