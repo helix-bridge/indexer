@@ -10,22 +10,33 @@ export class AggregationResolver {
   async historyRecordById(
     @Args('id') id: string
   ) {
-    return this.aggregationService.historyRecordById({
+    return this.aggregationService.queryHistoryRecordById({
       id: id,
     });
   }
 
-  //async historyRecords(
-    //@Args('sender') sender: string,
-    //@Args('recipient') recipient: string,
-    //@Args('row') row: number,
-    //@Args('page') page: number
-  //) {
-    //return this.aggregationService.historyRecords({
-      //sender,
-      //recipient,
-      //row,
-      //page,
-    //});
-  //}
+  @Query()
+  async historyRecords(
+    @Args('sender') sender: string,
+    @Args('recipient') recipient: string,
+    @Args('row') row: number,
+    @Args('page') page: number
+  ) {
+    let skip = row * page || undefined;
+    let take = row || undefined;
+    let filter = new Array();
+    if (sender) {
+      filter.push({ sender: sender });
+    }
+    if (recipient) {
+      filter.push({ recipient: recipient });
+    }
+        
+    let where = (sender || recipient) ? { OR: filter } : undefined;
+    return this.aggregationService.queryHistoryRecords({
+      skip,
+      take,
+      where,
+    });
+  }
 }

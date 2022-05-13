@@ -16,6 +16,8 @@ export abstract class IQuery {
 
     abstract historyRecordById(id?: Nullable<string>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
 
+    abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<Nullable<HistoryRecord>[]> | Promise<Nullable<Nullable<HistoryRecord>[]>>;
+
     abstract burnRecords(first?: Nullable<number>, startTime?: Nullable<number>, sender?: Nullable<string>, recipient?: Nullable<string>): Nullable<Nullable<BurnRecordEntity>[]> | Promise<Nullable<Nullable<BurnRecordEntity>[]>>;
 
     abstract burnRecord(id: string): Nullable<S2sRecord> | Promise<Nullable<S2sRecord>>;

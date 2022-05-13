@@ -20,5 +20,6 @@ type HistoryRecord {
 
 type Query {
   historyRecordById(id: String): HistoryRecord
+  historyRecords(sender: String, recipient: String, row: Int, page: Int): [HistoryRecord]
 }
  
