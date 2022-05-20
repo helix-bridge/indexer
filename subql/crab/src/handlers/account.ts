@@ -15,6 +15,10 @@ export class AccountHandler {
     return u8aToHex(decodeAddress(address));
   }
 
+  static isDvmAddress(address: string) {
+    return address.startsWith("0x64766d3a00000000000000")
+  }
+
   static async ensureAccount(id: string) {
     const account = await Account.get(id);
 
