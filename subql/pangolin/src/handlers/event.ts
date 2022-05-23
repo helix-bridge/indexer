@@ -3,10 +3,6 @@ import { Block, BridgeDispatchEvent, Transfer } from '../types';
 import { AccountHandler } from './account';
 
 export class EventHandler {
-  private dvmKtonContract = '0x8809f9b3acef1da309f49b5ab97a4c0faa64e6ae';
-  private dvmWithdrawAddress = '0x0000000000000000000000000000000000000015';
-  private dvmWithdrawSS58Format = '5elrpqut7c3mwtjeo28dtksbya7pgzyrtvbrsfrue9efu7jj';
-
   private event: SubstrateEvent;
 
   constructor(event: SubstrateEvent) {
@@ -60,12 +56,10 @@ export class EventHandler {
       await this.handleBridgeDispatchEvent();
     }
 
-    if (this.method === 'Transfer' && (this.section === 'balances' || this.section === 'kton')) {
-      await this.handleMainToSmartTransfer();
-    }
-
-    if (this.section === 'ethereum') {
-      await this.handleSmartToMainTransfer();
+    if (this.method === 'DVMTransfer' && this.section === 'ethereum') {
+      await this.handleDvmToSubstrate();
+    } else if (this.method === 'Transfer' && this.section === 'balances') {
+      await this.handleSubstrateToDvm();
     }
   }
 
@@ -81,10 +75,59 @@ export class EventHandler {
     await event.save();
   }
 
-  private async handleTransfer(from: string, to: string, amount: number | string) {
-    const sender = AccountHandler.convertToDVMAddress(from);
-    const recipient = AccountHandler.convertToDVMAddress(to);
+  // Dvm -> 15 -> Substrate
+  private findDvmToSubstrate(router: string) {
+    const event = this.event?.extrinsic?.events.find((item) => {
+      if (item.event.method === 'DVMTransfer') {
+        const [_1, to, amount] = JSON.parse(item.event.data.toString());
+        if (amount === amount && to === router) {
+          return true;
+        }
+      }
+      return false;
+    });
+    return event;
+  }
 
+  private async handleDvmToSubstrate() {
+    const [from, to, amount] = JSON.parse(this.data);
+    let sender = AccountHandler.formatAddress(from);
+    const recipient = AccountHandler.formatAddress(to);
+    const senderIsDvm = AccountHandler.isDvmAddress(sender);
+    const recipientIsDvm = AccountHandler.isDvmAddress(recipient);
+
+    if (senderIsDvm && !recipientIsDvm) {
+      const event = this.findDvmToSubstrate(from);
+
+      if (!event) {
+        return;
+      }
+
+      const [iFrom] = JSON.parse(event.event.data.toString());
+      sender = AccountHandler.formatAddress(iFrom);
+      await this.handleTransfer('crab-dvm', 'crab', sender, recipient, amount);
+    }
+  }
+
+  private async handleSubstrateToDvm() {
+    const [from, to, amount] = JSON.parse(this.data);
+    const sender = AccountHandler.formatAddress(from);
+    const recipient = AccountHandler.formatAddress(to);
+    const senderIsDvm = AccountHandler.isDvmAddress(sender);
+    const recipientIsDvm = AccountHandler.isDvmAddress(recipient);
+
+    if (!senderIsDvm && recipientIsDvm) {
+      await this.handleTransfer('crab', 'crab-dvm', sender, recipient, amount);
+    }
+  }
+
+  private async handleTransfer(
+    fromChain: string,
+    toChain: string,
+    sender: string,
+    recipient: string,
+    amount: number
+  ) {
     await AccountHandler.ensureAccount(recipient);
     await AccountHandler.updateTransferStatistic(recipient);
     await AccountHandler.ensureAccount(sender);
@@ -99,6 +142,8 @@ export class EventHandler {
     transfer.method = this.method;
     transfer.amount = BigInt(amount ?? 0);
     transfer.timestamp = this.timestamp;
+    transfer.fromChain = fromChain;
+    transfer.toChain = toChain;
 
     transfer.block = this.simpleBlock();
 
@@ -106,77 +151,6 @@ export class EventHandler {
       await transfer.save();
     } catch (error) {
       console.log(error.message);
-    }
-  }
-
-  private async handleMainToSmartTransfer() {
-    const [from, to, amount] = JSON.parse(this.data);
-
-    await this.handleTransfer(from, to, amount);
-  }
-
-  /**
-   *  ring transfer 1 -> from: eth to
-   */
-
-  private async handleSmartToMainTransfer() {
-    const [from, to, amount] = JSON.parse(this.data) as [string, string, string];
-    let formattedFrom = from;
-    let formattedTo = to;
-
-    if (this.method === 'DVMTransfer') {
-      if (to.toLowerCase() === this.dvmWithdrawSS58Format) {
-        formattedFrom = AccountHandler.convertToEthereumFormat(from);
-      }
-
-      if (from.toLowerCase() === this.dvmWithdrawSS58Format) {
-        formattedTo = AccountHandler.convertToDVMAddress(to);
-      }
-    }
-
-    if (this.method === 'KtonDVMTransfer') {
-      if (to.toLowerCase() === this.dvmKtonContract) {
-        formattedFrom = AccountHandler.convertToEthereumFormat(from);
-      }
-
-      if (from.toLowerCase() === this.dvmKtonContract) {
-        formattedTo = AccountHandler.convertToDVMAddress(to);
-      }
-    }
-
-    const transfer = await Transfer.get(this.extrinsicHash);
-
-    /**
-     * transfer to wkton contract KtonDVMTransfer(who, WKTON_ADDRESS, U256)
-     * withdraw from wkton contract KtonDVMTransfer(WKTON_ADDRESS, to, U256)
-     */
-    if (transfer && formattedFrom.toLowerCase() === this.dvmWithdrawAddress) {
-      await AccountHandler.ensureAccount(formattedTo);
-      await AccountHandler.updateTransferStatistic(formattedTo);
-
-      transfer.mediatorId = transfer.recipientId;
-      transfer.recipientId = formattedTo;
-
-      await transfer.save();
-
-      return;
-    }
-
-    if (transfer && this.method === 'Executed') {
-      await AccountHandler.ensureAccount(formattedFrom);
-      await AccountHandler.updateTransferStatistic(formattedFrom);
-
-      // FIXME: if this event belongs to a cross-chain operation, the mediatorId equals to the senderId
-      transfer.mediatorId = transfer.senderId;
-      transfer.senderId = formattedFrom;
-
-      await transfer.save();
-
-      return;
-    }
-
-    if (this.method === 'DVMTransfer' || this.method === 'KtonDVMTransfer') {
-      await this.handleTransfer(formattedFrom, formattedTo, amount);
     }
   }
 
