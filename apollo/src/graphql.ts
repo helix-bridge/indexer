@@ -1,3 +1,4 @@
+
 /*
  * -------------------------------------------------------
  * THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
@@ -12,6 +13,10 @@ export class Accounts {
 
 export abstract class IQuery {
     abstract accounts(chain?: Nullable<string>): Nullable<Accounts> | Promise<Nullable<Accounts>>;
+
+    abstract historyRecordById(id?: Nullable<string>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
+
+    abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<Nullable<HistoryRecord>[]> | Promise<Nullable<Nullable<HistoryRecord>[]>>;
 
     abstract burnRecords(first?: Nullable<number>, startTime?: Nullable<number>, sender?: Nullable<string>, recipient?: Nullable<string>): Nullable<Nullable<BurnRecordEntity>[]> | Promise<Nullable<Nullable<BurnRecordEntity>[]>>;
 
@@ -28,6 +33,47 @@ export abstract class IQuery {
     abstract s2sRecords(first?: Nullable<number>, startTime?: Nullable<number>, sender?: Nullable<string>, recipient?: Nullable<string>): Nullable<Nullable<S2sRecord>[]> | Promise<Nullable<Nullable<S2sRecord>[]>>;
 
     abstract dailyStatistics(first?: Nullable<number>, timepast?: Nullable<number>, chain?: Nullable<string>): Nullable<Nullable<DailyStatistic>[]> | Promise<Nullable<Nullable<DailyStatistic>[]>>;
+}
+
+export class HistoryRecord {
+    id: string;
+    fromChain: string;
+    toChain: string;
+    bridge: string;
+    laneId: string;
+    nonce: string;
+    requestTxHash: string;
+    responseTxHash?: Nullable<string>;
+    sender: string;
+    recipient: string;
+    token: string;
+    amount: string;
+    startTime: number;
+    endTime?: Nullable<number>;
+    result: number;
+    fee: string;
+}
+
+export class S2sEvent {
+    id: string;
+    laneId: string;
+    nonce: string;
+    requestTxHash: string;
+    responseTxHash?: Nullable<string>;
+    senderId: string;
+    result: number;
+    recipient: string;
+    token: string;
+    amount: string;
+    startTimestamp: string;
+    endTimestamp?: Nullable<string>;
+    fee: string;
+}
+
+export class DailyStatistic {
+    id: string;
+    dailyVolume?: Nullable<BigInt>;
+    dailyCount?: Nullable<number>;
 }
 
 export class BurnRecordEntity {
@@ -54,22 +100,6 @@ export class DVMLockRecord {
     recipient: string;
     amount: BigInt;
     txHash: string;
-}
-
-export class S2sEvent {
-    id: string;
-    laneId: string;
-    nonce: string;
-    requestTxHash: string;
-    responseTxHash?: Nullable<string>;
-    senderId: string;
-    result: number;
-    recipient: string;
-    token: string;
-    amount: string;
-    startTimestamp: string;
-    endTimestamp?: Nullable<string>;
-    fee: string;
 }
 
 export class UnlockRecord {
@@ -103,12 +133,6 @@ export class S2sRecord {
     endTime?: Nullable<number>;
     result: number;
     fee: string;
-}
-
-export class DailyStatistic {
-    id: string;
-    dailyVolume?: Nullable<BigInt>;
-    dailyCount?: Nullable<number>;
 }
 
 export class BurnRecordEntity_filter {

@@ -1,0 +1,25 @@
+
+type HistoryRecord {
+  id: String!
+  fromChain: String!
+  toChain: String!
+  bridge: String!
+  laneId: String!
+  nonce: String!
+  requestTxHash: String!
+  responseTxHash: String
+  sender: String!
+  recipient: String!
+  token: String!
+  amount: String!
+  startTime: Int!
+  endTime: Int
+  result: Int!
+  fee: String!
+}
+
+type Query {
+  historyRecordById(id: String): HistoryRecord
+  historyRecords(sender: String, recipient: String, row: Int, page: Int): [HistoryRecord]
+}
+ 
