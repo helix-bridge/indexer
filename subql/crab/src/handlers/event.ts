@@ -56,12 +56,10 @@ export class EventHandler {
       await this.handleBridgeDispatchEvent();
     }
 
-    if (this.method === 'Transfer' && (this.section === 'balances' || this.section === 'kton')) {
-      await this.handleMainToSmartTransfer();
-    }
-
-    if (this.method === 'Endowed' && this.section === 'balances') {
-      await this.handleSmartToMainTransfer();
+    if (this.method === 'DVMTransfer' && this.section === 'ethereum') {
+      await this.handleDvmToSubstrate();
+    } else if (this.method === 'Transfer' && this.section === 'balances') {
+      await this.handleSubstrateToDvm();
     }
   }
 
@@ -77,10 +75,59 @@ export class EventHandler {
     await event.save();
   }
 
-  private async handleTransfer(from: string, to: string, amount: number) {
+  // Dvm -> 15 -> Substrate
+  private findDvmToSubstrate(router: string, count: number) {
+    const event = this.event?.extrinsic?.events.find((item) => {
+      if (item.event.method === 'DVMTransfer') {
+        const [_1, to, amount] = JSON.parse(item.event.data.toString());
+        if (count === amount && to === router) {
+          return true;
+        }
+      }
+      return false;
+    });
+    return event;
+  }
+
+  private async handleDvmToSubstrate() {
+    const [from, to, amount] = JSON.parse(this.data);
+    let sender = AccountHandler.formatAddress(from);
+    const recipient = AccountHandler.formatAddress(to);
+    const senderIsDvm = AccountHandler.isDvmAddress(sender);
+    const recipientIsDvm = AccountHandler.isDvmAddress(recipient);
+
+    if (senderIsDvm && !recipientIsDvm) {
+      const event = this.findDvmToSubstrate(from, amount);
+
+      if (!event) {
+        return;
+      }
+
+      const [iFrom] = JSON.parse(event.event.data.toString());
+      sender = AccountHandler.formatAddress(iFrom);
+      await this.handleTransfer('crab-dvm', 'crab', sender, recipient, amount);
+    }
+  }
+
+  private async handleSubstrateToDvm() {
+    const [from, to, amount] = JSON.parse(this.data);
     const sender = AccountHandler.formatAddress(from);
     const recipient = AccountHandler.formatAddress(to);
+    const senderIsDvm = AccountHandler.isDvmAddress(sender);
+    const recipientIsDvm = AccountHandler.isDvmAddress(recipient);
 
+    if (!senderIsDvm && recipientIsDvm) {
+      await this.handleTransfer('crab', 'crab-dvm', sender, recipient, amount);
+    }
+  }
+
+  private async handleTransfer(
+    fromChain: string,
+    toChain: string,
+    sender: string,
+    recipient: string,
+    amount: number
+  ) {
     await AccountHandler.ensureAccount(recipient);
     await AccountHandler.updateTransferStatistic(recipient);
     await AccountHandler.ensureAccount(sender);
@@ -95,6 +142,8 @@ export class EventHandler {
     transfer.method = this.method;
     transfer.amount = BigInt(amount ?? 0);
     transfer.timestamp = this.timestamp;
+    transfer.fromChain = fromChain;
+    transfer.toChain = toChain;
 
     transfer.block = this.simpleBlock();
 
@@ -105,18 +154,6 @@ export class EventHandler {
     }
   }
 
-  private async handleMainToSmartTransfer() {
-    const [from, to, amount] = JSON.parse(this.data);
-
-    await this.handleTransfer(from, to, amount);
-  }
-
-  private async handleSmartToMainTransfer() {
-    const [to, amount] = JSON.parse(this.data);
-    const from = '0x0000000000000000000000000000000000000015';
-
-    await this.handleTransfer(from, to, amount);
-  }
   private simpleBlock(): Block {
     return {
       blockHash: this.blockHash,

@@ -3,7 +3,7 @@ import { decodeAddress } from '@polkadot/util-crypto';
 import { u8aToHex, isHex } from '@polkadot/util';
 
 export class AccountHandler {
-  static convertToDVMAddress(address: string) {
+  static formatAddress(address: string) {
     if (isHex(address)) {
       return address;
     }
@@ -15,17 +15,8 @@ export class AccountHandler {
     return u8aToHex(decodeAddress(address));
   }
 
-  static convertToEthereumFormat(address: string): string | null {
-    if (!address) {
-      return '';
-    }
-
-    const startAt = 2;
-    const result = u8aToHex(decodeAddress(address)).slice(startAt);
-    const PREFIX = '64766d3a00000000000000';
-
-    // eslint-disable-next-line no-magic-numbers
-    return result.startsWith(PREFIX) ? '0x' + result.slice(-42, -2) : null;
+  static isDvmAddress(address: string) {
+    return address.startsWith("0x64766d3a00000000000000")
   }
 
   static async ensureAccount(id: string) {
