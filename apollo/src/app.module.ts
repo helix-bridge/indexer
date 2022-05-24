@@ -12,6 +12,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AggregationModule } from './aggregation/aggregation.module';
 import { Darwinia2crabModule } from './darwinia2crab/darwinia2crab.module';
+import { Crab2smartModule } from './crab2smart/crab2smart.module';
 
 @Scalar('BigInt')
 export class BigIntScalar extends BigInt {}
@@ -20,7 +21,7 @@ export class BigIntScalar extends BigInt {}
   imports: [
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      typePaths: ['./**/*.graphql'],
+      typePaths: ['./src/**/*.graphql'],
       definitions: {
         path: join(process.cwd(), 'src/graphql.ts'),
         outputAs: 'class',
@@ -33,6 +34,7 @@ export class BigIntScalar extends BigInt {}
     TasksModule,
     AggregationModule,
     Darwinia2crabModule,
+    Crab2smartModule,
   ],
   controllers: [AppController],
   providers: [AppService, BigIntScalar],
