@@ -76,11 +76,11 @@ export class EventHandler {
   }
 
   // Dvm -> 15 -> Substrate
-  private findDvmToSubstrate(router: string) {
+  private findDvmToSubstrate(router: string, count: number) {
     const event = this.event?.extrinsic?.events.find((item) => {
       if (item.event.method === 'DVMTransfer') {
         const [_1, to, amount] = JSON.parse(item.event.data.toString());
-        if (amount === amount && to === router) {
+        if (count === amount && to === router) {
           return true;
         }
       }
@@ -97,7 +97,7 @@ export class EventHandler {
     const recipientIsDvm = AccountHandler.isDvmAddress(recipient);
 
     if (senderIsDvm && !recipientIsDvm) {
-      const event = this.findDvmToSubstrate(from);
+      const event = this.findDvmToSubstrate(from, amount);
 
       if (!event) {
         return;
