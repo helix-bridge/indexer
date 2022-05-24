@@ -35,31 +35,13 @@ dataSources:
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
+            module: ethereum
+            method: DVMTransfer
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
             module: balances
-            method: Transfer # ring: mainnet -> dvm
-
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: kton
-            method: Transfer # kton: mainnet -> dvm
-
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: ethereum
-            method: DVMTransfer # ring: dvm -> mainnet
-
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: ethereum
-            method: KtonDVMTransfer # kton dvm -> mainnet
-
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: ethereum
-            method: Executed
+            method: Transfer
 
  

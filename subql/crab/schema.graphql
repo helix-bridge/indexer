@@ -29,6 +29,8 @@ type Transfer @entity {
 
   sender: Account
   recipient: Account
+  fromChain: String
+  toChain: String
   amount: BigInt
   section: String
   method: String
