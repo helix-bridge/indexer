@@ -1,4 +1,4 @@
-FROM node:14-buster
+FROM node:14-alpine
 
 COPY output /opt/apollo
 
