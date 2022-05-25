@@ -1,10 +1,10 @@
 FROM node:14-alpine
 
-COPY . /opt/apollo
+COPY output /opt/apollo
+COPY package.json /opt/apollo
+COPY scripts/entrypoint.sh /opt/apollo
 
-RUN cd /opt/apollo && \
-  npm i && \
-  npm run build
+RUN cd /opt/apollo && npm i
 
 WORKDIR /opt/apollo
 
