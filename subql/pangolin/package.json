@@ -12,6 +12,9 @@
   },
   "homepage": "https://github.com/subquery/subql-starter",
   "repository": "github:subquery/subql-starter",
+  "resolutions": {
+    "ipfs-unixfs": "6.0.6"
+  },
   "files": [
     "dist",
     "schema.graphql",
