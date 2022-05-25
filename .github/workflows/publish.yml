@@ -1,9 +1,12 @@
 name: Release
 
+# on:
+#   push:
+#     tags:
+#       - "v*"
+
 on:
-  push:
-    tags:
-      - "v*"
+  pull_request:
 
 jobs:
   publish-apollo:
@@ -54,6 +57,5 @@ jobs:
           push: true
           tags: |
             quay.io/helix-bridge/apollo:sha-${{ steps.short-sha.outputs.sha }}
-            quay.io/helix-bridge/apollo:${{ steps.tag-name.outputs.tag }}
 
-
+# quay.io/helix-bridge/apollo:${{ steps.tag-name.outputs.tag }}
