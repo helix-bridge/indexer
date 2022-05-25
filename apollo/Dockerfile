@@ -1,12 +1,13 @@
 FROM node:14-alpine
 
-COPY output /opt/apollo
-COPY package.json /opt/apollo
-COPY scripts/entrypoint.sh /opt/apollo
+COPY . /opt/indexer
 
-RUN cd /opt/apollo && npm i
+RUN cd /opt/indexer/apollo && \
+  npm i && \
+  npx prisma generate && \
+  npm run build
 
-WORKDIR /opt/apollo
+WORKDIR /opt/indexer/apollo
 
 EXPOSE 4002
 
