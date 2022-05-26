@@ -1,9 +1,16 @@
 FROM node:14-alpine
 
-COPY output /opt/apollo
+COPY . /opt/indexer
 
-WORKDIR /opt/apollo
+RUN cd /opt/indexer/apollo && \
+  npm i && \
+  npx prisma generate && \
+  npm run build
+
+WORKDIR /opt/indexer/apollo
 
 EXPOSE 4002
 
-CMD [ "node", "index.js" ]
+# CMD [ "node", "index.js" ]
+
+ENTRYPOINT /opt/indexer/apollo/scripts/entrypoint.sh
