@@ -63,6 +63,7 @@ export class Darwinia2crabService implements OnModuleInit {
         variables: null,
       });
       const nodes = res.data?.data?.s2sEvents?.nodes;
+      const timezone = new Date().getTimezoneOffset() * 60;
       if (nodes) {
           for (let node of nodes) {
               await this.aggregationService.createHistoryRecord({
@@ -78,8 +79,8 @@ export class Darwinia2crabService implements OnModuleInit {
                 recipient: node.recipient,
                 token: node.token,
                 amount: node.amount,
-                startTime: getUnixTime(new Date(node.startTimestamp)),
-                endTime: getUnixTime(new Date(node.endTimestamp)),
+                startTime: getUnixTime(new Date(node.startTimestamp)) - timezone,
+                endTime: getUnixTime(new Date(node.endTimestamp)) - timezone,
                 result: node.result,
                 fee: node.fee,
               });
@@ -123,6 +124,7 @@ export class Darwinia2crabService implements OnModuleInit {
         variables: null,
       });
       const nodes = res.data?.data?.s2sEvents?.nodes;
+      const timezone = new Date().getTimezoneOffset() * 60;
       if (nodes) {
           for (let node of nodes) {
               if (node.result == 0) {
@@ -134,7 +136,7 @@ export class Darwinia2crabService implements OnModuleInit {
                 },
                 data: {
                   responseTxHash: node.responseTxHash,
-                  endTime: getUnixTime(new Date(node.endTimestamp)),
+                  endTime: getUnixTime(new Date(node.endTimestamp)) - timezone,
                   result: node.result,
                 },
               });

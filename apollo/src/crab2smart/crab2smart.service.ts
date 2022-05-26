@@ -42,6 +42,7 @@ export class Crab2smartService implements OnModuleInit {
         variables: null,
       });
       const nodes = res.data?.data?.transfers?.nodes;
+      const timezone = new Date().getTimezoneOffset() * 60;
       if (nodes) {
         for (let node of nodes) {
           latestNonce = latestNonce + 1;
@@ -58,8 +59,8 @@ export class Crab2smartService implements OnModuleInit {
             recipient: node.recipientId,
             token: "Crab",
             amount: node.amount,
-            startTime: getUnixTime(new Date(node.timestamp)),
-            endTime: getUnixTime(new Date(node.timestamp)),
+            startTime: getUnixTime(new Date(node.timestamp)) - timezone,
+            endTime: getUnixTime(new Date(node.timestamp)) - timezone,
             result: 1,
             fee: "0",
           });
