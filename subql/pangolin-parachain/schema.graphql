@@ -37,28 +37,9 @@ type BridgeDispatchEvent @entity {
 type Account @entity {
   id: ID!
 
-  transferTotalCount: Int
-
-  transferIn: [Transfer] @derivedFrom(field: "recipient")
-  transferOut: [Transfer] @derivedFrom(field: "sender")
-
   # s2s
   s2sLockedTotalCount: Int
   s2sLockedTotalAmount: BigInt
   s2sLocked: [S2SEvent] @derivedFrom(field: "sender")
 }
 
-type Transfer @entity {
-  id: ID!
-
-  sender: Account
-  recipient: Account
-  fromChain: String
-  toChain: String
-  amount: BigInt
-  section: String
-  method: String
-  timestamp: Date
-
-  block: Block
-}

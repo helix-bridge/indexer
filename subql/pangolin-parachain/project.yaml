@@ -1,0 +1,51 @@
+specVersion: 0.2.0
+name: wormhole-pangolin
+version: 1.0.0
+description: ''
+repository: git@github.com:darwinia-network/subql-wormhole.git
+
+schema:
+  file: ./schema.graphql
+
+network:
+  genesisHash: '0x9426ba4cc73993fc77e77221f797573dc5c63d418d0478a0a01fab9798fdcceb'
+  endpoint: wss://pangolin-parachain-rpc.darwinia.network
+  chaintypes:
+    file: ./types.yaml
+
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 175000
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgePangolinDispatch
+            method: MessageVersionSpecMismatch 
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgePangolinDispatch
+            method: MessageWeightMismatch 
+       
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgePangolinDispatch
+            method: MessageDispatched
+       
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: FromPangolinIssuing
+            method: TokenBurnAndRemoteUnlocked
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: FromPangolinIssuing
+            method: TokenUnlockedConfirmed
+
