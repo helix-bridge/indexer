@@ -1,15 +1,12 @@
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { AggregationService } from './aggregation.service';
-import { HistoryRecord, Prisma, PrismaClient } from '@prisma/client';
 
 @Resolver()
 export class AggregationResolver {
   constructor(private aggregationService: AggregationService) {}
 
   @Query()
-  async historyRecordById(
-    @Args('id') id: string
-  ) {
+  async historyRecordById(@Args('id') id: string) {
     return this.aggregationService.queryHistoryRecordById({
       id: id,
     });
@@ -22,17 +19,17 @@ export class AggregationResolver {
     @Args('row') row: number,
     @Args('page') page: number
   ) {
-    let skip = row * page || undefined;
-    let take = row || undefined;
-    let filter = new Array();
+    const skip = row * page || undefined;
+    const take = row || undefined;
+    const filter = [];
     if (sender) {
       filter.push({ sender: sender });
     }
     if (recipient) {
       filter.push({ recipient: recipient });
     }
-        
-    let where = (sender || recipient) ? { OR: filter } : undefined;
+
+    const where = sender || recipient ? { OR: filter } : undefined;
     return this.aggregationService.queryHistoryRecords({
       skip,
       take,

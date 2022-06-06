@@ -4,6 +4,6 @@ import { AggregationResolver } from './aggregation.resolver';
 
 @Module({
   providers: [AggregationService, AggregationResolver],
-  exports: [AggregationService]
+  exports: [AggregationService],
 })
 export class AggregationModule {}

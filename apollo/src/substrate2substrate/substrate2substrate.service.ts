@@ -71,7 +71,10 @@ export class Substrate2substrateService {
 
   readonly issuingUrl = this.configService.get<string>('SUBQL') + 'darwinia';
 
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService) {
+    console.log('-------chain type----', this.configService.get('CHAIN_TYPE'));
+    console.log('-------chain THEGRAPH----', this.configService.get('THEGRAPH'));
+  }
 
   /* ---------------------------------------- the graph section --------------------------------- */
 

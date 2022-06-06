@@ -14,14 +14,14 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
   }
 
   async createHistoryRecord(data: Prisma.HistoryRecordCreateInput): Promise<HistoryRecord> {
-      return this.historyRecord.create({
-          data,
-      });
+    return this.historyRecord.create({
+      data,
+    });
   }
 
   async updateHistoryRecord(params: {
-    where: Prisma.HistoryRecordWhereUniqueInput,
-    data: Prisma.HistoryRecordUpdateInput,
+    where: Prisma.HistoryRecordWhereUniqueInput;
+    data: Prisma.HistoryRecordUpdateInput;
   }): Promise<HistoryRecord> {
     const { where, data } = params;
     return this.historyRecord.update({
@@ -31,19 +31,19 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
   }
 
   async queryHistoryRecordById(
-      historyRecordWhereUniqueInput: Prisma.HistoryRecordWhereUniqueInput,
+    historyRecordWhereUniqueInput: Prisma.HistoryRecordWhereUniqueInput
   ): Promise<HistoryRecord | null> {
     return this.historyRecord.findUnique({
-        where: historyRecordWhereUniqueInput,
+      where: historyRecordWhereUniqueInput,
     });
   }
 
   async queryHistoryRecordFirst(
-    historyRecordWhereInput: Prisma.HistoryRecordWhereInput,
+    historyRecordWhereInput: Prisma.HistoryRecordWhereInput
   ): Promise<HistoryRecord | null> {
     return this.historyRecord.findFirst({
       where: historyRecordWhereInput,
-      orderBy: { startTime: 'desc' }
+      orderBy: { startTime: 'desc' },
     });
   }
 
@@ -58,7 +58,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       skip,
       take,
       where,
-      orderBy: {startTime: 'desc'}
+      orderBy: { startTime: 'desc' },
     });
   }
 }
