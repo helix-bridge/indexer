@@ -10,7 +10,7 @@ export class Darwinia2crabService implements OnModuleInit {
   private readonly logger = new Logger(TasksService.name);
 
   // lock and mint
-  private readonly darwiniaUrl = this.configService.get<string>('SUBQL') + 'darwinia';
+  private readonly issuingUrl = this.configService.get<string>('SUBSTRATE_SUBSTRATE_ISSUING');
   private readonly fetchLockDataInterval = this.configService.get<number>(
     'FETCH_DARWINIA_TO_CRAB_LOCK_DATA_INTERVAL'
   );
@@ -26,7 +26,7 @@ export class Darwinia2crabService implements OnModuleInit {
   private needSyncLockConfirmed = true;
 
   // burn and redeem
-  private readonly crabUrl = this.configService.get<string>('THEGRAPH');
+  private readonly backingUrl = this.configService.get<string>('SUBSTRATE_SUBSTRATE_BACKING');
   private readonly fetchBurnDataInterval = this.configService.get<number>(
     'FETCH_DARWINIA_TO_CRAB_BURN_DATA_INTERVAL'
   );
@@ -47,22 +47,26 @@ export class Darwinia2crabService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    this.taskService.addInterval('darwinia2crabdvm-fetchlockdata', this.fetchLockDataInterval, () =>
-      this.fetchLockRecords()
+    this.taskService.addInterval(
+      'darwinia2crabDvm-fetch_lock_data',
+      this.fetchLockDataInterval,
+      () => this.fetchLockRecords()
     );
 
     this.taskService.addInterval(
-      'darwinia2crabdvm-updatelockdata',
+      'darwinia2crabDvm-update_lock_data',
       this.updateLockDataInterval,
       () => this.checkConfirmedLockRecords()
     );
 
-    this.taskService.addInterval('darwinia2crabdvm-fetchburndata', this.fetchBurnDataInterval, () =>
-      this.fetchBurnRecords()
+    this.taskService.addInterval(
+      'darwinia2crabDvm-fetch_burn_data',
+      this.fetchBurnDataInterval,
+      () => this.fetchBurnRecords()
     );
 
     this.taskService.addInterval(
-      'darwinia2crabdvm-updateburndata',
+      'darwinia2crabDvm-update_burn_data',
       this.updateBurnDataInterval,
       () => this.checkConfirmedBurnRecords()
     );
@@ -77,7 +81,7 @@ export class Darwinia2crabService implements OnModuleInit {
         bridge: 'helix',
       });
       const latestNonce = firstRecord ? firstRecord.nonce : -1;
-      const res = await axios.post(this.darwiniaUrl, {
+      const res = await axios.post(this.issuingUrl, {
         query: `query { s2sEvents (first: ${first}, orderBy: NONCE_ASC, filter: {nonce: {greaterThan: "${latestNonce}"}}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, token, senderId, recipient, fee}}}`,
         variables: null,
       });
@@ -140,7 +144,7 @@ export class Darwinia2crabService implements OnModuleInit {
         targetNonces.push('"' + record.nonce + '"');
       }
       const nonces = targetNonces.join(',');
-      const res = await axios.post(this.darwiniaUrl, {
+      const res = await axios.post(this.issuingUrl, {
         query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, token, senderId, recipient, fee}}}`,
         variables: null,
       });
@@ -179,7 +183,7 @@ export class Darwinia2crabService implements OnModuleInit {
         bridge: 'helix',
       });
       const latestNonce = firstRecord ? firstRecord.nonce : -1;
-      const res = await axios.post(this.crabUrl, {
+      const res = await axios.post(this.backingUrl, {
         query: `query { burnRecordEntities (first: ${first}, orderBy: nonce, orderDirection: asc, where: { nonce_gt: ${latestNonce} }) {id, lane_id, nonce, amount, start_timestamp, end_timestamp, request_transaction, response_transaction, result, token, sender, recipient, fee}}`,
         variables: null,
       });
@@ -241,7 +245,7 @@ export class Darwinia2crabService implements OnModuleInit {
         targetNonces.push(record.nonce);
       }
       const nonces = targetNonces.join(',');
-      const res = await axios.post(this.crabUrl, {
+      const res = await axios.post(this.backingUrl, {
         query: `query { burnRecordEntities (where: { nonce_in: [${nonces}] }) {id, lane_id, nonce, amount, start_timestamp, end_timestamp, request_transaction, response_transaction, result, token, sender, recipient, fee}}`,
         variables: null,
       });

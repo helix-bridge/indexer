@@ -67,9 +67,9 @@ const s2sEventTos2sRecord = (s2sEvent: S2sEvent | null): S2sRecord =>
 
 @Injectable()
 export class Substrate2substrateService {
-  readonly backingUrl = this.configService.get<string>('THEGRAPH');
+  readonly backingUrl = this.configService.get<string>('SUBSTRATE_SUBSTRATE_BACKING');
 
-  readonly issuingUrl = this.configService.get<string>('SUBQL') + 'darwinia';
+  readonly issuingUrl = this.configService.get<string>('SUBSTRATE_SUBSTRATE_ISSUING');
 
   constructor(private configService: ConfigService) {}
 
