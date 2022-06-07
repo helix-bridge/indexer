@@ -287,7 +287,7 @@ export class Darwinia2crabService implements OnModuleInit {
 
       const nodes = res.data?.data?.burnRecordEntities;
 
-      if (nodes) {
+      if (nodes && nodes.length > 0) {
         for (const node of nodes) {
           if (node.result === 0) {
             continue;
