@@ -21,7 +21,11 @@ export class AccountService {
 
       return { total: res.data.data.accounts.totalCount };
     } else {
-      const results = await Promise.all(['darwinia', 'pangolin'].map((chain) => query(chain)));
+      const chains =
+        this.configService.get<string>('CHAIN_TYPE') === 'test'
+          ? ['pangoro', 'pangolin']
+          : ['darwinia', 'crab'];
+      const results = await Promise.all(chains.map((chain) => query(chain)));
 
       return { total: results.reduce((acc, cur) => acc + cur.data.data.accounts.totalCount, 0) };
     }

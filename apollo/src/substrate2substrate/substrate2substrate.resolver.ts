@@ -5,6 +5,9 @@ import { Substrate2substrateService } from './substrate2substrate.service';
 export class BurnRecordEntitiesResolver {
   constructor(private substrate2SubstrateService: Substrate2substrateService) {}
 
+  /**
+   * TODO: unused
+   */
   @Query()
   async burnRecords(
     @Args('first') first: number,
@@ -35,6 +38,9 @@ export class BurnRecordEntitiesResolver {
 export class LockRecordEntitiesResolver {
   constructor(private substrate2SubstrateService: Substrate2substrateService) {}
 
+  /**
+   * TODO: unused
+   */
   @Query()
   async lockRecords(
     @Args('first') first: number,
@@ -61,6 +67,9 @@ export class LockRecordEntitiesResolver {
   }
 }
 
+/**
+ * TODO: unused
+ */
 @Resolver('s2sRecords')
 export class S2sRecordsResolver {
   constructor(private substrate2SubstrateService: Substrate2substrateService) {}

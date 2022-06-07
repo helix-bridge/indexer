@@ -2,17 +2,19 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule, Scalar } from '@nestjs/graphql';
+import { ScheduleModule } from '@nestjs/schedule';
 import BigInt from 'apollo-type-bigint';
 import { join } from 'path';
 import { AccountModule } from './account/account.module';
+import { AggregationModule } from './aggregation/aggregation.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { Crab2smartModule } from './crab2smart/crab2smart.module';
+import { Darwinia2crabModule } from './darwinia2crab/darwinia2crab.module';
 import { Substrate2substrateModule } from './substrate2substrate/substrate2substrate.module';
 import { TasksModule } from './tasks/tasks.module';
-import { ScheduleModule } from '@nestjs/schedule';
-import { AggregationModule } from './aggregation/aggregation.module';
-import { Darwinia2crabModule } from './darwinia2crab/darwinia2crab.module';
-import { Crab2smartModule } from './crab2smart/crab2smart.module';
+
+const chainEnvFilePath = `.env.${process.env.NODE_ENV || 'prod'}`;
 
 @Scalar('BigInt')
 export class BigIntScalar extends BigInt {}
@@ -29,7 +31,10 @@ export class BigIntScalar extends BigInt {}
     }),
     Substrate2substrateModule,
     AccountModule,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      envFilePath: ['.env', chainEnvFilePath],
+      isGlobal: true,
+    }),
     ScheduleModule.forRoot(),
     TasksModule,
     AggregationModule,

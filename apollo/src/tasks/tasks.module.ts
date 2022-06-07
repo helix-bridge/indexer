@@ -3,8 +3,8 @@ import { TasksService } from './tasks.service';
 import { AggregationModule } from '../aggregation/aggregation.module';
 
 @Module({
-  imports: [ AggregationModule ],
+  imports: [AggregationModule],
   providers: [TasksService],
-  exports: [TasksService]
+  exports: [TasksService],
 })
 export class TasksModule {}

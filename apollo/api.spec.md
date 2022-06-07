@@ -15,6 +15,4 @@ camelCase
 | requestTxHash  | string | hex string     |         |
 | responseTxHash | string | hex string     |         |
 | fromChain      | string | crab           |         |
-| fromChainMode  | string | dvm            |         |
 | toChain        | string | darwinia       |         |
-| toChainMode    | string | native         |         |
