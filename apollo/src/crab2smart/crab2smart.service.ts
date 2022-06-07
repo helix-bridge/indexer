@@ -9,7 +9,7 @@ import { TasksService } from '../tasks/tasks.service';
 export class Crab2smartService implements OnModuleInit {
   private readonly logger = new Logger(TasksService.name);
 
-  private readonly backingUrl = this.configService.get<string>('SUBSTRATE_SUBSTRATE_ISSUING');
+  private readonly endpoint = this.configService.get<string>('SUBSTRATE_DVM_ENDPOINT');
 
   private readonly fetchDataInterval = 10000;
 
@@ -51,7 +51,7 @@ export class Crab2smartService implements OnModuleInit {
 
       let latestNonce: number = firstRecord ? Number(firstRecord.nonce) : 0;
 
-      const res = await axios.post(this.backingUrl, {
+      const res = await axios.post(this.endpoint, {
         query: `query { transfers (first: ${this.fetchDataFirst}, orderBy: TIMESTAMP_ASC, offset: ${latestNonce}) { totalCount nodes{id, senderId, recipientId, fromChain, toChain, amount, timestamp }}}`,
         variables: null,
       });
