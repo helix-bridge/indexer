@@ -17,6 +17,10 @@ export class Crab2smartService implements OnModuleInit {
 
   private readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
 
+  private latestNonce: number = -1;
+
+  private isSyncing = false;
+
   constructor(
     private configService: ConfigService,
     private aggregationService: AggregationService,
@@ -32,27 +36,35 @@ export class Crab2smartService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    this.taskService.addInterval(`${this.prefix}-fetch_data`, this.fetchDataInterval, () =>
-      this.fetchRecords()
-    );
+    this.taskService.addInterval(`${this.prefix}-fetch_data`, this.fetchDataInterval, async () => {
+      if (this.isSyncing) {
+        return;
+      }
+      this.isSyncing = true;
+      await this.fetchRecords()
+      this.isSyncing = false;
+    });
   }
 
   async fetchRecords() {
     try {
       const chainDvm = this.chain + '-dvm';
 
-      const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
-        OR: [
-          { fromChain: this.chain, toChain: chainDvm },
-          { fromChain: chainDvm, toChain: this.chain },
-        ],
-        bridge: 'helix',
-      });
+      if (this.latestNonce == -1) {
+        const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
+          OR: [
+            { fromChain: this.chain, toChain: chainDvm },
+            { fromChain: chainDvm, toChain: this.chain },
+          ],
+          bridge: 'helix',
+        });
 
-      let latestNonce: number = firstRecord ? Number(firstRecord.nonce) : 0;
+        this.latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
+      }
 
+      const query = `query { transfers (first: ${this.fetchDataFirst}, orderBy: TIMESTAMP_ASC, offset: ${this.latestNonce}) { totalCount nodes{id, senderId, recipientId, fromChain, toChain, amount, timestamp }}}`;
       const res = await axios.post(this.endpoint, {
-        query: `query { transfers (first: ${this.fetchDataFirst}, orderBy: TIMESTAMP_ASC, offset: ${latestNonce}) { totalCount nodes{id, senderId, recipientId, fromChain, toChain, amount, timestamp }}}`,
+        query: query,
         variables: null,
       });
 
@@ -60,16 +72,15 @@ export class Crab2smartService implements OnModuleInit {
       const timezone = new Date().getTimezoneOffset() * 60;
       const token = this.isTest ? 'PRing' : 'Crab';
 
-      if (nodes) {
+      if (nodes && nodes.length > 0) {
         for (const node of nodes) {
-          latestNonce = latestNonce + 1;
           await this.aggregationService.createHistoryRecord({
             id: `${this.prefix}-${node.id}`,
             fromChain: node.fromChain,
             toChain: node.toChain,
             bridge: 'helix',
             laneId: '0',
-            nonce: latestNonce.toString(),
+            nonce: (this.latestNonce + 1).toString(),
             requestTxHash: node.id,
             responseTxHash: node.id,
             sender: node.senderId,
@@ -81,13 +92,14 @@ export class Crab2smartService implements OnModuleInit {
             result: 1,
             fee: '0',
           });
+          this.latestNonce = this.latestNonce + 1;
         }
+        this.logger.log(
+            `save new ${this.chain} to ${this.chain} DVM records success, latestNonce: ${this.latestNonce}, added: ${nodes.length}`
+        );
       }
-      this.logger.log(
-        `save new ${this.chain} to ${this.chain} DVM records success, latestNonce: ${latestNonce}, added: ${nodes.length}`
-      );
     } catch (e) {
-      this.logger.warn(`update ${this.chain} to ${this.chain} DVM records failed ${e}`);
+      this.logger.warn(`update ${this.chain} to ${this.chain} DVM records failed ${e} nonce is ${this.latestNonce}`);
     }
   }
 }
