@@ -47,13 +47,13 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     });
   }
 
-  // const count = this.historyRecord.count();
   async queryHistoryRecords(params: {
     skip?: number;
     take?: number;
     where?: Prisma.HistoryRecordWhereInput;
   }): Promise<HistoryRecord[]> {
     const { skip, take, where } = params;
+
     return this.historyRecord.findMany({
       skip,
       take,

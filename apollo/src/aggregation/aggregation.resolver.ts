@@ -22,11 +22,13 @@ export class AggregationResolver {
     const skip = row * page || undefined;
     const take = row || undefined;
     const filter = [];
+
     if (sender) {
-      filter.push({ sender: sender });
+      filter.push({ sender });
     }
+
     if (recipient) {
-      filter.push({ recipient: recipient });
+      filter.push({ recipient });
     }
 
     const where = sender || recipient ? { OR: filter } : undefined;

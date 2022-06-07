@@ -4,6 +4,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 @Injectable()
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
+
   constructor(private schedulerRegistry: SchedulerRegistry) {}
 
   addInterval(name: string, milliseconds: number, callback: () => void) {
