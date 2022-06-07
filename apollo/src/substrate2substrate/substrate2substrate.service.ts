@@ -19,59 +19,80 @@ interface RecordsRequest {
   recipient?: string;
 }
 
-const toISOString = (timestamp: number) => new Date(timestamp * 1000).toISOString().slice(0, 19);
-
-const burnRecordToS2SRecord = (burnRecord: BurnRecordEntity | null): S2sRecord =>
-  burnRecord && {
-    id: burnRecord.id,
-    fromChain: 'crab',
-    fromChainMode: 'dvm',
-    toChain: 'darwinia',
-    toChainMode: 'native',
-    bridge: 'helix',
-    laneId: burnRecord.lane_id,
-    nonce: burnRecord.nonce,
-    requestTxHash: burnRecord.request_transaction,
-    responseTxHash: burnRecord.response_transaction,
-    sender: burnRecord.sender,
-    recipient: burnRecord.recipient,
-    token: burnRecord.token,
-    amount: burnRecord.amount,
-    startTime: burnRecord.start_timestamp,
-    endTime: burnRecord.end_timestamp,
-    result: burnRecord.result,
-    fee: burnRecord.fee.toString(),
-  };
-
-const s2sEventTos2sRecord = (s2sEvent: S2sEvent | null): S2sRecord =>
-  s2sEvent && {
-    id: s2sEvent.id,
-    fromChain: 'darwinia',
-    fromChainMode: 'native',
-    toChain: 'crab',
-    toChainMode: 'dvm',
-    bridge: 'helix',
-    laneId: s2sEvent.laneId,
-    nonce: s2sEvent.nonce,
-    requestTxHash: s2sEvent.requestTxHash,
-    responseTxHash: s2sEvent.responseTxHash,
-    sender: s2sEvent.senderId,
-    recipient: s2sEvent.recipient,
-    token: s2sEvent.token,
-    amount: s2sEvent.amount,
-    startTime: getUnixTime(new Date(s2sEvent.startTimestamp)),
-    endTime: getUnixTime(new Date(s2sEvent.endTimestamp)),
-    result: s2sEvent.result,
-    fee: s2sEvent.fee,
-  };
-
 @Injectable()
 export class Substrate2substrateService {
   readonly backingUrl = this.configService.get<string>('SUBSTRATE_SUBSTRATE_BACKING');
 
   readonly issuingUrl = this.configService.get<string>('SUBSTRATE_SUBSTRATE_ISSUING');
 
+  private readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
+
   constructor(private configService: ConfigService) {}
+
+  private get issuingChain() {
+    return this.isTest ? 'pangoro' : 'darwinia';
+  }
+
+  private get backingChain() {
+    return this.isTest ? 'pangolin' : 'crab';
+  }
+
+  private toISOString(timestamp: number) {
+    return new Date(timestamp * 1000).toISOString().slice(0, 19);
+  }
+
+  /**
+   * TODO: remove fromChainMode, toChainMode
+   */
+  private burnRecordToS2SRecord(burnRecord: BurnRecordEntity | null): S2sRecord {
+    return (
+      burnRecord && {
+        id: burnRecord.id,
+        fromChain: this.backingChain,
+        fromChainMode: 'dvm',
+        toChain: this.issuingChain,
+        toChainMode: 'native',
+        bridge: 'helix',
+        laneId: burnRecord.lane_id,
+        nonce: burnRecord.nonce,
+        requestTxHash: burnRecord.request_transaction,
+        responseTxHash: burnRecord.response_transaction,
+        sender: burnRecord.sender,
+        recipient: burnRecord.recipient,
+        token: burnRecord.token,
+        amount: burnRecord.amount,
+        startTime: burnRecord.start_timestamp,
+        endTime: burnRecord.end_timestamp,
+        result: burnRecord.result,
+        fee: burnRecord.fee.toString(),
+      }
+    );
+  }
+
+  private s2sEventTos2sRecord(s2sEvent: S2sEvent | null): S2sRecord {
+    return (
+      s2sEvent && {
+        id: s2sEvent.id,
+        fromChain: this.issuingChain,
+        fromChainMode: 'native',
+        toChain: this.backingChain,
+        toChainMode: 'dvm',
+        bridge: 'helix',
+        laneId: s2sEvent.laneId,
+        nonce: s2sEvent.nonce,
+        requestTxHash: s2sEvent.requestTxHash,
+        responseTxHash: s2sEvent.responseTxHash,
+        sender: s2sEvent.senderId,
+        recipient: s2sEvent.recipient,
+        token: s2sEvent.token,
+        amount: s2sEvent.amount,
+        startTime: getUnixTime(new Date(s2sEvent.startTimestamp)),
+        endTime: getUnixTime(new Date(s2sEvent.endTimestamp)),
+        result: s2sEvent.result,
+        fee: s2sEvent.fee,
+      }
+    );
+  }
 
   /* ---------------------------------------- the graph section --------------------------------- */
 
@@ -128,7 +149,7 @@ export class Substrate2substrateService {
         variables: null,
       });
 
-      return burnRecordToS2SRecord(res.data.data.burnRecordEntity);
+      return this.burnRecordToS2SRecord(res.data.data.burnRecordEntity);
     } catch {
       throw new HttpException(`Query burn record failed`, 500);
     }
@@ -220,7 +241,7 @@ export class Substrate2substrateService {
         variables: null,
       });
 
-      return s2sEventTos2sRecord(res.data.data.s2sEvent);
+      return this.s2sEventTos2sRecord(res.data.data.s2sEvent);
     } catch {
       throw new HttpException(`Query s2s event failed`, 500);
     }
@@ -263,9 +284,9 @@ export class Substrate2substrateService {
 
     while (left.length && right.length) {
       const record =
-        toISOString(left[0].start_timestamp) >= right[0].startTimestamp
-          ? burnRecordToS2SRecord(left.shift())
-          : s2sEventTos2sRecord(right.shift());
+        this.toISOString(left[0].start_timestamp) >= right[0].startTimestamp
+          ? this.burnRecordToS2SRecord(left.shift())
+          : this.s2sEventTos2sRecord(right.shift());
 
       s2sRecordList.push(record);
 
@@ -275,7 +296,7 @@ export class Substrate2substrateService {
     }
 
     const more = left.length > 0 ? left : right;
-    const convert = left.length > 0 ? burnRecordToS2SRecord : s2sEventTos2sRecord;
+    const convert = left.length > 0 ? this.burnRecordToS2SRecord : this.s2sEventTos2sRecord;
 
     for (const idx in more) {
       if (Object.prototype.hasOwnProperty.call(more, idx)) {
@@ -299,11 +320,11 @@ export class Substrate2substrateService {
     const filterBurnDaily = `where: {id_gte: ${timelimit}}`;
     const filterLockDaily = `filter: {id: {greaterThanOrEqualTo: \"${timelimit}\"}}`;
 
-    if (chain === 'darwinia') {
+    if (chain === this.issuingChain) {
       const dailyStatistics = await this.indexMappingDailyStatistics(filterBurnDaily);
 
       return dailyStatistics.data.burnDailyStatistics;
-    } else if (chain === 'crab') {
+    } else if (chain === this.backingChain) {
       const dailyStatistics = await this.indexIssuingDailyStatistics(filterLockDaily);
 
       return dailyStatistics.data.s2sDailyStatistics.nodes;
