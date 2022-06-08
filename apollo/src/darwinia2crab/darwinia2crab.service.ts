@@ -95,7 +95,7 @@ export class Darwinia2crabService implements OnModuleInit {
       const nodes = res.data?.data?.s2sEvents?.nodes;
       const timezone = new Date().getTimezoneOffset() * 60;
 
-      if (nodes) {
+      if (nodes && nodes.length > 0) {
         for (const node of nodes) {
           await this.aggregationService.createHistoryRecord({
             id: `${this.prefix}-lock-${node.id}`,
@@ -120,11 +120,11 @@ export class Darwinia2crabService implements OnModuleInit {
             this.needSyncLockConfirmed = true;
           }
         }
-      }
 
-      this.logger.log(
-        `save new ${this.issuingChain} to ${this.backingChain} DVM lock records success, latestNonce: ${latestNonce}, added: ${nodes.length}`
-      );
+        this.logger.log(
+          `save new ${this.issuingChain} to ${this.backingChain} DVM lock records success, latestNonce: ${latestNonce}, added: ${nodes.length}`
+        );
+      }
     } catch (e) {
       this.logger.warn(
         `fetch ${this.issuingChain} to ${this.backingChain} DVM lock records failed ${e}`
@@ -215,7 +215,7 @@ export class Darwinia2crabService implements OnModuleInit {
 
       const nodes = res.data?.data?.burnRecordEntities;
 
-      if (nodes) {
+      if (nodes && nodes.length > 0) {
         for (const node of nodes) {
           await this.aggregationService.createHistoryRecord({
             id: `${this.prefix}-burn-${node.id}`,
