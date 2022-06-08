@@ -105,7 +105,8 @@ export class EventHandler {
 
       const [iFrom] = JSON.parse(event.event.data.toString());
       sender = AccountHandler.formatAddress(iFrom);
-      await this.handleTransfer('crab-dvm', 'crab', sender, recipient, amount);
+      const senderDvm = AccountHandler.truncateToDvmAddress(sender);
+      await this.handleTransfer('crab-dvm', 'crab', senderDvm, recipient, amount);
     }
   }
 
@@ -117,7 +118,8 @@ export class EventHandler {
     const recipientIsDvm = AccountHandler.isDvmAddress(recipient);
 
     if (!senderIsDvm && recipientIsDvm) {
-      await this.handleTransfer('crab', 'crab-dvm', sender, recipient, amount);
+      const recipientDvm = AccountHandler.truncateToDvmAddress(recipient);
+      await this.handleTransfer('crab', 'crab-dvm', sender, recipientDvm, amount);
     }
   }
 
