@@ -18,6 +18,8 @@ export abstract class IQuery {
 
     abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<Nullable<HistoryRecord>[]> | Promise<Nullable<Nullable<HistoryRecord>[]>>;
 
+    abstract queryDailyStatistics(timepast: number, first?: Nullable<number>, from?: Nullable<string>, to?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>): Nullable<Nullable<DailyStatistics>[]> | Promise<Nullable<Nullable<DailyStatistics>[]>>;
+
     abstract burnRecords(first?: Nullable<number>, startTime?: Nullable<number>, sender?: Nullable<string>, recipient?: Nullable<string>): Nullable<Nullable<BurnRecordEntity>[]> | Promise<Nullable<Nullable<BurnRecordEntity>[]>>;
 
     abstract burnRecord(id: string): Nullable<S2sRecord> | Promise<Nullable<S2sRecord>>;
@@ -52,6 +54,17 @@ export class HistoryRecord {
     endTime?: Nullable<number>;
     result: number;
     fee: string;
+}
+
+export class DailyStatistics {
+    fromChain: string;
+    toChain: string;
+    Direction: string;
+    bridge: string;
+    timestamp: number;
+    token: string;
+    dailyVolume?: Nullable<BigInt>;
+    dailyCount?: Nullable<BigInt>;
 }
 
 export class S2sEvent {
