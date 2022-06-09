@@ -29,3 +29,14 @@ model HistoryRecord {
   result Int
   fee String
 }
+
+model DailyStatistics {
+  fromChain String
+  toChain String
+  bridge String
+  timestamp Int
+  token String
+  dailyVolume BigInt?
+  dailyCount BigInt?
+  @@unique([fromChain, toChain, timestamp, token], name: "daily_statistics_id")
+}

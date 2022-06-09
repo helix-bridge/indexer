@@ -38,4 +38,38 @@ export class AggregationResolver {
       where,
     });
   }
+
+  // daily statistics
+  @Query()
+  async queryDailyStatistics(
+    @Args('timepast') timepast: number,
+    @Args('first') take: number,
+    @Args('from') fromChain: string,
+    @Args('to') toChain: string,
+    @Args('bridge') bridge: string,
+    @Args('token') token: string
+  ) {
+    const filter = [];
+    if (fromChain) {
+      filter.push({ fromChain });
+    }
+    if (toChain) {
+      filter.push({ toChain });
+    }
+    if (bridge) {
+      filter.push({ bridge });
+    }
+    if (token) {
+      filter.push({ token });
+    }
+
+    const now = Date.now() / 1000;
+    const timelimit = Math.floor(now - timepast);
+    const where = { AND: { timestamp: { gt: timelimit }, AND: filter } };
+    return this.aggregationService.queryDailyStatistics({
+      take,
+      where,
+    });
+  }
 }
+

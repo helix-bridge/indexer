@@ -12,30 +12,26 @@ export class Darwinia2crabService implements OnModuleInit {
   // lock and mint
   private readonly issuingUrl = this.configService.get<string>('SUBSTRATE_SUBSTRATE_ISSUING');
 
-  private readonly fetchLockDataInterval = 10000;
+  private readonly fetchHistoryDataInterval = 10000;
 
-  private readonly updateLockDataInterval = 5000;
+  private readonly fetchDailyStatisticsInterval = 5000;
 
-  private readonly fetchLockDataFirst = 10;
+  private readonly fetchHistoryDataFirst = 10;
 
-  private readonly updateLockDataFirst = 10;
+  private readonly fetchDailyStatisticsFirst = 10;
 
   private needSyncLockConfirmed = true;
 
   // burn and redeem
   private readonly backingUrl = this.configService.get<string>('SUBSTRATE_SUBSTRATE_BACKING');
 
-  private readonly fetchBurnDataInterval = 10000;
-
-  private readonly updateBurnDataInterval = 15000;
-
-  private readonly fetchBurnDataFirst = 10;
-
-  private readonly updateBurnDataFirst = 10;
-
   private needSyncBurnConfirmed = true;
 
   private readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
+
+  private isSyncingHistory = false;
+
+  private isSyncingStatistics = false;
 
   constructor(
     private configService: ConfigService,
@@ -56,25 +52,26 @@ export class Darwinia2crabService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    this.taskService.addInterval(`${this.prefix}-fetch_lock_data`, this.fetchLockDataInterval, () =>
-      this.fetchLockRecords()
-    );
-
-    this.taskService.addInterval(
-      `${this.prefix}-update_lock_data`,
-      this.updateLockDataInterval,
-      () => this.checkConfirmedLockRecords()
-    );
-
-    this.taskService.addInterval(`${this.prefix}-fetch_burn_data`, this.fetchBurnDataInterval, () =>
-      this.fetchBurnRecords()
-    );
-
-    this.taskService.addInterval(
-      `${this.prefix}-update_burn_data`,
-      this.updateBurnDataInterval,
-      () => this.checkConfirmedBurnRecords()
-    );
+    this.taskService.addInterval(`${this.prefix}-fetch_history_data`, this.fetchHistoryDataInterval, async () => {
+      if (this.isSyncingHistory) {
+        return;
+      }
+      this.isSyncingHistory = true;
+      await this.fetchLockRecords()
+      await this.checkConfirmedLockRecords()
+      await this.fetchBurnRecords()
+      await this.checkConfirmedBurnRecords()
+      this.isSyncingHistory = false;
+    });
+    this.taskService.addInterval(`${this.prefix}-fetch_statistics_data`, this.fetchDailyStatisticsInterval, async () => {
+      if (this.isSyncingStatistics) {
+        return;
+      }
+      this.isSyncingStatistics = true;
+      await this.fetchDailyStatisticsFromIssuing();
+      await this.fetchDailyStatisticsFromBacking();
+      this.isSyncingStatistics = false;
+    });
   }
 
   async fetchLockRecords() {
@@ -88,7 +85,7 @@ export class Darwinia2crabService implements OnModuleInit {
       const latestNonce = firstRecord ? firstRecord.nonce : -1;
 
       const res = await axios.post(this.issuingUrl, {
-        query: `query { s2sEvents (first: ${this.fetchLockDataFirst}, orderBy: NONCE_ASC, filter: {nonce: {greaterThan: "${latestNonce}"}}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, token, senderId, recipient, fee}}}`,
+        query: `query { s2sEvents (first: ${this.fetchHistoryDataFirst}, orderBy: NONCE_ASC, filter: {nonce: {greaterThan: "${latestNonce}"}}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, token, senderId, recipient, fee}}}`,
         variables: null,
       });
 
@@ -139,7 +136,7 @@ export class Darwinia2crabService implements OnModuleInit {
 
     try {
       const unconfirmedRecords = await this.aggregationService.queryHistoryRecords({
-        take: this.updateLockDataFirst,
+        take: this.fetchHistoryDataFirst,
         where: {
           fromChain: this.issuingChain,
           toChain: `${this.backingChain}-dvm`,
@@ -209,7 +206,7 @@ export class Darwinia2crabService implements OnModuleInit {
       const latestNonce = firstRecord ? firstRecord.nonce : -1;
 
       const res = await axios.post(this.backingUrl, {
-        query: `query { burnRecordEntities (first: ${this.fetchBurnDataFirst}, orderBy: nonce, orderDirection: asc, where: { nonce_gt: ${latestNonce} }) {id, lane_id, nonce, amount, start_timestamp, end_timestamp, request_transaction, response_transaction, result, token, sender, recipient, fee}}`,
+        query: `query { burnRecordEntities (first: ${this.fetchHistoryDataFirst}, orderBy: nonce, orderDirection: asc, where: { nonce_gt: ${latestNonce} }) {id, lane_id, nonce, amount, start_timestamp, end_timestamp, request_transaction, response_transaction, result, token, sender, recipient, fee}}`,
         variables: null,
       });
 
@@ -258,7 +255,7 @@ export class Darwinia2crabService implements OnModuleInit {
 
     try {
       const unconfirmedRecords = await this.aggregationService.queryHistoryRecords({
-        take: this.updateBurnDataFirst,
+        take: this.fetchHistoryDataFirst,
         where: {
           fromChain: 'crab-dvm',
           toChain: 'darwinia',
@@ -312,6 +309,90 @@ export class Darwinia2crabService implements OnModuleInit {
     } catch (e) {
       this.logger.warn(
         `update ${this.backingChain} DVM to ${this.issuingChain} burn records failed ${e}`
+      );
+    }
+  }
+
+  async fetchDailyStatisticsFromIssuing() {
+    try {
+      const firstRecord = await this.aggregationService.queryDailyStatisticsFirst({
+        fromChain: this.issuingChain,
+        toChain: this.backingChain + '-dvm',
+        bridge: 'helix',
+      });
+
+      const latestDay = firstRecord ? firstRecord.timestamp : -1;
+
+      const res = await axios.post(this.issuingUrl, {
+        query: `query { s2sDailyStatistics (first: ${this.fetchDailyStatisticsFirst}, orderBy: ID_ASC, filter: {id: {greaterThan: "${latestDay}"}}) {nodes{id, dailyVolume, dailyCount}}}`,
+        variables: null,
+      });
+
+      const nodes = res.data?.data?.s2sDailyStatistics?.nodes;
+
+      if (nodes && nodes.length > 0) {
+        for (const node of nodes) {
+          await this.aggregationService.createDailyStatistics({
+            fromChain: this.issuingChain,
+            toChain: `${this.backingChain}-dvm`,
+            bridge: 'helix',
+            timestamp: Number(node.id),
+            token: 'native-ring',
+            dailyVolume: global.BigInt(node.dailyVolume),
+            dailyCount: node.dailyCount,
+          });
+
+        }
+
+        this.logger.log(
+          `save new ${this.backingChain} to ${this.issuingChain} daily statistics success, latestDay: ${latestDay}, added: ${nodes.length}`
+        );
+      }
+    } catch (e) {
+      this.logger.warn(
+        `fetch ${this.backingChain} to ${this.issuingChain} daily statistics records failed ${e}`
+      );
+    }
+  }
+
+  async fetchDailyStatisticsFromBacking() {
+    try {
+      const firstRecord = await this.aggregationService.queryDailyStatisticsFirst({
+        fromChain: this.backingChain + '-dvm',
+        toChain: this.issuingChain,
+        bridge: 'helix',
+      });
+
+      const latestDay = firstRecord ? firstRecord.timestamp : -1;
+
+      const res = await axios.post(this.backingUrl, {
+        query: `query { burnDailyStatistics (first: ${this.fetchDailyStatisticsFirst}, orderBy: id, orderDirection: asc, where: {id_gt: "${latestDay}"}) {id, dailyVolume, dailyCount}}`,
+        variables: null,
+      });
+
+      const nodes = res.data?.data?.burnDailyStatistics;
+
+      if (nodes && nodes.length > 0) {
+        for (const node of nodes) {
+          await this.aggregationService.createDailyStatistics({
+            fromChain: `${this.backingChain}-dvm`,
+            toChain: this.issuingChain,
+            bridge: 'helix',
+            timestamp: Number(node.id),
+            token: 'native-ring',
+            dailyVolume: global.BigInt(node.dailyVolume),
+            dailyCount: node.dailyCount,
+          });
+
+        }
+
+        this.logger.log(
+          `save new ${this.issuingChain} to ${this.backingChain} daily statistics success, latestDay: ${latestDay}, added: ${nodes.length}`
+        );
+      }
+    } catch (e) {
+      this.logger.warn(
+        `fetch ${this.issuingChain} to ${this.backingChain} daily statistics records failed ${e}`
       );
     }
   }
