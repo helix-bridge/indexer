@@ -143,7 +143,7 @@ export class Darwinia2crabService implements OnModuleInit {
     }
 
     try {
-      const unconfirmedRecords = await this.aggregationService.queryHistoryRecords({
+      const { records: unconfirmedRecords } = await this.aggregationService.queryHistoryRecords({
         take: this.fetchHistoryDataFirst,
         where: {
           fromChain: this.issuingChain,
@@ -262,7 +262,7 @@ export class Darwinia2crabService implements OnModuleInit {
     }
 
     try {
-      const unconfirmedRecords = await this.aggregationService.queryHistoryRecords({
+      const { records: unconfirmedRecords } = await this.aggregationService.queryHistoryRecords({
         take: this.fetchHistoryDataFirst,
         where: {
           fromChain: 'crab-dvm',

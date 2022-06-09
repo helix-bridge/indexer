@@ -1,4 +1,3 @@
-
 /*
  * -------------------------------------------------------
  * THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
@@ -16,9 +15,9 @@ export abstract class IQuery {
 
     abstract historyRecordById(id?: Nullable<string>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
 
-    abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
-
     abstract queryDailyStatistics(timepast: number, first?: Nullable<number>, from?: Nullable<string>, to?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>): Nullable<Nullable<DailyStatistics>[]> | Promise<Nullable<Nullable<DailyStatistics>[]>>;
+
+    abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
 
     abstract burnRecords(first?: Nullable<number>, startTime?: Nullable<number>, sender?: Nullable<string>, recipient?: Nullable<string>): Nullable<Nullable<BurnRecordEntity>[]> | Promise<Nullable<Nullable<BurnRecordEntity>[]>>;
 

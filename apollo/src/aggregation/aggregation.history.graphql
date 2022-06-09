@@ -36,7 +36,6 @@ type HistoryRecords {
 
 type Query {
   historyRecordById(id: String): HistoryRecord
-  historyRecords(sender: String, recipient: String, row: Int, page: Int): [HistoryRecord]
   queryDailyStatistics(timepast: Int!, first: Int, from: String, to: String, bridge: String, token: String): [DailyStatistics]
   historyRecords(sender: String, recipient: String, row: Int, page: Int): HistoryRecords
 }
