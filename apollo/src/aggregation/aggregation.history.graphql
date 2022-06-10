@@ -21,7 +21,6 @@ type HistoryRecord {
 type DailyStatistics {
   fromChain: String!
   toChain: String!
-  Direction: String!
   bridge: String!
   timestamp: Int!
   token: String!
@@ -29,9 +28,13 @@ type DailyStatistics {
   dailyCount: BigInt
 }
 
+type HistoryRecords {
+  total: Int!
+  records: [HistoryRecord]
+}
+
 type Query {
   historyRecordById(id: String): HistoryRecord
-  historyRecords(sender: String, recipient: String, row: Int, page: Int): [HistoryRecord]
   queryDailyStatistics(timepast: Int!, first: Int, from: String, to: String, bridge: String, token: String): [DailyStatistics]
+  historyRecords(sender: String, recipient: String, row: Int, page: Int): HistoryRecords
 }
- 
