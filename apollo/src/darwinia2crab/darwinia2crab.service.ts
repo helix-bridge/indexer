@@ -52,26 +52,34 @@ export class Darwinia2crabService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    this.taskService.addInterval(`${this.prefix}-fetch_history_data`, this.fetchHistoryDataInterval, async () => {
-      if (this.isSyncingHistory) {
-        return;
+    this.taskService.addInterval(
+      `${this.prefix}-fetch_history_data`,
+      this.fetchHistoryDataInterval,
+      async () => {
+        if (this.isSyncingHistory) {
+          return;
+        }
+        this.isSyncingHistory = true;
+        await this.fetchLockRecords();
+        await this.checkConfirmedLockRecords();
+        await this.fetchBurnRecords();
+        await this.checkConfirmedBurnRecords();
+        this.isSyncingHistory = false;
       }
-      this.isSyncingHistory = true;
-      await this.fetchLockRecords()
-      await this.checkConfirmedLockRecords()
-      await this.fetchBurnRecords()
-      await this.checkConfirmedBurnRecords()
-      this.isSyncingHistory = false;
-    });
-    this.taskService.addInterval(`${this.prefix}-fetch_statistics_data`, this.fetchDailyStatisticsInterval, async () => {
-      if (this.isSyncingStatistics) {
-        return;
+    );
+    this.taskService.addInterval(
+      `${this.prefix}-fetch_statistics_data`,
+      this.fetchDailyStatisticsInterval,
+      async () => {
+        if (this.isSyncingStatistics) {
+          return;
+        }
+        this.isSyncingStatistics = true;
+        await this.fetchDailyStatisticsFromIssuing();
+        await this.fetchDailyStatisticsFromBacking();
+        this.isSyncingStatistics = false;
       }
-      this.isSyncingStatistics = true;
-      await this.fetchDailyStatisticsFromIssuing();
-      await this.fetchDailyStatisticsFromBacking();
-      this.isSyncingStatistics = false;
-    });
+    );
   }
 
   async fetchLockRecords() {
@@ -341,7 +349,6 @@ export class Darwinia2crabService implements OnModuleInit {
             dailyVolume: global.BigInt(node.dailyVolume),
             dailyCount: node.dailyCount,
           });
-
         }
 
         this.logger.log(
@@ -383,7 +390,6 @@ export class Darwinia2crabService implements OnModuleInit {
             dailyVolume: global.BigInt(node.dailyVolume),
             dailyCount: node.dailyCount,
           });
-
         }
 
         this.logger.log(

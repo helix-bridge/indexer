@@ -93,4 +93,3 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     });
   }
 }
-
