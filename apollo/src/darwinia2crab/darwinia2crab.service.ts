@@ -352,12 +352,12 @@ export class Darwinia2crabService implements OnModuleInit {
         }
 
         this.logger.log(
-          `save new ${this.backingChain} to ${this.issuingChain} daily statistics success, latestDay: ${latestDay}, added: ${nodes.length}`
+          `save new ${this.backingChain} DVM to ${this.issuingChain} daily statistics from issuing success, latestDay: ${latestDay}, added: ${nodes.length}`
         );
       }
     } catch (e) {
       this.logger.warn(
-        `fetch ${this.backingChain} to ${this.issuingChain} daily statistics records failed ${e}`
+        `fetch ${this.backingChain} DVM to ${this.issuingChain} daily statistics from issuing records failed ${e}`
       );
     }
   }
@@ -393,12 +393,12 @@ export class Darwinia2crabService implements OnModuleInit {
         }
 
         this.logger.log(
-          `save new ${this.issuingChain} to ${this.backingChain} daily statistics success, latestDay: ${latestDay}, added: ${nodes.length}`
+          `save new ${this.issuingChain} to ${this.backingChain} DVM daily statistics from backing success, latestDay: ${latestDay}, added: ${nodes.length}`
         );
       }
     } catch (e) {
       this.logger.warn(
-        `fetch ${this.issuingChain} to ${this.backingChain} daily statistics records failed ${e}`
+        `fetch ${this.issuingChain} to ${this.backingChain} DVM daily statistics from backing records failed ${e}`
       );
     }
   }
