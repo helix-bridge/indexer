@@ -17,7 +17,7 @@ export class Crab2smartService implements OnModuleInit {
 
   private readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
 
-  private latestNonce: number = -1;
+  private latestNonce = -1;
 
   private isSyncing = false;
 
@@ -41,7 +41,7 @@ export class Crab2smartService implements OnModuleInit {
         return;
       }
       this.isSyncing = true;
-      await this.fetchRecords()
+      await this.fetchRecords();
       this.isSyncing = false;
     });
   }
@@ -95,11 +95,13 @@ export class Crab2smartService implements OnModuleInit {
           this.latestNonce = this.latestNonce + 1;
         }
         this.logger.log(
-            `save new ${this.chain} to ${this.chain} DVM records success, latestNonce: ${this.latestNonce}, added: ${nodes.length}`
+          `save new ${this.chain} to ${this.chain} DVM records success, latestNonce: ${this.latestNonce}, added: ${nodes.length}`
         );
       }
     } catch (e) {
-      this.logger.warn(`update ${this.chain} to ${this.chain} DVM records failed ${e} nonce is ${this.latestNonce}`);
+      this.logger.warn(
+        `update ${this.chain} to ${this.chain} DVM records failed ${e} nonce is ${this.latestNonce}`
+      );
     }
   }
 }
