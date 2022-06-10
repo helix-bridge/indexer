@@ -1,3 +1,4 @@
+
 /*
  * -------------------------------------------------------
  * THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
@@ -58,7 +59,6 @@ export class HistoryRecord {
 export class DailyStatistics {
     fromChain: string;
     toChain: string;
-    Direction: string;
     bridge: string;
     timestamp: number;
     token: string;

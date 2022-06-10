@@ -21,7 +21,6 @@ type HistoryRecord {
 type DailyStatistics {
   fromChain: String!
   toChain: String!
-  Direction: String!
   bridge: String!
   timestamp: Int!
   token: String!
