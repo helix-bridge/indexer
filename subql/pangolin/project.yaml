@@ -44,4 +44,15 @@ dataSources:
             module: balances
             method: Transfer
 
+        - handler: handleEvent
+          kind: : substrate/EventHandler
+          filter:
+            module: toPangolinParachainBacking
+            method: TokenLocked
+
+        - handler: handleEvent
+          kind: : substrate/EventHandler
+          filter:
+            module: toPangolinParachainBacking
+            method: TokenLockedConfirmed
  
