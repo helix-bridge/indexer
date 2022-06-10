@@ -1,5 +1,5 @@
 import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
-import { HistoryRecord, Prisma, PrismaClient } from '@prisma/client';
+import { HistoryRecord, DailyStatistics, Prisma, PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class AggregationService extends PrismaClient implements OnModuleInit {
@@ -59,6 +59,37 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       take,
       where,
       orderBy: { startTime: 'desc' },
+    });
+  }
+
+  // daily statistics
+  async createDailyStatistics(data: Prisma.DailyStatisticsCreateInput): Promise<DailyStatistics> {
+    return this.dailyStatistics.create({
+      data,
+    });
+  }
+
+  async queryDailyStatistics(params: {
+    skip?: number;
+    take?: number;
+    where?: Prisma.DailyStatisticsWhereInput;
+  }): Promise<DailyStatistics[]> {
+    const { skip, take, where } = params;
+
+    return this.dailyStatistics.findMany({
+      skip,
+      take,
+      where,
+      orderBy: { timestamp: 'desc' },
+    });
+  }
+
+  async queryDailyStatisticsFirst(
+    dailyStatisticsWhereInput: Prisma.DailyStatisticsWhereInput
+  ): Promise<DailyStatistics | null> {
+    return this.dailyStatistics.findFirst({
+      where: dailyStatisticsWhereInput,
+      orderBy: { timestamp: 'desc' },
     });
   }
 }

@@ -19,6 +19,10 @@ export class AccountHandler {
     return address.startsWith("0x64766d3a00000000000000")
   }
 
+  static truncateToDvmAddress(address: string) {
+    return "0x" + address.substr(24, 40)
+  }
+
   static async ensureAccount(id: string) {
     const account = await Account.get(id);
 
