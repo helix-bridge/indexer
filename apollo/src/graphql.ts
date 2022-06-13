@@ -1,3 +1,4 @@
+
 /*
  * -------------------------------------------------------
  * THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
@@ -133,9 +134,7 @@ export class UnlockRecord {
 export class S2sRecord {
     id: string;
     fromChain: string;
-    fromChainMode: string;
     toChain: string;
-    toChainMode: string;
     bridge: string;
     laneId: string;
     nonce: string;
