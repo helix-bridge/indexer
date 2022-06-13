@@ -80,7 +80,7 @@ export class Crab2smartService implements OnModuleInit {
             toChain: node.toChain,
             bridge: 'helix',
             laneId: '0',
-            nonce: (this.latestNonce + 1).toString(),
+            nonce: this.latestNonce + 1,
             requestTxHash: node.id,
             responseTxHash: node.id,
             sender: node.senderId,

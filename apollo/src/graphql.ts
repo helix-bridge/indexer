@@ -43,7 +43,7 @@ export class HistoryRecord {
     toChain: string;
     bridge: string;
     laneId: string;
-    nonce: string;
+    nonce: BigInt;
     requestTxHash: string;
     responseTxHash?: Nullable<string>;
     sender: string;

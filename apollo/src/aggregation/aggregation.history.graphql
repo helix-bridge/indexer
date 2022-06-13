@@ -5,7 +5,7 @@ type HistoryRecord {
   toChain: String!
   bridge: String!
   laneId: String!
-  nonce: String!
+  nonce: BigInt!
   requestTxHash: String!
   responseTxHash: String
   sender: String!
