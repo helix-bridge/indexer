@@ -14,7 +14,7 @@ export class Darwinia2crabService implements OnModuleInit {
 
   private readonly fetchHistoryDataInterval = 10000;
 
-  private readonly fetchDailyStatisticsInterval = 5000;
+  private readonly fetchDailyStatisticsInterval = 3600000;
 
   private readonly fetchHistoryDataFirst = 10;
 
