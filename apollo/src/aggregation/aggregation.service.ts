@@ -44,7 +44,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
   ): Promise<HistoryRecord | null> {
     return this.historyRecord.findFirst({
       where: historyRecordWhereInput,
-      orderBy: { startTime: 'desc' },
+      orderBy: { nonce: 'desc' },
     });
   }
 
