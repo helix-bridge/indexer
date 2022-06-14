@@ -47,6 +47,14 @@ export class Darwinia2crabService implements OnModuleInit {
     return this.isTest ? 'pangolin' : 'crab';
   }
 
+  private get lockFeeToken() {
+    return this.isTest ? 'PRing' : 'Ring';
+  }
+
+  private get burnFeeToken() {
+    return this.isTest ? 'PRing' : 'Crab';
+  }
+
   private get prefix() {
     return `${this.issuingChain}2${this.backingChain}dvm`;
   }
@@ -119,6 +127,7 @@ export class Darwinia2crabService implements OnModuleInit {
             endTime: getUnixTime(new Date(node.endTimestamp)) - timezone,
             result: node.result,
             fee: node.fee,
+            feeToken: this.lockFeeToken,
           });
 
           if (!this.needSyncLockConfirmed && node.result == 0) {
@@ -239,6 +248,7 @@ export class Darwinia2crabService implements OnModuleInit {
             endTime: Number(node.end_timestamp),
             result: node.result,
             fee: node.fee.toString(),
+            feeToken: this.burnFeeToken,
           });
 
           if (!this.needSyncBurnConfirmed && node.result == 0) {

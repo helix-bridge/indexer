@@ -16,6 +16,7 @@ type HistoryRecord {
   endTime: Int
   result: Int!
   fee: String!
+  feeToken: String!
 }
 
 type DailyStatistics {

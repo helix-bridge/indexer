@@ -54,6 +54,7 @@ export class HistoryRecord {
     endTime?: Nullable<number>;
     result: number;
     fee: string;
+    feeToken: string;
 }
 
 export class DailyStatistics {
@@ -85,6 +86,7 @@ export class S2sEvent {
     startTimestamp: string;
     endTimestamp?: Nullable<string>;
     fee: string;
+    feeToken: string;
 }
 
 export class DailyStatistic {
@@ -107,6 +109,7 @@ export class BurnRecordEntity {
     end_timestamp?: Nullable<number>;
     result?: Nullable<number>;
     fee?: Nullable<number>;
+    feeToken: string;
 }
 
 export class DVMLockRecord {
@@ -148,6 +151,7 @@ export class S2sRecord {
     endTime?: Nullable<number>;
     result: number;
     fee: string;
+    feeToken: string;
 }
 
 export class BurnRecordEntity_filter {

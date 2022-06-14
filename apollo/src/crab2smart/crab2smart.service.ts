@@ -91,6 +91,7 @@ export class Crab2smartService implements OnModuleInit {
             endTime: getUnixTime(new Date(node.timestamp)) - timezone,
             result: 1,
             fee: '0',
+            feeToken: 'null',
           });
           this.latestNonce = this.latestNonce + 1;
         }
