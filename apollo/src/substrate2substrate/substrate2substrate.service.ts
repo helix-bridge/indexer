@@ -38,11 +38,11 @@ export class Substrate2substrateService {
   }
 
   private get lockFeeToken() {
-    return this.isTest ? 'PRing' : 'Ring';
+    return this.isTest ? 'PRING' : 'RING';
   }
 
   private get burnFeeToken() {
-    return this.isTest ? 'PRing' : 'Crab';
+    return this.isTest ? 'PRING' : 'CRAB';
   }
 
   private toISOString(timestamp: number) {
