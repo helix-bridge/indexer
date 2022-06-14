@@ -16,6 +16,7 @@ type BurnRecordEntity {
   end_timestamp: Int
   result: Int
   fee: Int
+  feeToken: String!
 }
 
 type DVMLockRecord {
@@ -42,7 +43,9 @@ type S2sEvent {
   startTimestamp: String!
   endTimestamp: String
   fee: String!
+  feeToken: String!
 }
+
 type UnlockRecord {
   id: ID!
   laneId: String!
@@ -72,6 +75,7 @@ type S2sRecord {
   endTime: Int
   result: Int!
   fee: String!
+  feeToken: String!
 }
 
 type DailyStatistic {

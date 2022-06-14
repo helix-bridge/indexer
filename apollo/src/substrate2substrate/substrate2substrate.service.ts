@@ -37,6 +37,14 @@ export class Substrate2substrateService {
     return this.isTest ? 'pangolin' : 'crab';
   }
 
+  private get lockFeeToken() {
+    return this.isTest ? 'PRING' : 'RING';
+  }
+
+  private get burnFeeToken() {
+    return this.isTest ? 'PRING' : 'CRAB';
+  }
+
   private toISOString(timestamp: number) {
     return new Date(timestamp * 1000).toISOString().slice(0, 19);
   }
@@ -60,6 +68,7 @@ export class Substrate2substrateService {
         endTime: burnRecord.end_timestamp,
         result: burnRecord.result,
         fee: burnRecord.fee.toString(),
+        feeToken: this.burnFeeToken,
       }
     );
   }
@@ -83,6 +92,7 @@ export class Substrate2substrateService {
         endTime: getUnixTime(new Date(s2sEvent.endTimestamp)),
         result: s2sEvent.result,
         fee: s2sEvent.fee,
+        feeToken: this.lockFeeToken,
       }
     );
   }

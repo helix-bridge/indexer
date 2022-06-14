@@ -28,6 +28,7 @@ model HistoryRecord {
   endTime Int?
   result Int
   fee String
+  feeToken String
 }
 
 model DailyStatistics {
