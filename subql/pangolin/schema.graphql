@@ -15,7 +15,6 @@ type S2SEvent @entity {
   sender: Account!
   result: Int! # 0 TokenLocked 1 TokenLockedConfirmed success 2 TokenLockedConfirmed fail
   recipient: String!
-  token: String! # token address
   amount: String!
   startTimestamp: Date!
   endTimestamp: Date

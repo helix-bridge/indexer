@@ -168,11 +168,10 @@ export class EventHandler {
   }
 
   private async handleTokenLocked() {
-    // [lane_id, message_nonce, token address, sender, recipient, amount]
-    const [laneId, nonce, token, from, to, value] = JSON.parse(this.data) as [
+    // [lane_id, message_nonce, sender, recipient, amount]
+    const [laneId, nonce, from, to, value] = JSON.parse(this.data) as [
       string,
       bigint,
-      string | Record<string, any>,
       string,
       string,
       number
@@ -188,7 +187,6 @@ export class EventHandler {
     event.startTimestamp = this.timestamp;
     event.senderId = sender;
     event.recipient = recipient;
-    event.token = typeof token === 'string' ? token : token.native.address;
     event.amount = value.toString();
     event.result = 0;
     event.endTimestamp = null;

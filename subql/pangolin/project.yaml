@@ -45,13 +45,13 @@ dataSources:
             method: Transfer
 
         - handler: handleEvent
-          kind: : substrate/EventHandler
+          kind: substrate/EventHandler
           filter:
             module: toPangolinParachainBacking
             method: TokenLocked
 
         - handler: handleEvent
-          kind: : substrate/EventHandler
+          kind: substrate/EventHandler
           filter:
             module: toPangolinParachainBacking
             method: TokenLockedConfirmed
