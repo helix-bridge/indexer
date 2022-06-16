@@ -17,22 +17,6 @@ types:
   Announcement: ProxyAnnouncement
   AuthorityId: '[u8;32]'
   AuthoritySignature: '[u8;64]'
-  BSCHeader:
-    parentHash: H256
-    uncleHash: H256
-    coinbase: EthereumAddress
-    stateRoot: H256
-    transactionsRoot: H256
-    receiptsRoot: H256
-    logBloom: Bloom
-    difficulty: U256
-    number: u64
-    gasLimit: U256
-    gasUsed: U256
-    timestamp: u64
-    extraData: Bytes
-    mixDigest: H256
-    nonce: Bytes
   BabeEpochConfiguration: 'Null'
   BalanceInfo: '{}'
   BalanceLock:
@@ -41,10 +25,6 @@ types:
     reasons: Reasons
   Bloom: '[u8; 256; Bloom]'
   BridgeMessageId: '(LaneId, MessageNonce)'
-  ChainProperties:
-    ss58Format: Option<u8>
-    tokenDecimals: Option<Vec<u32>>
-    tokenSymbol: Option<Vec<Text>>
   Common:
     amount: Balance
   DepositId: U256
