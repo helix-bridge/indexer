@@ -1,5 +1,6 @@
 import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
 import { HistoryRecord, DailyStatistics, Prisma, PrismaClient } from '@prisma/client';
+import { HistoryRecords } from '../graphql';
 
 @Injectable()
 export class AggregationService extends PrismaClient implements OnModuleInit {
@@ -43,7 +44,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
   ): Promise<HistoryRecord | null> {
     return this.historyRecord.findFirst({
       where: historyRecordWhereInput,
-      orderBy: { startTime: 'desc' },
+      orderBy: { nonce: 'desc' },
     });
   }
 
@@ -51,15 +52,17 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     skip?: number;
     take?: number;
     where?: Prisma.HistoryRecordWhereInput;
-  }): Promise<HistoryRecord[]> {
+  }): Promise<HistoryRecords> {
     const { skip, take, where } = params;
-
-    return this.historyRecord.findMany({
+    const records = await this.historyRecord.findMany({
       skip,
       take,
       where,
       orderBy: { startTime: 'desc' },
     });
+    const total = await this.historyRecord.count({ where });
+
+    return { total, records };
   }
 
   // daily statistics

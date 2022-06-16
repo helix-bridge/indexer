@@ -17,7 +17,7 @@ model HistoryRecord {
   toChain String
   bridge String
   laneId String
-  nonce String
+  nonce BigInt
   requestTxHash String
   responseTxHash String?
   sender String
@@ -28,6 +28,7 @@ model HistoryRecord {
   endTime Int?
   result Int
   fee String
+  feeToken String
 }
 
 model DailyStatistics {

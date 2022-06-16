@@ -14,7 +14,7 @@ export class Darwinia2crabService implements OnModuleInit {
 
   private readonly fetchHistoryDataInterval = 10000;
 
-  private readonly fetchDailyStatisticsInterval = 5000;
+  private readonly fetchDailyStatisticsInterval = 3600000;
 
   private readonly fetchHistoryDataFirst = 10;
 
@@ -45,6 +45,14 @@ export class Darwinia2crabService implements OnModuleInit {
 
   private get backingChain() {
     return this.isTest ? 'pangolin' : 'crab';
+  }
+
+  private get lockFeeToken() {
+    return this.isTest ? 'PRING' : 'RING';
+  }
+
+  private get burnFeeToken() {
+    return this.isTest ? 'PRING' : 'CRAB';
   }
 
   private get prefix() {
@@ -108,7 +116,7 @@ export class Darwinia2crabService implements OnModuleInit {
             toChain: `${this.backingChain}-dvm`,
             bridge: 'helix',
             laneId: node.laneId,
-            nonce: node.nonce,
+            nonce: global.BigInt(node.nonce),
             requestTxHash: node.requestTxHash,
             responseTxHash: node.responseTxHash,
             sender: node.senderId,
@@ -119,6 +127,7 @@ export class Darwinia2crabService implements OnModuleInit {
             endTime: getUnixTime(new Date(node.endTimestamp)) - timezone,
             result: node.result,
             fee: node.fee,
+            feeToken: this.lockFeeToken,
           });
 
           if (!this.needSyncLockConfirmed && node.result == 0) {
@@ -143,7 +152,7 @@ export class Darwinia2crabService implements OnModuleInit {
     }
 
     try {
-      const unconfirmedRecords = await this.aggregationService.queryHistoryRecords({
+      const { records: unconfirmedRecords } = await this.aggregationService.queryHistoryRecords({
         take: this.fetchHistoryDataFirst,
         where: {
           fromChain: this.issuingChain,
@@ -228,7 +237,7 @@ export class Darwinia2crabService implements OnModuleInit {
             toChain: this.issuingChain,
             bridge: 'helix',
             laneId: node.lane_id,
-            nonce: node.nonce,
+            nonce: global.BigInt(node.nonce),
             requestTxHash: node.request_transaction,
             responseTxHash: node.response_transaction,
             sender: node.sender,
@@ -239,6 +248,7 @@ export class Darwinia2crabService implements OnModuleInit {
             endTime: Number(node.end_timestamp),
             result: node.result,
             fee: node.fee.toString(),
+            feeToken: this.burnFeeToken,
           });
 
           if (!this.needSyncBurnConfirmed && node.result == 0) {
@@ -262,7 +272,7 @@ export class Darwinia2crabService implements OnModuleInit {
     }
 
     try {
-      const unconfirmedRecords = await this.aggregationService.queryHistoryRecords({
+      const { records: unconfirmedRecords } = await this.aggregationService.queryHistoryRecords({
         take: this.fetchHistoryDataFirst,
         where: {
           fromChain: 'crab-dvm',
@@ -352,12 +362,12 @@ export class Darwinia2crabService implements OnModuleInit {
         }
 
         this.logger.log(
-          `save new ${this.backingChain} to ${this.issuingChain} daily statistics success, latestDay: ${latestDay}, added: ${nodes.length}`
+          `save new ${this.backingChain} DVM to ${this.issuingChain} daily statistics from issuing success, latestDay: ${latestDay}, added: ${nodes.length}`
         );
       }
     } catch (e) {
       this.logger.warn(
-        `fetch ${this.backingChain} to ${this.issuingChain} daily statistics records failed ${e}`
+        `fetch ${this.backingChain} DVM to ${this.issuingChain} daily statistics from issuing records failed ${e}`
       );
     }
   }
@@ -393,12 +403,12 @@ export class Darwinia2crabService implements OnModuleInit {
         }
 
         this.logger.log(
-          `save new ${this.issuingChain} to ${this.backingChain} daily statistics success, latestDay: ${latestDay}, added: ${nodes.length}`
+          `save new ${this.issuingChain} to ${this.backingChain} DVM daily statistics from backing success, latestDay: ${latestDay}, added: ${nodes.length}`
         );
       }
     } catch (e) {
       this.logger.warn(
-        `fetch ${this.issuingChain} to ${this.backingChain} daily statistics records failed ${e}`
+        `fetch ${this.issuingChain} to ${this.backingChain} DVM daily statistics from backing records failed ${e}`
       );
     }
   }

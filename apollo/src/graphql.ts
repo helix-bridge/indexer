@@ -1,3 +1,4 @@
+
 /*
  * -------------------------------------------------------
  * THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
@@ -15,9 +16,9 @@ export abstract class IQuery {
 
     abstract historyRecordById(id?: Nullable<string>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
 
-    abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<Nullable<HistoryRecord>[]> | Promise<Nullable<Nullable<HistoryRecord>[]>>;
-
     abstract queryDailyStatistics(timepast: number, first?: Nullable<number>, from?: Nullable<string>, to?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>): Nullable<Nullable<DailyStatistics>[]> | Promise<Nullable<Nullable<DailyStatistics>[]>>;
+
+    abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
 
     abstract burnRecords(first?: Nullable<number>, startTime?: Nullable<number>, sender?: Nullable<string>, recipient?: Nullable<string>): Nullable<Nullable<BurnRecordEntity>[]> | Promise<Nullable<Nullable<BurnRecordEntity>[]>>;
 
@@ -42,7 +43,7 @@ export class HistoryRecord {
     toChain: string;
     bridge: string;
     laneId: string;
-    nonce: string;
+    nonce: BigInt;
     requestTxHash: string;
     responseTxHash?: Nullable<string>;
     sender: string;
@@ -53,17 +54,22 @@ export class HistoryRecord {
     endTime?: Nullable<number>;
     result: number;
     fee: string;
+    feeToken: string;
 }
 
 export class DailyStatistics {
     fromChain: string;
     toChain: string;
-    Direction: string;
     bridge: string;
     timestamp: number;
     token: string;
     dailyVolume?: Nullable<BigInt>;
     dailyCount?: Nullable<BigInt>;
+}
+
+export class HistoryRecords {
+    total: number;
+    records?: Nullable<Nullable<HistoryRecord>[]>;
 }
 
 export class S2sEvent {
@@ -80,6 +86,7 @@ export class S2sEvent {
     startTimestamp: string;
     endTimestamp?: Nullable<string>;
     fee: string;
+    feeToken: string;
 }
 
 export class DailyStatistic {
@@ -102,6 +109,7 @@ export class BurnRecordEntity {
     end_timestamp?: Nullable<number>;
     result?: Nullable<number>;
     fee?: Nullable<number>;
+    feeToken: string;
 }
 
 export class DVMLockRecord {
@@ -129,9 +137,7 @@ export class UnlockRecord {
 export class S2sRecord {
     id: string;
     fromChain: string;
-    fromChainMode: string;
     toChain: string;
-    toChainMode: string;
     bridge: string;
     laneId: string;
     nonce: string;
@@ -145,6 +151,7 @@ export class S2sRecord {
     endTime?: Nullable<number>;
     result: number;
     fee: string;
+    feeToken: string;
 }
 
 export class BurnRecordEntity_filter {

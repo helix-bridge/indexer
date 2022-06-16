@@ -37,21 +37,24 @@ export class Substrate2substrateService {
     return this.isTest ? 'pangolin' : 'crab';
   }
 
+  private get lockFeeToken() {
+    return this.isTest ? 'PRING' : 'RING';
+  }
+
+  private get burnFeeToken() {
+    return this.isTest ? 'PRING' : 'CRAB';
+  }
+
   private toISOString(timestamp: number) {
     return new Date(timestamp * 1000).toISOString().slice(0, 19);
   }
 
-  /**
-   * TODO: remove fromChainMode, toChainMode
-   */
   private burnRecordToS2SRecord(burnRecord: BurnRecordEntity | null): S2sRecord {
     return (
       burnRecord && {
         id: burnRecord.id,
-        fromChain: this.backingChain,
-        fromChainMode: 'dvm',
+        fromChain: this.backingChain + '-dvm',
         toChain: this.issuingChain,
-        toChainMode: 'native',
         bridge: 'helix',
         laneId: burnRecord.lane_id,
         nonce: burnRecord.nonce,
@@ -65,6 +68,7 @@ export class Substrate2substrateService {
         endTime: burnRecord.end_timestamp,
         result: burnRecord.result,
         fee: burnRecord.fee.toString(),
+        feeToken: this.burnFeeToken,
       }
     );
   }
@@ -74,9 +78,7 @@ export class Substrate2substrateService {
       s2sEvent && {
         id: s2sEvent.id,
         fromChain: this.issuingChain,
-        fromChainMode: 'native',
-        toChain: this.backingChain,
-        toChainMode: 'dvm',
+        toChain: this.backingChain + '-dvm',
         bridge: 'helix',
         laneId: s2sEvent.laneId,
         nonce: s2sEvent.nonce,
@@ -90,6 +92,7 @@ export class Substrate2substrateService {
         endTime: getUnixTime(new Date(s2sEvent.endTimestamp)),
         result: s2sEvent.result,
         fee: s2sEvent.fee,
+        feeToken: this.lockFeeToken,
       }
     );
   }
