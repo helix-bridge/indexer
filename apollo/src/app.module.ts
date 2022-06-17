@@ -13,6 +13,7 @@ import { Crab2smartModule } from './crab2smart/crab2smart.module';
 import { Darwinia2crabModule } from './darwinia2crab/darwinia2crab.module';
 import { Substrate2substrateModule } from './substrate2substrate/substrate2substrate.module';
 import { TasksModule } from './tasks/tasks.module';
+import { Substrate2parachainModule } from './substrate2parachain/substrate2parachain.module';
 
 const chainEnvFilePath = `.env.${process.env.NODE_ENV || 'prod'}`;
 
@@ -40,6 +41,7 @@ export class BigIntScalar extends BigInt {}
     AggregationModule,
     Darwinia2crabModule,
     Crab2smartModule,
+    Substrate2parachainModule,
   ],
   controllers: [AppController],
   providers: [AppService, BigIntScalar],
