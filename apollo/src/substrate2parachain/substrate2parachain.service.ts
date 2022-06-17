@@ -45,8 +45,8 @@ export class Substrate2parachainService implements OnModuleInit {
         this.isSyncingHistory = true;
         await this.fetchS2sRecords(true);
         await this.fetchS2sRecords(false);
-        await this.checkConfirmedLockRecords(true);
-        await this.checkConfirmedLockRecords(false);
+        await this.checkConfirmedRecords(true);
+        await this.checkConfirmedRecords(false);
         this.isSyncingHistory = false;
       }
     );
@@ -120,7 +120,7 @@ export class Substrate2parachainService implements OnModuleInit {
     }
   }
 
-  async checkConfirmedLockRecords(isLock: boolean) {
+  async checkConfirmedRecords(isLock: boolean) {
     if (!this.needSyncLockConfirmed && isLock) {
       return;
     } else if (!this.needSyncBurnConfirmed && !isLock) {
@@ -168,7 +168,7 @@ export class Substrate2parachainService implements OnModuleInit {
       if (nodes && nodes.length > 0) {
         var updated = 0;
         for (const node of nodes) {
-          if (node.result == 0) {
+          if (node.result === 0) {
             continue;
           }
           updated += 1;
