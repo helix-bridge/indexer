@@ -183,11 +183,14 @@ export class Darwinia2crabService implements OnModuleInit {
       const nodes = res.data?.data?.s2sEvents?.nodes;
       const timezone = new Date().getTimezoneOffset() * 60;
 
-      if (nodes) {
+      if (nodes && nodes.length > 0) {
+        var newRecordUpdated = false;
         for (const node of nodes) {
           if (node.result == 0) {
             continue;
           }
+
+          newRecordUpdated = true;
 
           await this.aggregationService.updateHistoryRecord({
             where: {
@@ -200,9 +203,11 @@ export class Darwinia2crabService implements OnModuleInit {
             },
           });
         }
-        this.logger.log(
-          `update ${this.issuingChain} to ${this.backingChain} DVM lock records success, nonces: ${nonces}`
-        );
+        if (newRecordUpdated) {
+          this.logger.log(
+            `update ${this.issuingChain} to ${this.backingChain} DVM lock records success, nonces: ${nonces}`
+          );
+        }
       }
     } catch (e) {
       this.logger.warn(
@@ -303,10 +308,12 @@ export class Darwinia2crabService implements OnModuleInit {
       const nodes = res.data?.data?.burnRecordEntities;
 
       if (nodes && nodes.length > 0) {
+        var newRecordUpdated = false;
         for (const node of nodes) {
           if (node.result === 0) {
             continue;
           }
+          newRecordUpdated = true;
 
           await this.aggregationService.updateHistoryRecord({
             where: {
@@ -320,9 +327,11 @@ export class Darwinia2crabService implements OnModuleInit {
           });
         }
 
-        this.logger.log(
-          `update ${this.backingChain} DVM to ${this.issuingChain} burn records success, nonces: ${nonces}`
-        );
+        if (newRecordUpdated) {
+          this.logger.log(
+            `update ${this.backingChain} DVM to ${this.issuingChain} burn records success, nonces: ${nonces}`
+          );
+        }
       }
     } catch (e) {
       this.logger.warn(
