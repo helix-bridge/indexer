@@ -5,8 +5,11 @@ set -xe
 
 BIN_PATH=$(cd "$(dirname "$0")"; pwd -P)
 
+ENV_MODE=$1
+ENV_MODE=${ENV_MODE:-prod}
+
 npx prisma migrate dev --name init
 
 # node ${BIN_PATH}/index.js
-npm run start:prod
+npm run start:${ENV_MODE}
 

@@ -4,8 +4,7 @@ COPY . /opt/indexer
 
 RUN cd /opt/indexer/apollo && \
   npm i && \
-  npx prisma generate && \
-  npm run build
+  npx prisma generate
 
 WORKDIR /opt/indexer/apollo
 
