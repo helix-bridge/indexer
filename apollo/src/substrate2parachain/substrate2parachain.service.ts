@@ -25,8 +25,8 @@ export class Substrate2parachainService implements OnModuleInit {
 
   private isSyncingHistory = false;
 
-  private readonly chain = this.configService.get<string>('PARACHAIN')
-  private readonly lockFeeToken = this.configService.get<string>('PARACHAIN_LOCK_FEE_TOKEN')
+  private readonly chain = this.configService.get<string>('PARACHAIN');
+  private readonly lockFeeToken = this.configService.get<string>('PARACHAIN_LOCK_FEE_TOKEN');
 
   constructor(
     private configService: ConfigService,
@@ -52,15 +52,19 @@ export class Substrate2parachainService implements OnModuleInit {
     );
   }
 
-
   private fetchInfos(isLock: boolean) {
-    return isLock ?
-      [this.chain, this.chain + '-parachain', this.backingUrl, `${this.chain}-parachain-lock`] :
-      [this.chain + '-parachain', this.chain, this.issuingUrl, `${this.chain}-parachain-burn`] as const;
+    return isLock
+      ? [this.chain, this.chain + '-parachain', this.backingUrl, `${this.chain}-parachain-lock`]
+      : ([
+          this.chain + '-parachain',
+          this.chain,
+          this.issuingUrl,
+          `${this.chain}-parachain-burn`,
+        ] as const);
   }
 
   async fetchS2sRecords(isLock: boolean) {
-    const [fromChain, toChain, url, keyPrefix] = this.fetchInfos(isLock); 
+    const [fromChain, toChain, url, keyPrefix] = this.fetchInfos(isLock);
     try {
       const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
         fromChain,
@@ -101,11 +105,11 @@ export class Substrate2parachainService implements OnModuleInit {
           });
 
           if (node.result == 0) {
-              if (!this.needSyncLockConfirmed && isLock) {
-                  this.needSyncLockConfirmed = true;
-              } else if (!this.needSyncBurnConfirmed && !isLock) {
-                  this.needSyncBurnConfirmed = true;
-              }
+            if (!this.needSyncLockConfirmed && isLock) {
+              this.needSyncLockConfirmed = true;
+            } else if (!this.needSyncBurnConfirmed && !isLock) {
+              this.needSyncBurnConfirmed = true;
+            }
           }
         }
 
@@ -114,9 +118,7 @@ export class Substrate2parachainService implements OnModuleInit {
         );
       }
     } catch (e) {
-      this.logger.warn(
-        `fetch ${fromChain} to ${toChain} records failed ${e}`
-      );
+      this.logger.warn(`fetch ${fromChain} to ${toChain} records failed ${e}`);
     }
   }
 
@@ -127,7 +129,7 @@ export class Substrate2parachainService implements OnModuleInit {
       return;
     }
 
-    const [fromChain, toChain, url, keyPrefix] = this.fetchInfos(isLock); 
+    const [fromChain, toChain, url, keyPrefix] = this.fetchInfos(isLock);
 
     try {
       const { records: unconfirmedRecords } = await this.aggregationService.queryHistoryRecords({
@@ -166,7 +168,8 @@ export class Substrate2parachainService implements OnModuleInit {
       const timezone = new Date().getTimezoneOffset() * 60;
 
       if (nodes && nodes.length > 0) {
-        var updated = 0;
+        let updated = 0;
+
         for (const node of nodes) {
           if (node.result === 0) {
             continue;
@@ -191,9 +194,7 @@ export class Substrate2parachainService implements OnModuleInit {
         }
       }
     } catch (e) {
-      this.logger.warn(
-        `update ${fromChain} to ${toChain} records failed ${e}`
-      );
+      this.logger.warn(`update ${fromChain} to ${toChain} records failed ${e}`);
     }
   }
 }
