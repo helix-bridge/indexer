@@ -9,9 +9,8 @@ import { AccountModule } from './account/account.module';
 import { AggregationModule } from './aggregation/aggregation.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { Crab2smartModule } from './crab2smart/crab2smart.module';
-import { Darwinia2crabModule } from './darwinia2crab/darwinia2crab.module';
-import { Substrate2substrateModule } from './substrate2substrate/substrate2substrate.module';
+import { Substrate2dvmModule } from './substrate2dvm/substrate2dvm.module';
+import { Substrate2substrateDVMModule } from './substrate2substrateDVM/substrate2substrateDVM.module';
 import { TasksModule } from './tasks/tasks.module';
 import { Substrate2parachainModule } from './substrate2parachain/substrate2parachain.module';
 
@@ -30,7 +29,6 @@ export class BigIntScalar extends BigInt {}
         outputAs: 'class',
       },
     }),
-    Substrate2substrateModule,
     AccountModule,
     ConfigModule.forRoot({
       envFilePath: ['.env', chainEnvFilePath],
@@ -39,8 +37,8 @@ export class BigIntScalar extends BigInt {}
     ScheduleModule.forRoot(),
     TasksModule,
     AggregationModule,
-    Darwinia2crabModule,
-    Crab2smartModule,
+    Substrate2substrateDVMModule,
+    Substrate2dvmModule,
     Substrate2parachainModule,
   ],
   controllers: [AppController],

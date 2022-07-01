@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AggregationModule } from '../aggregation/aggregation.module';
 import { TasksModule } from '../tasks/tasks.module';
-import { Darwinia2crabService } from './darwinia2crab.service';
+import { Substrate2dvmService } from './substrate2dvm.service';
 
 @Module({
   imports: [AggregationModule, TasksModule],
-  providers: [Darwinia2crabService],
+  providers: [Substrate2dvmService],
 })
-export class Darwinia2crabModule {}
+export class Substrate2dvmModule {}

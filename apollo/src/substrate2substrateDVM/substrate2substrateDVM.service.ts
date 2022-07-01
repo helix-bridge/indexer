@@ -6,7 +6,7 @@ import { AggregationService } from '../aggregation/aggregation.service';
 import { TasksService } from '../tasks/tasks.service';
 
 @Injectable()
-export class Darwinia2crabService implements OnModuleInit {
+export class Substrate2substrateDVMService implements OnModuleInit {
   private readonly logger = new Logger(TasksService.name);
 
   // lock and mint
@@ -107,6 +107,7 @@ export class Darwinia2crabService implements OnModuleInit {
 
       const nodes = res.data?.data?.s2sEvents?.nodes;
       const timezone = new Date().getTimezoneOffset() * 60;
+      const token = this.isTest ? 'ORING' : 'RING';
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
@@ -121,7 +122,7 @@ export class Darwinia2crabService implements OnModuleInit {
             responseTxHash: node.responseTxHash,
             sender: node.senderId,
             recipient: node.recipient,
-            token: node.token,
+            token,
             amount: node.amount,
             startTime: getUnixTime(new Date(node.startTimestamp)) - timezone,
             endTime: getUnixTime(new Date(node.endTimestamp)) - timezone,
@@ -176,7 +177,7 @@ export class Darwinia2crabService implements OnModuleInit {
       const nonces = targetNonces.join(',');
 
       const res = await axios.post(this.issuingUrl, {
-        query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, token, senderId, recipient, fee}}}`,
+        query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) { nodes{id, responseTxHash, result, endTimestamp }}}`,
         variables: null,
       });
 
@@ -184,9 +185,10 @@ export class Darwinia2crabService implements OnModuleInit {
       const timezone = new Date().getTimezoneOffset() * 60;
 
       if (nodes && nodes.length > 0) {
-        var newRecordUpdated = false;
+        let newRecordUpdated = false;
+
         for (const node of nodes) {
-          if (node.result == 0) {
+          if (node.result === 0) {
             continue;
           }
 
@@ -203,6 +205,7 @@ export class Darwinia2crabService implements OnModuleInit {
             },
           });
         }
+
         if (newRecordUpdated) {
           this.logger.log(
             `update ${this.issuingChain} to ${this.backingChain} DVM lock records success, nonces: ${nonces}`
@@ -233,6 +236,7 @@ export class Darwinia2crabService implements OnModuleInit {
       });
 
       const nodes = res.data?.data?.burnRecordEntities;
+      const token = this.isTest ? 'xORING' : 'xRING';
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
@@ -247,7 +251,7 @@ export class Darwinia2crabService implements OnModuleInit {
             responseTxHash: node.response_transaction,
             sender: node.sender,
             recipient: node.recipient,
-            token: node.token,
+            token,
             amount: node.amount,
             startTime: Number(node.start_timestamp),
             endTime: Number(node.end_timestamp),
@@ -308,7 +312,8 @@ export class Darwinia2crabService implements OnModuleInit {
       const nodes = res.data?.data?.burnRecordEntities;
 
       if (nodes && nodes.length > 0) {
-        var newRecordUpdated = false;
+        let newRecordUpdated = false;
+
         for (const node of nodes) {
           if (node.result === 0) {
             continue;

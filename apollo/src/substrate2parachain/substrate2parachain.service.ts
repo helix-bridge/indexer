@@ -27,6 +27,7 @@ export class Substrate2parachainService implements OnModuleInit {
 
   private readonly chain = this.configService.get<string>('PARACHAIN');
   private readonly lockFeeToken = this.configService.get<string>('PARACHAIN_LOCK_FEE_TOKEN');
+  private readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
 
   constructor(
     private configService: ConfigService,
@@ -81,6 +82,7 @@ export class Substrate2parachainService implements OnModuleInit {
 
       const nodes = res.data?.data?.s2sEvents?.nodes;
       const timezone = new Date().getTimezoneOffset() * 60;
+      const token = this.isTest ? 'PRING' : 'CRAB';
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
@@ -95,7 +97,7 @@ export class Substrate2parachainService implements OnModuleInit {
             responseTxHash: node.responseTxHash,
             sender: node.senderId,
             recipient: node.recipient,
-            token: 'PRING',
+            token,
             amount: node.amount,
             startTime: getUnixTime(new Date(node.startTimestamp)) - timezone,
             endTime: getUnixTime(new Date(node.endTimestamp)) - timezone,
@@ -160,7 +162,7 @@ export class Substrate2parachainService implements OnModuleInit {
       const nonces = targetNonces.join(',');
 
       const res = await axios.post(url, {
-        query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, senderId, recipient, fee}}}`,
+        query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) { nodes {id, endTimestamp, responseTxHash, result }}}`,
         variables: null,
       });
 
