@@ -2,11 +2,15 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { getUnixTime } from 'date-fns';
+import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
+import { RecordsService } from '../model/RecordsService';
 import { TasksService } from '../tasks/tasks.service';
 
 @Injectable()
-export class Substrate2substrateDVMService implements OnModuleInit {
+export class Substrate2substrateDVMService extends RecordsService implements OnModuleInit {
+  private readonly subql = this.configService.get<string>('SUBQL');
+
   private readonly logger = new Logger(TasksService.name);
 
   // lock and mint
@@ -20,10 +24,14 @@ export class Substrate2substrateDVMService implements OnModuleInit {
 
   private readonly fetchDailyStatisticsFirst = 10;
 
+  private needSyncLock = true;
+
   private needSyncLockConfirmed = true;
 
   // burn and redeem
   private readonly backingUrl = this.configService.get<string>('SUBSTRATE_SUBSTRATE_BACKING');
+
+  private needSyncBurn = true;
 
   private needSyncBurnConfirmed = true;
 
@@ -37,7 +45,9 @@ export class Substrate2substrateDVMService implements OnModuleInit {
     private configService: ConfigService,
     private aggregationService: AggregationService,
     private taskService: TasksService
-  ) {}
+  ) {
+    super();
+  }
 
   private get issuingChain() {
     return this.isTest ? 'pangoro' : 'darwinia';
@@ -69,8 +79,10 @@ export class Substrate2substrateDVMService implements OnModuleInit {
         }
         this.isSyncingHistory = true;
         await this.fetchLockRecords();
+        await this.checkLockRecords();
         await this.checkConfirmedLockRecords();
         await this.fetchBurnRecords();
+        await this.checkBurnRecords();
         await this.checkConfirmedBurnRecords();
         this.isSyncingHistory = false;
       }
@@ -129,9 +141,11 @@ export class Substrate2substrateDVMService implements OnModuleInit {
             result: node.result,
             fee: node.fee,
             feeToken: this.lockFeeToken,
+            targetTxHash: '',
+            bridgeDispatchMethod: '',
           });
 
-          if (!this.needSyncLockConfirmed && node.result == 0) {
+          if (!this.needSyncLockConfirmed && node.result === 0) {
             this.needSyncLockConfirmed = true;
           }
         }
@@ -258,6 +272,8 @@ export class Substrate2substrateDVMService implements OnModuleInit {
             result: node.result,
             fee: node.fee.toString(),
             feeToken: this.burnFeeToken,
+            targetTxHash: '',
+            bridgeDispatchMethod: '',
           });
 
           if (!this.needSyncBurnConfirmed && node.result == 0) {
@@ -284,8 +300,8 @@ export class Substrate2substrateDVMService implements OnModuleInit {
       const { records: unconfirmedRecords } = await this.aggregationService.queryHistoryRecords({
         take: this.fetchHistoryDataFirst,
         where: {
-          fromChain: 'crab-dvm',
-          toChain: 'darwinia',
+          fromChain: this.backingChain + '-dvm',
+          toChain: this.issuingChain,
           bridge: 'helix',
           result: 0,
         },
@@ -341,6 +357,130 @@ export class Substrate2substrateDVMService implements OnModuleInit {
     } catch (e) {
       this.logger.warn(
         `update ${this.backingChain} DVM to ${this.issuingChain} burn records failed ${e}`
+      );
+    }
+  }
+
+  async checkLockRecords(): Promise<void> {
+    if (!this.needSyncLock) {
+      return;
+    }
+
+    try {
+      const { records: uncheckedRecords } = await this.aggregationService.queryHistoryRecords({
+        take: this.fetchHistoryDataFirst,
+        where: {
+          fromChain: this.issuingChain,
+          toChain: `${this.backingChain}-dvm`,
+          bridge: 'helix',
+          targetTxHash: '',
+        },
+      });
+
+      if (uncheckedRecords.length === 0) {
+        this.needSyncLock = false;
+        return;
+      }
+
+      const ids = uncheckedRecords.map((item) => `"${last(item.id.split('-'))}"`).join(',');
+
+      const res = await axios.post(this.subql + this.backingChain, {
+        query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block }}}`,
+        variables: null,
+      });
+
+      const nodes = res.data?.data?.bridgeDispatchEvent?.nodes;
+
+      if (nodes && nodes.length > 0) {
+        let updated = 0;
+
+        for (const node of nodes) {
+          updated += 1;
+
+          await this.aggregationService.updateHistoryRecord({
+            where: {
+              id: `${this.prefix}-lock-${node.id}`,
+            },
+            data: {
+              targetTxHash: node.block.extrinsicHash,
+              bridgeDispatchMethod: node.method,
+            },
+          });
+        }
+
+        if (updated > 0) {
+          this.logger.log(
+            `update ${this.issuingChain} to ${
+              this.backingChain
+            } DVM dispatch records success, nonces: ${nodes.map((item) => item.id)}`
+          );
+        }
+      }
+    } catch (e) {
+      this.logger.warn(
+        `update ${this.issuingChain} to ${this.backingChain} DVM dispatch records failed ${e}`
+      );
+    }
+  }
+
+  async checkBurnRecords(): Promise<void> {
+    if (!this.needSyncBurn) {
+      return;
+    }
+
+    try {
+      const { records: uncheckedRecords } = await this.aggregationService.queryHistoryRecords({
+        take: this.fetchHistoryDataFirst,
+        where: {
+          fromChain: this.backingChain + '-dvm',
+          toChain: this.issuingChain,
+          bridge: 'helix',
+          targetTxHash: '',
+        },
+      });
+
+      if (uncheckedRecords.length <= 1) {
+        this.needSyncBurn = false;
+        return;
+      }
+
+      const ids = uncheckedRecords.map((item) => `"${last(item.id.split('-'))}"`).join(',');
+
+      const res = await axios.post(this.subql + this.issuingChain, {
+        query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block }}}`,
+        variables: null,
+      });
+
+      const nodes = res.data?.data?.burnRecordEntities;
+
+      if (nodes && nodes.length > 0) {
+        let updated = 0;
+
+        for (const node of nodes) {
+          updated += 1;
+
+          await this.aggregationService.updateHistoryRecord({
+            where: {
+              id: `${this.prefix}-burn-${node.id}`,
+            },
+            data: {
+              targetTxHash: node.block.extrinsicHash,
+              bridgeDispatchMethod: node.method,
+            },
+          });
+        }
+
+        if (updated > 0) {
+          this.logger.log(
+            `update ${this.backingChain} DVM to ${
+              this.issuingChain
+            } dispatch records success, ids: ${nodes.map((item) => item.id)}`
+          );
+        }
+      }
+    } catch (e) {
+      this.logger.warn(
+        `update ${this.backingChain} DVM to ${this.issuingChain} dispatch records failed ${e}`
       );
     }
   }

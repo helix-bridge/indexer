@@ -2,14 +2,16 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { getUnixTime } from 'date-fns';
+import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
+import { RecordsService } from '../model/RecordsService';
 import { TasksService } from '../tasks/tasks.service';
 
 // pangolin -> pangolin parachain
 // crab -> crab parachain
 // darwinia -> darwinia parachain
 @Injectable()
-export class Substrate2parachainService implements OnModuleInit {
+export class Substrate2parachainService extends RecordsService implements OnModuleInit {
   private readonly logger = new Logger(TasksService.name);
 
   private readonly backingUrl = this.configService.get<string>('SUBSTRATE_TO_PARACHAIN_BACKING');
@@ -20,8 +22,10 @@ export class Substrate2parachainService implements OnModuleInit {
   private readonly fetchHistoryDataFirst = 10;
 
   private needSyncLockConfirmed = true;
+  private needSyncLock = true;
 
   private needSyncBurnConfirmed = true;
+  private needSyncBurn = true;
 
   private isSyncingHistory = false;
 
@@ -33,7 +37,9 @@ export class Substrate2parachainService implements OnModuleInit {
     private configService: ConfigService,
     private aggregationService: AggregationService,
     private taskService: TasksService
-  ) {}
+  ) {
+    super();
+  }
 
   async onModuleInit() {
     this.taskService.addInterval(
@@ -43,11 +49,14 @@ export class Substrate2parachainService implements OnModuleInit {
         if (this.isSyncingHistory) {
           return;
         }
+
         this.isSyncingHistory = true;
-        await this.fetchS2sRecords(true);
-        await this.fetchS2sRecords(false);
-        await this.checkConfirmedRecords(true);
-        await this.checkConfirmedRecords(false);
+        await this.fetchLockRecords();
+        await this.fetchBurnRecords();
+        await this.checkLockRecords();
+        await this.checkBurnRecords();
+        await this.checkConfirmedLockRecords();
+        await this.checkConfirmedBurnRecords();
         this.isSyncingHistory = false;
       }
     );
@@ -64,8 +73,9 @@ export class Substrate2parachainService implements OnModuleInit {
         ] as const);
   }
 
-  async fetchS2sRecords(isLock: boolean) {
+  private async fetchS2sRecords(isLock: boolean) {
     const [fromChain, toChain, url, keyPrefix] = this.fetchInfos(isLock);
+
     try {
       const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
         fromChain,
@@ -104,9 +114,11 @@ export class Substrate2parachainService implements OnModuleInit {
             result: node.result,
             fee: node.fee,
             feeToken: this.lockFeeToken,
+            targetTxHash: '',
+            bridgeDispatchMethod: '',
           });
 
-          if (node.result == 0) {
+          if (node.result === 0) {
             if (!this.needSyncLockConfirmed && isLock) {
               this.needSyncLockConfirmed = true;
             } else if (!this.needSyncBurnConfirmed && !isLock) {
@@ -124,7 +136,7 @@ export class Substrate2parachainService implements OnModuleInit {
     }
   }
 
-  async checkConfirmedRecords(isLock: boolean) {
+  private async checkConfirmedRecords(isLock: boolean) {
     if (!this.needSyncLockConfirmed && isLock) {
       return;
     } else if (!this.needSyncBurnConfirmed && !isLock) {
@@ -198,5 +210,101 @@ export class Substrate2parachainService implements OnModuleInit {
     } catch (e) {
       this.logger.warn(`update ${fromChain} to ${toChain} records failed ${e}`);
     }
+  }
+
+  private async checkRecords(isLock: boolean) {
+    if (!this.needSyncLock && isLock) {
+      return;
+    } else if (!this.needSyncBurn && !isLock) {
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [fromChain, toChain, _url, keyPrefix] = this.fetchInfos(isLock);
+
+    try {
+      const { records: uncheckedRecords } = await this.aggregationService.queryHistoryRecords({
+        take: this.fetchHistoryDataFirst,
+        where: {
+          fromChain,
+          toChain,
+          bridge: 'helix',
+          targetTxHash: '',
+        },
+      });
+
+      if (uncheckedRecords.length === 0) {
+        if (isLock) {
+          this.needSyncLock = false;
+        } else {
+          this.needSyncBurn = false;
+        }
+
+        return;
+      }
+
+      const ids = uncheckedRecords.map((item) => `"${last(item.id.split('-'))}"`).join(',');
+
+      const res = await axios.post(isLock ? this.issuingUrl : this.backingUrl, {
+        query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block }}}`,
+        variables: null,
+      });
+
+      const nodes = res.data?.data?.bridgeDispatchEvents?.nodes;
+
+      if (nodes && nodes.length > 0) {
+        let updated = 0;
+
+        for (const node of nodes) {
+          updated += 1;
+
+          await this.aggregationService.updateHistoryRecord({
+            where: {
+              id: `${keyPrefix}-${node.id}`,
+            },
+            data: {
+              targetTxHash: node.block.extrinsicHash,
+              bridgeDispatchMethod: node.method,
+            },
+          });
+        }
+
+        if (updated > 0) {
+          this.logger.log(
+            `update ${
+              nodes.length
+            } ${fromChain} to ${toChain} dispatch records success, ids: ${nodes.map(
+              (item) => item.id
+            )}, ${updated}`
+          );
+        }
+      }
+    } catch (e) {
+      this.logger.warn(`update ${fromChain} to ${toChain} dispatch records failed ${e}`);
+    }
+  }
+
+  async fetchLockRecords() {
+    await this.fetchS2sRecords(true);
+  }
+
+  async fetchBurnRecords() {
+    await this.fetchS2sRecords(false);
+  }
+
+  async checkLockRecords() {
+    await this.checkRecords(true);
+  }
+
+  async checkBurnRecords(): Promise<void> {
+    await this.checkRecords(false);
+  }
+
+  async checkConfirmedLockRecords() {
+    await this.checkConfirmedRecords(true);
+  }
+
+  async checkConfirmedBurnRecords() {
+    await this.checkConfirmedRecords(false);
   }
 }

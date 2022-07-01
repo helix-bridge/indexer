@@ -4,9 +4,11 @@ type HistoryRecord {
   fromChain: String!
   toChain: String!
   bridge: String!
+  bridgeDispatchMethod: String
   laneId: String!
   nonce: BigInt!
   requestTxHash: String!
+  targetTxHash: String
   responseTxHash: String
   sender: String!
   recipient: String!

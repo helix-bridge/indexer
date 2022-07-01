@@ -92,6 +92,8 @@ export class Substrate2dvmService implements OnModuleInit {
             result: 1,
             fee: '0',
             feeToken: 'null',
+            targetTxHash: node.id,
+            bridgeDispatchMethod: '',
           });
           this.latestNonce = this.latestNonce + 1;
         }
