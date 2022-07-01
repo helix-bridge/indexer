@@ -6,7 +6,7 @@ import { AggregationService } from '../aggregation/aggregation.service';
 import { TasksService } from '../tasks/tasks.service';
 
 @Injectable()
-export class Darwinia2crabService implements OnModuleInit {
+export class Substrate2substrateDVMService implements OnModuleInit {
   private readonly logger = new Logger(TasksService.name);
 
   // lock and mint
@@ -177,7 +177,7 @@ export class Darwinia2crabService implements OnModuleInit {
       const nonces = targetNonces.join(',');
 
       const res = await axios.post(this.issuingUrl, {
-        query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, token, senderId, recipient, fee}}}`,
+        query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) { nodes{id, responseTxHash, result, endTimestamp }}}`,
         variables: null,
       });
 
@@ -188,7 +188,7 @@ export class Darwinia2crabService implements OnModuleInit {
         let newRecordUpdated = false;
 
         for (const node of nodes) {
-          if (node.result == 0) {
+          if (node.result === 0) {
             continue;
           }
 

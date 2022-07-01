@@ -6,7 +6,7 @@ import { AggregationService } from '../aggregation/aggregation.service';
 import { TasksService } from '../tasks/tasks.service';
 
 @Injectable()
-export class Crab2smartService implements OnModuleInit {
+export class Substrate2dvmService implements OnModuleInit {
   private readonly logger = new Logger(TasksService.name);
 
   private readonly endpoint = this.configService.get<string>('SUBSTRATE_DVM_ENDPOINT');

@@ -162,7 +162,7 @@ export class Substrate2parachainService implements OnModuleInit {
       const nonces = targetNonces.join(',');
 
       const res = await axios.post(url, {
-        query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, senderId, recipient, fee}}}`,
+        query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) { nodes {id, endTimestamp, responseTxHash, result }}}`,
         variables: null,
       });
 
