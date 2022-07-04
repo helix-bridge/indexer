@@ -1,60 +1,64 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import { getUnixTime } from 'date-fns';
 import { AggregationService } from '../aggregation/aggregation.service';
+import { RecordsService } from '../base/RecordsService';
+import { Transfer } from '../base/TransferService';
 import { TasksService } from '../tasks/tasks.service';
+import { TransferService } from './transfer.service';
 
 @Injectable()
-export class Substrate2dvmService implements OnModuleInit {
-  private readonly logger = new Logger(TasksService.name);
-
-  private readonly endpoint = this.configService.get<string>('SUBSTRATE_DVM_ENDPOINT');
-
-  private readonly fetchDataInterval = 10000;
-
-  private readonly fetchDataFirst = 10;
-
-  private readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
+export class Substrate2dvmService extends RecordsService implements OnModuleInit {
+  protected isSyncingHistory = new Array(this.transferService.transfers.length).fill(false);
 
   private latestNonce = -1;
 
-  private isSyncing = false;
+  // unused vars
+  protected needSyncLock = [];
+  protected needSyncLockConfirmed = [];
+  protected needSyncBurn = [];
+  protected needSyncBurnConfirmed = [];
 
   constructor(
-    private configService: ConfigService,
+    public configService: ConfigService,
+    public logger: Logger,
     private aggregationService: AggregationService,
-    private taskService: TasksService
-  ) {}
-
-  private get chain() {
-    return this.isTest ? 'pangolin' : 'crab';
+    private taskService: TasksService,
+    private transferService: TransferService
+  ) {
+    super();
   }
 
-  private get prefix() {
-    return `${this.chain}2${this.chain}dvm`;
+  protected genID(transfer: Transfer, identifier: string) {
+    return `${transfer.from.chain}2${transfer.to.chain}-${identifier}`;
   }
 
   async onModuleInit() {
-    this.taskService.addInterval(`${this.prefix}-fetch_data`, this.fetchDataInterval, async () => {
-      if (this.isSyncing) {
-        return;
+    this.taskService.addInterval(`substrate-dvm-fetch_history_data`, 10000, async () => {
+      const transfers = this.transferService.transfers;
+      const len = transfers.length;
+
+      for (let index = 0; index < len; index) {
+        if (this.isSyncingHistory[index]) {
+          continue;
+        }
+
+        this.isSyncingHistory[index] = true;
+        await this.fetchRecords(transfers[index]);
+        this.isSyncingHistory[index] = false;
       }
-      this.isSyncing = true;
-      await this.fetchRecords();
-      this.isSyncing = false;
     });
   }
 
-  async fetchRecords() {
-    try {
-      const chainDvm = this.chain + '-dvm';
+  async fetchRecords(transfer: Transfer) {
+    const { from, to } = transfer;
 
-      if (this.latestNonce == -1) {
+    try {
+      if (this.latestNonce === -1) {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
           OR: [
-            { fromChain: this.chain, toChain: chainDvm },
-            { fromChain: chainDvm, toChain: this.chain },
+            { fromChain: from.chain, toChain: to.chain },
+            { fromChain: to.chain, toChain: from.chain },
           ],
           bridge: 'helix',
         });
@@ -62,20 +66,18 @@ export class Substrate2dvmService implements OnModuleInit {
         this.latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { transfers (first: ${this.fetchDataFirst}, orderBy: TIMESTAMP_ASC, offset: ${this.latestNonce}) { totalCount nodes{id, senderId, recipientId, fromChain, toChain, amount, timestamp }}}`;
-      const res = await axios.post(this.endpoint, {
-        query: query,
-        variables: null,
-      });
-
-      const nodes = res.data?.data?.transfers?.nodes;
-      const timezone = new Date().getTimezoneOffset() * 60;
-      const token = this.isTest ? 'PRING' : 'CRAB';
+      const query = `query { transfers (first: 10, orderBy: TIMESTAMP_ASC, offset: ${this.latestNonce}) { totalCount nodes{id, senderId, recipientId, fromChain, toChain, amount, timestamp }}}`;
+      const nodes = await axios
+        .post(from.url, {
+          query: query,
+          variables: null,
+        })
+        .then((res) => res.data?.data?.transfers?.nodes);
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
           await this.aggregationService.createHistoryRecord({
-            id: `${this.prefix}-${node.id}`,
+            id: this.genID(transfer, node.id),
             fromChain: node.fromChain,
             toChain: node.toChain,
             bridge: 'helix',
@@ -85,26 +87,36 @@ export class Substrate2dvmService implements OnModuleInit {
             responseTxHash: node.id,
             sender: node.senderId,
             recipient: node.recipientId,
-            token,
+            token: from.token,
             amount: node.amount,
-            startTime: getUnixTime(new Date(node.timestamp)) - timezone,
-            endTime: getUnixTime(new Date(node.timestamp)) - timezone,
+            startTime: this.toUnixTime(node.timestamp),
+            endTime: this.toUnixTime(node.timestamp),
             result: 1,
             fee: '0',
             feeToken: 'null',
             targetTxHash: node.id,
             bridgeDispatchMethod: '',
           });
+
           this.latestNonce = this.latestNonce + 1;
         }
+
         this.logger.log(
-          `save new ${this.chain} to ${this.chain} DVM records success, latestNonce: ${this.latestNonce}, added: ${nodes.length}`
+          `save new ${from.chain} to ${to.chain} records success, latestNonce: ${this.latestNonce}, added: ${nodes.length}`
         );
       }
     } catch (e) {
       this.logger.warn(
-        `update ${this.chain} to ${this.chain} DVM records failed ${e} nonce is ${this.latestNonce}`
+        `update ${from.chain} to ${to.chain} records failed ${e} nonce is ${this.latestNonce}`
       );
     }
+  }
+
+  async checkRecords(): Promise<void> {
+    // does not need to check
+  }
+
+  async checkConfirmedRecords(): Promise<void> {
+    // does not need to check
   }
 }

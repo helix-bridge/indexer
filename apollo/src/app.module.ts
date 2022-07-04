@@ -10,9 +10,9 @@ import { AggregationModule } from './aggregation/aggregation.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Substrate2dvmModule } from './substrate2dvm/substrate2dvm.module';
+import { Substrate2parachainModule } from './substrate2parachain/substrate2parachain.module';
 import { Substrate2substrateDVMModule } from './substrate2substrateDVM/substrate2substrateDVM.module';
 import { TasksModule } from './tasks/tasks.module';
-import { Substrate2parachainModule } from './substrate2parachain/substrate2parachain.module';
 
 const chainEnvFilePath = `.env.${process.env.NODE_ENV || 'prod'}`;
 
