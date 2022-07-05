@@ -26,7 +26,7 @@ export class HistoryRecord {
     fromChain: string;
     toChain: string;
     bridge: string;
-    bridgeDispatchMethod?: Nullable<string>;
+    bridgeDispatchError?: Nullable<string>;
     laneId: string;
     nonce: BigInt;
     requestTxHash: string;

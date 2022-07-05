@@ -5,6 +5,7 @@ import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
 import { RecordsService } from '../base/RecordsService';
 import { Transfer, TransferAction } from '../base/TransferService';
+import { SubqlRecord } from '../interface/record';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 
@@ -13,6 +14,8 @@ import { TransferService } from './transfer.service';
 // darwinia -> darwinia parachain
 @Injectable()
 export class Substrate2parachainService extends RecordsService implements OnModuleInit {
+  private readonly logger = new Logger('Substrate<>Parachain');
+
   private readonly transfersCount = this.transferService.transfers.length;
 
   protected readonly needSyncLockConfirmed = new Array(this.transfersCount).fill(true);
@@ -29,7 +32,6 @@ export class Substrate2parachainService extends RecordsService implements OnModu
 
   constructor(
     public configService: ConfigService,
-    public logger: Logger,
     private aggregationService: AggregationService,
     private taskService: TasksService,
     private transferService: TransferService
@@ -38,39 +40,33 @@ export class Substrate2parachainService extends RecordsService implements OnModu
   }
 
   protected genID(transfer: Transfer, action: TransferAction, identifier: string): string {
-    return `${transfer.from.chain.split('-')[0]}-parachain-${action}-${identifier}`;
+    return `${transfer.backing.chain.split('-')[0]}-parachain-${action}-${identifier}`;
   }
 
   async onModuleInit() {
-    this.taskService.addInterval(
-      `substrate-parachain-fetch_history_data`,
-      this.fetchHistoryDataInterval,
-      async () => {
-        const transfers = this.transferService.transfers;
-        const len = transfers.length;
-
-        for (let index = 0; index < len; index) {
+    this.transferService.transfers.forEach((item, index) => {
+      this.taskService.addInterval(
+        `${item.backing.chain}-parachain-fetch_history_data`,
+        this.fetchHistoryDataInterval,
+        async () => {
           if (this.isSyncingHistory[index]) {
-            continue;
+            return;
           }
-
-          const item = transfers[index];
-
           this.isSyncingHistory[index] = true;
           await this.fetchRecords(item, 'lock', index);
           await this.fetchRecords(item, 'burn', index);
-          await this.checkRecords(item, 'lock', index);
-          await this.checkRecords(item, 'burn', index);
-          await this.checkConfirmedRecords(item, 'lock', index);
-          await this.checkConfirmedRecords(item, 'burn', index);
+          await this.checkDispatched(item, 'lock', index);
+          await this.checkDispatched(item, 'burn', index);
+          await this.checkConfirmed(item, 'lock', index);
+          await this.checkConfirmed(item, 'burn', index);
           this.isSyncingHistory[index] = false;
         }
-      }
-    );
+      );
+    });
   }
 
   async fetchRecords(transfer: Transfer, action: TransferAction, index: number) {
-    let { from, to } = transfer;
+    let { backing: from, issuing: to } = transfer;
 
     if (action === 'burn') {
       [to, from] = [from, to];
@@ -115,107 +111,38 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             fee: node.fee,
             feeToken: this.lockFeeToken,
             targetTxHash: '',
-            bridgeDispatchMethod: '',
+            bridgeDispatchError: '',
           });
 
           if (node.result === 0) {
             if (!this.needSyncLockConfirmed[index] && isLock) {
               this.needSyncLockConfirmed[index] = true;
+              this.needSyncLock[index] = true;
             } else if (!this.needSyncBurnConfirmed && !isLock) {
               this.needSyncBurnConfirmed[index] = true;
+              this.needSyncBurn[index] = true;
             }
           }
         }
 
         this.logger.log(
-          `save new ${from.chain} to ${to.chain} records success, latestNonce: ${latestNonce}, added: ${nodes.length}`
+          this.fetchRecordsLog(action, from.chain, to.chain, { latestNonce, added: nodes.length })
         );
       }
-    } catch (e) {
-      this.logger.warn(`fetch ${from.chain} to ${to.chain} records failed ${e}`);
+    } catch (error) {
+      this.logger.warn(this.fetchRecordsLog(action, from.chain, to.chain, { error }));
     }
   }
 
-  async checkConfirmedRecords(transfer: Transfer, action: TransferAction, index: number) {
-    if (!this.needSyncLockConfirmed[index] && action === 'lock') {
-      return;
-    } else if (!this.needSyncBurnConfirmed[index] && action === 'burn') {
-      return;
-    }
-
-    let { from, to } = transfer;
-
-    if (action === 'burn') {
-      [to, from] = [from, to];
-    }
-
-    try {
-      const { records: unconfirmedRecords } = await this.aggregationService.queryHistoryRecords({
-        take: this.fetchHistoryDataFirst,
-        where: {
-          fromChain: from.chain,
-          toChain: to.chain,
-          bridge: 'helix',
-          result: 0,
-        },
-      });
-
-      if (unconfirmedRecords.length == 0) {
-        if (action === 'lock') {
-          this.needSyncLockConfirmed[index] = false;
-        } else {
-          this.needSyncBurnConfirmed[index] = false;
-        }
-
-        return;
-      }
-
-      const nonces = unconfirmedRecords.map((record) => `"${record.nonce}"`).join(',');
-
-      const nodes = await axios
-        .post(from.url, {
-          query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) { nodes {id, endTimestamp, responseTxHash, result }}}`,
-          variables: null,
-        })
-        .then((res) => res.data?.data?.s2sEvents?.nodes);
-
-      if (nodes && nodes.length > 0) {
-        let updated = 0;
-
-        for (const node of nodes) {
-          if (node.result === 0) {
-            continue;
-          }
-          updated += 1;
-
-          await this.aggregationService.updateHistoryRecord({
-            where: { id: this.genID(transfer, action, node.id) },
-            data: {
-              responseTxHash: node.responseTxHash,
-              endTime: this.toUnixTime(node.endTimestamp),
-              result: node.result,
-            },
-          });
-        }
-        if (updated > 0) {
-          this.logger.log(
-            `update ${from.chain} to ${to.chain} records success, nonces: ${nonces}, ${updated}`
-          );
-        }
-      }
-    } catch (e) {
-      this.logger.warn(`update ${from.chain} to ${to.chain} records failed ${e}`);
-    }
-  }
-
-  async checkRecords(transfer: Transfer, action: TransferAction, index: number) {
-    if (!this.needSyncLock[index] && action === 'lock') {
-      return;
-    } else if (!this.needSyncBurn[index] && action === 'burn') {
+  async checkDispatched(transfer: Transfer, action: TransferAction, index: number) {
+    if (
+      (action === 'lock' && !this.needSyncLock[index]) ||
+      (action === 'burn' && !this.needSyncBurn[index])
+    ) {
       return;
     }
 
-    let { from, to } = transfer;
+    let { backing: from, issuing: to } = transfer;
 
     if (action === 'burn') {
       [to, from] = [from, to];
@@ -245,37 +172,99 @@ export class Substrate2parachainService extends RecordsService implements OnModu
       const ids = uncheckedRecords.map((item) => `"${last(item.id.split('-'))}"`).join(',');
 
       const nodes = await axios
-        .post(from.url, {
+        .post(to.url, {
           query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block }}}`,
           variables: null,
         })
         .then((res) => res.data?.data?.bridgeDispatchEvents?.nodes);
 
       if (nodes && nodes.length > 0) {
-        let updated = 0;
-
         for (const node of nodes) {
-          updated += 1;
-
           await this.aggregationService.updateHistoryRecord({
             where: { id: this.genID(transfer, action, node.id) },
             data: {
               targetTxHash: node.block.extrinsicHash,
-              bridgeDispatchMethod: node.method,
+              bridgeDispatchError: node.method,
             },
           });
         }
 
-        if (updated > 0) {
-          this.logger.log(
-            `update ${nodes.length} ${from.chain} to ${
-              to.chain
-            } dispatch records success, ids: ${nodes.map((item) => item.id)}, ${updated}`
-          );
-        }
+        this.logger.log(
+          this.checkRecordsLog(action, from.chain, to.chain, {
+            ids: nodes.map((item) => item.id),
+            updated: nodes.length,
+          })
+        );
       }
-    } catch (e) {
-      this.logger.warn(`update ${from.chain} to ${to.chain} dispatch records failed ${e}`);
+    } catch (error) {
+      this.logger.warn(this.checkRecordsLog(action, from.chain, to.chain, { error }));
+    }
+  }
+
+  async checkConfirmed(transfer: Transfer, action: TransferAction, index: number) {
+    if (!this.needSyncLockConfirmed[index] && action === 'lock') {
+      return;
+    } else if (!this.needSyncBurnConfirmed[index] && action === 'burn') {
+      return;
+    }
+
+    let { backing: from, issuing: to } = transfer;
+
+    if (action === 'burn') {
+      [to, from] = [from, to];
+    }
+
+    try {
+      const { records: unconfirmedRecords } = await this.aggregationService.queryHistoryRecords({
+        take: this.fetchHistoryDataFirst,
+        where: {
+          fromChain: from.chain,
+          toChain: to.chain,
+          bridge: 'helix',
+          result: 0,
+        },
+      });
+
+      if (unconfirmedRecords.length == 0) {
+        if (action === 'lock') {
+          this.needSyncLockConfirmed[index] = false;
+        } else {
+          this.needSyncBurnConfirmed[index] = false;
+        }
+
+        return;
+      }
+
+      const nonces = unconfirmedRecords.map((record) => `"${record.nonce}"`).join(',');
+
+      const nodes = await axios
+        .post<{ data: { s2sEvents: { nodes: SubqlRecord[] } } }>(from.url, {
+          query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) { nodes {id, endTimestamp, responseTxHash, result }}}`,
+          variables: null,
+        })
+        .then((res) => res.data?.data?.s2sEvents?.nodes.filter((item) => item.result > 0));
+
+      if (nodes && nodes.length > 0) {
+        for (const node of nodes) {
+          await this.aggregationService.updateHistoryRecord({
+            where: { id: this.genID(transfer, action, node.id) },
+            data: {
+              responseTxHash: node.responseTxHash,
+              endTime: this.toUnixTime(node.endTimestamp),
+              result: node.result,
+            },
+          });
+        }
+
+        this.logger.log(
+          this.checkConfirmRecordsLog(action, from.chain, to.chain, {
+            nonces,
+            updated: nodes.length,
+          })
+        );
+      }
+    } catch (error) {
+      this.logger.warn(this.checkConfirmRecordsLog(action, from.chain, to.chain, { error }));
     }
   }
 }

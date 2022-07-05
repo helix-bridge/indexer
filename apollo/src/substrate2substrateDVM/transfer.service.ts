@@ -9,15 +9,15 @@ export class TransferService extends BaseTransferService {
 
   formalChainTransfers: Transfer[] = [
     {
-      from: { chain: 'darwinia', url: this.issuingUrl, token: 'RING', feeToken: 'RING' },
-      to: { chain: 'crab-dvm', url: this.backingUrl, token: 'xRING', feeToken: 'RING' },
+      backing: { chain: 'darwinia', url: this.backingUrl, token: 'RING', feeToken: 'RING' },
+      issuing: { chain: 'crab-dvm', url: this.issuingUrl, token: 'xRING', feeToken: 'RING' },
     },
   ];
 
   testChainTransfers: Transfer[] = [
     {
-      from: { chain: 'pangoro', url: this.issuingUrl, token: 'ORING', feeToken: 'PRING' },
-      to: { chain: 'pangolin-dvm', url: this.backingUrl, token: 'xORING', feeToken: 'PRING' },
+      backing: { chain: 'pangoro', url: this.backingUrl, token: 'ORING', feeToken: 'PRING' },
+      issuing: { chain: 'pangolin-dvm', url: this.issuingUrl, token: 'xORING', feeToken: 'PRING' },
     },
   ];
 

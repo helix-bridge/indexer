@@ -11,15 +11,20 @@ export class TransferService extends BaseTransferService {
 
   formalChainTransfers: Transfer[] = [
     {
-      from: { chain: 'crab', url: this.backingUrl, token: 'CRAB', feeToken: 'CRAB' },
-      to: { chain: 'crab-parachain', url: this.issuingUrl, token: 'CRAB', feeToken: 'CRAB' },
+      backing: { chain: 'crab', url: this.backingUrl, token: 'CRAB', feeToken: 'CRAB' },
+      issuing: { chain: 'crab-parachain', url: this.issuingUrl, token: 'CRAB', feeToken: 'CRAB' },
     },
   ];
 
   testChainTransfers: Transfer[] = [
     {
-      from: { chain: 'pangolin', url: this.backingUrl, token: 'PRING', feeToken: 'PRING' },
-      to: { chain: 'pangolin-parachain', url: this.issuingUrl, token: 'PRING', feeToken: 'PRING' },
+      backing: { chain: 'pangolin', url: this.backingUrl, token: 'PRING', feeToken: 'PRING' },
+      issuing: {
+        chain: 'pangolin-parachain',
+        url: this.issuingUrl,
+        token: 'PRING',
+        feeToken: 'PRING',
+      },
     },
   ];
 

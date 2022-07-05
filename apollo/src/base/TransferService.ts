@@ -8,8 +8,8 @@ export interface Partner {
 }
 
 export interface Transfer {
-  from: Partner;
-  to: Partner;
+  backing: Partner;
+  issuing: Partner;
 }
 
 export type TransferAction = 'lock' | 'burn';

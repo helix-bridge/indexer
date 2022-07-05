@@ -9,9 +9,11 @@ import { TransferService } from './transfer.service';
 
 @Injectable()
 export class Substrate2dvmService extends RecordsService implements OnModuleInit {
+  private readonly logger = new Logger('Substrate<>DVM');
+
   protected isSyncingHistory = new Array(this.transferService.transfers.length).fill(false);
 
-  private latestNonce = -1;
+  private readonly latestNonce = new Array(this.transferService.transfers.length).fill(-1);
 
   // unused vars
   protected needSyncLock = [];
@@ -21,7 +23,6 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
 
   constructor(
     public configService: ConfigService,
-    public logger: Logger,
     private aggregationService: AggregationService,
     private taskService: TasksService,
     private transferService: TransferService
@@ -30,31 +31,31 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
   }
 
   protected genID(transfer: Transfer, identifier: string) {
-    return `${transfer.from.chain}2${transfer.to.chain}-${identifier}`;
+    return `${transfer.backing.chain}2${transfer.issuing.chain}-${identifier}`;
   }
 
   async onModuleInit() {
-    this.taskService.addInterval(`substrate-dvm-fetch_history_data`, 10000, async () => {
-      const transfers = this.transferService.transfers;
-      const len = transfers.length;
-
-      for (let index = 0; index < len; index) {
-        if (this.isSyncingHistory[index]) {
-          continue;
+    this.transferService.transfers.forEach((item, index) => {
+      this.taskService.addInterval(
+        `${item.backing.chain}-dvm-fetch_history_data`,
+        10000,
+        async () => {
+          if (this.isSyncingHistory[index]) {
+            return;
+          }
+          this.isSyncingHistory[index] = true;
+          await this.fetchRecords(item, '', index);
+          this.isSyncingHistory[index] = false;
         }
-
-        this.isSyncingHistory[index] = true;
-        await this.fetchRecords(transfers[index]);
-        this.isSyncingHistory[index] = false;
-      }
+      );
     });
   }
 
-  async fetchRecords(transfer: Transfer) {
-    const { from, to } = transfer;
+  async fetchRecords(transfer: Transfer, _, index: number) {
+    const { backing: from, issuing: to } = transfer;
 
     try {
-      if (this.latestNonce === -1) {
+      if (this.latestNonce[index] === -1) {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
           OR: [
             { fromChain: from.chain, toChain: to.chain },
@@ -63,10 +64,10 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
           bridge: 'helix',
         });
 
-        this.latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
+        this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { transfers (first: 10, orderBy: TIMESTAMP_ASC, offset: ${this.latestNonce}) { totalCount nodes{id, senderId, recipientId, fromChain, toChain, amount, timestamp }}}`;
+      const query = `query { transfers (first: 10, orderBy: TIMESTAMP_ASC, offset: ${this.latestNonce[index]}) { totalCount nodes{id, senderId, recipientId, fromChain, toChain, amount, timestamp }}}`;
       const nodes = await axios
         .post(from.url, {
           query: query,
@@ -82,7 +83,7 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
             toChain: node.toChain,
             bridge: 'helix',
             laneId: '0',
-            nonce: this.latestNonce + 1,
+            nonce: this.latestNonce[index] + 1,
             requestTxHash: node.id,
             responseTxHash: node.id,
             sender: node.senderId,
@@ -95,28 +96,29 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
             fee: '0',
             feeToken: 'null',
             targetTxHash: node.id,
-            bridgeDispatchMethod: '',
+            bridgeDispatchError: '',
           });
 
-          this.latestNonce = this.latestNonce + 1;
+          this.latestNonce[index] += 1;
         }
 
         this.logger.log(
-          `save new ${from.chain} to ${to.chain} records success, latestNonce: ${this.latestNonce}, added: ${nodes.length}`
+          this.fetchRecordsLog('Smart', from.chain, to.chain, {
+            latestNonce: this.latestNonce[index],
+            added: nodes.length,
+          })
         );
       }
-    } catch (e) {
-      this.logger.warn(
-        `update ${from.chain} to ${to.chain} records failed ${e} nonce is ${this.latestNonce}`
-      );
+    } catch (error) {
+      this.logger.warn(this.fetchRecordsLog('Smart', from.chain, to.chain, { error }));
     }
   }
 
-  async checkRecords(): Promise<void> {
+  async checkDispatched(): Promise<void> {
     // does not need to check
   }
 
-  async checkConfirmedRecords(): Promise<void> {
+  async checkConfirmed(): Promise<void> {
     // does not need to check
   }
 }

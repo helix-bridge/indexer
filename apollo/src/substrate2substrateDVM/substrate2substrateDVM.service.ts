@@ -5,12 +5,14 @@ import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
 import { RecordsService } from '../base/RecordsService';
 import { Transfer, TransferAction } from '../base/TransferService';
+import { SubqlRecord, ThegraphRecord } from '../interface/record';
 import { TasksService } from '../tasks/tasks.service';
-import { Substrate2SubstrateDVMRecord, SubstrateDVM2SubstrateRecord } from './modal';
 import { TransferService } from './transfer.service';
 
 @Injectable()
 export class Substrate2substrateDVMService extends RecordsService implements OnModuleInit {
+  private readonly logger = new Logger('Substrate<>SubstrateDVM');
+
   private readonly subql = this.configService.get<string>('SUBQL');
 
   private readonly transfersCount = this.transferService.transfers.length;
@@ -29,7 +31,6 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
 
   constructor(
     public configService: ConfigService,
-    public logger: Logger,
     private aggregationService: AggregationService,
     private taskService: TasksService,
     private transferService: TransferService
@@ -38,100 +39,91 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
   }
 
   protected genID(transfer: Transfer, action: TransferAction, id: string) {
-    return `${transfer.from.chain}2${transfer.to.chain}-${action}-${id}`;
+    return `${transfer.backing.chain}2${transfer.issuing.chain}-${action}-${id}`;
   }
 
-  private lockRecordToHistory(record: Substrate2SubstrateDVMRecord, transfer: Transfer) {
+  private lockRecordToHistory(record: SubqlRecord, transfer: Transfer) {
     return {
-      ...record,
-      id: this.genID(transfer, 'lock', record.id),
-      fromChain: transfer.from.chain,
-      toChain: transfer.to.chain,
+      amount: record.amount,
       bridge: 'helix',
-      nonce: global.BigInt(record.nonce),
-      sender: record.senderId,
-      token: transfer.from.token,
-      startTime: this.toUnixTime(record.startTimestamp),
+      bridgeDispatchError: '',
       endTime: this.toUnixTime(record.endTimestamp),
-      feeToken: transfer.to.token,
+      fee: record.fee,
+      feeToken: transfer.issuing.token,
+      fromChain: transfer.backing.chain,
+      id: this.genID(transfer, 'lock', record.id),
+      laneId: record.laneId,
+      nonce: global.BigInt(record.nonce),
+      recipient: record.recipient,
+      requestTxHash: record.requestTxHash,
+      responseTxHash: record.responseTxHash,
+      result: record.result,
+      sender: record.senderId,
+      startTime: this.toUnixTime(record.startTimestamp),
       targetTxHash: '',
-      bridgeDispatchMethod: '',
+      toChain: transfer.issuing.chain,
+      token: transfer.backing.token,
     };
   }
 
-  private burnRecordToHistory(record: SubstrateDVM2SubstrateRecord, transfer: Transfer) {
+  private burnRecordToHistory(record: ThegraphRecord, transfer: Transfer) {
     return {
-      ...record,
-      id: this.genID(transfer, 'burn', record.id),
-      fromChain: transfer.to.chain,
-      toChain: transfer.from.chain,
+      amount: record.amount,
       bridge: 'helix',
-      laneId: record.lane_id,
-      nonce: global.BigInt(record.nonce),
-      requestTxHash: record.request_transaction,
-      responseTxHash: record.response_transaction,
-      token: transfer.to.token,
-      startTime: Number(record.start_timestamp),
+      bridgeDispatchError: '',
       endTime: Number(record.end_timestamp),
       fee: record.fee.toString(),
-      feeToken: transfer.to.feeToken,
+      feeToken: transfer.issuing.feeToken,
+      fromChain: transfer.issuing.chain,
+      id: this.genID(transfer, 'burn', record.id),
+      laneId: record.lane_id,
+      nonce: global.BigInt(record.nonce),
+      recipient: record.recipient,
+      requestTxHash: record.request_transaction,
+      responseTxHash: record.response_transaction,
+      result: record.result,
+      sender: record.sender,
+      startTime: Number(record.start_timestamp),
       targetTxHash: '',
-      bridgeDispatchMethod: '',
+      toChain: transfer.backing.chain,
+      token: transfer.issuing.token,
     };
   }
 
   async onModuleInit() {
-    this.taskService.addInterval(
-      `substrate-substrateDVM-fetch_history_data`,
-      this.fetchHistoryDataInterval,
-      async () => {
-        const transfers = this.transferService.transfers;
-        const len = transfers.length;
-
-        for (let index = 0; index < len; index) {
+    this.transferService.transfers.forEach((item, index) => {
+      const prefix = `${item.backing.chain}-${item.issuing.chain}`;
+      this.taskService.addInterval(
+        `${prefix}-fetch_history_data`,
+        this.fetchHistoryDataInterval,
+        async () => {
           if (this.isSyncingHistory[index]) {
-            continue;
+            return;
           }
-
-          const item = transfers[index];
-
           this.isSyncingHistory[index] = true;
           await this.fetchRecords(item, 'lock', index);
-          await this.checkRecords(item, 'lock', index);
-          await this.checkConfirmedRecords(item, 'lock', index);
+          await this.checkDispatched(item, 'lock', index);
+          await this.checkConfirmed(item, 'lock', index);
           await this.fetchRecords(item, 'burn', index);
-          await this.checkRecords(item, 'burn', index);
-          await this.checkConfirmedRecords(item, 'burn', index);
+          await this.checkDispatched(item, 'burn', index);
+          await this.checkConfirmed(item, 'burn', index);
           this.isSyncingHistory[index] = false;
         }
-      }
-    );
-
-    this.taskService.addInterval(
-      `substrate-substrateDVM-fetch_statistics_data`,
-      3600000,
-      async () => {
-        const transfers = this.transferService.transfers;
-        const len = transfers.length;
-
-        for (let index = 0; index < len; index) {
-          if (this.isSyncingStatistics[index]) {
-            continue;
-          }
-
-          const item = transfers[index];
-
-          this.isSyncingStatistics[index] = true;
-          await this.fetchDailyStatistics(item, 'lock');
-          await this.fetchDailyStatistics(item, 'burn');
-          this.isSyncingStatistics[index] = false;
+      );
+      this.taskService.addInterval(`${prefix}-fetch_statistics_data`, 60 * 60 * 1000, async () => {
+        if (this.isSyncingStatistics[index]) {
+          return;
         }
-      }
-    );
+        this.isSyncingStatistics[index] = true;
+        await this.fetchDailyStatistics(item, 'lock');
+        await this.fetchDailyStatistics(item, 'burn');
+        this.isSyncingStatistics[index] = false;
+      });
+    });
   }
 
   async fetchRecords(transfer: Transfer, action: TransferAction, index: number) {
-    let { from, to } = transfer;
+    let { backing: from, issuing: to } = transfer;
 
     if (action === 'burn') {
       [to, from] = [from, to];
@@ -157,10 +149,10 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
         })
         .then((res) =>
           action === 'lock'
-            ? (res.data?.data?.s2sEvents?.nodes as Substrate2SubstrateDVMRecord[]).map((record) =>
+            ? (res.data?.data?.s2sEvents?.nodes as SubqlRecord[]).map((record) =>
                 this.lockRecordToHistory(record, transfer)
               )
-            : (res.data?.data?.burnRecordEntities as SubstrateDVM2SubstrateRecord[]).map((record) =>
+            : (res.data?.data?.burnRecordEntities as ThegraphRecord[]).map((record) =>
                 this.burnRecordToHistory(record, transfer)
               )
         );
@@ -168,22 +160,30 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       if (records && records.length > 0) {
         for (const record of records) {
           await this.aggregationService.createHistoryRecord(record);
+        }
 
-          if (!this.needSyncLockConfirmed && record.result === 0) {
+        if (records.some((record) => record.result === 0)) {
+          if (action === 'lock' && !this.needSyncLockConfirmed[index]) {
             this.needSyncLockConfirmed[index] = true;
+            this.needSyncLock[index] = true;
+          }
+
+          if (action === 'burn' && !this.needSyncBurnConfirmed[index]) {
+            this.needSyncBurnConfirmed[index] = true;
+            this.needSyncBurn[index] = true;
           }
         }
 
         this.logger.log(
-          `save new ${from.chain} to ${to.chain} ${action} records success, latestNonce: ${latestNonce}, added: ${records.length}`
+          this.fetchRecordsLog(action, from.chain, to.chain, { latestNonce, added: records.length })
         );
       }
-    } catch (e) {
-      this.logger.warn(`fetch ${from.chain} to ${to.chain} ${action} records failed ${e}`);
+    } catch (error) {
+      this.logger.warn(this.fetchRecordsLog(action, from.chain, to.chain, { error }));
     }
   }
 
-  async checkRecords(transfer: Transfer, action: TransferAction, index: number) {
+  async checkDispatched(transfer: Transfer, action: TransferAction, index: number) {
     if (
       (action === 'lock' && !this.needSyncLock[index]) ||
       (action === 'burn' && !this.needSyncBurn[index])
@@ -191,7 +191,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       return;
     }
 
-    let { from, to } = transfer;
+    let { backing: from, issuing: to } = transfer;
 
     if (action === 'burn') {
       [to, from] = [from, to];
@@ -221,45 +221,39 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       const ids = uncheckedRecords.map((item) => `"${last(item.id.split('-'))}"`).join(',');
 
       const nodes = await axios
-        .post(this.subql + to.chain.split('-')[0], {
-          query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block }}}`,
-          variables: null,
-        })
-        .then((res) =>
-          action === 'lock'
-            ? res.data?.data?.bridgeDispatchEvent?.nodes
-            : res.data?.data?.burnRecordEntities
-        );
+        .post<{ data: { bridgeDispatchEvents: { nodes: any[] } } }>(
+          this.subql + to.chain.split('-')[0],
+          {
+            query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block }}}`,
+            variables: null,
+          }
+        )
+        .then((res) => res.data?.data?.bridgeDispatchEvents?.nodes);
 
       if (nodes && nodes.length > 0) {
-        let updated = 0;
-
         for (const node of nodes) {
-          updated += 1;
-
           await this.aggregationService.updateHistoryRecord({
             where: { id: this.genID(transfer, action, node.id) },
             data: {
               targetTxHash: node.block.extrinsicHash,
-              bridgeDispatchMethod: node.method,
+              bridgeDispatchError: node.method,
             },
           });
         }
 
-        if (updated > 0) {
-          this.logger.log(
-            `update ${from.chain} to ${to.chain} dispatch records success, ids: ${nodes.map(
-              (item) => item.id
-            )}`
-          );
-        }
+        this.logger.log(
+          this.checkRecordsLog(action, from.chain, to.chain, {
+            ids: nodes.map((item) => item.id).join(','),
+            updated: nodes.length,
+          })
+        );
       }
-    } catch (e) {
-      this.logger.warn(`update ${from.chain} to ${to.chain} dispatch records failed ${e}`);
+    } catch (error) {
+      this.logger.warn(this.checkRecordsLog(action, from.chain, to.chain, { error }));
     }
   }
 
-  async checkConfirmedRecords(transfer: Transfer, action: TransferAction, index: number) {
+  async checkConfirmed(transfer: Transfer, action: TransferAction, index: number) {
     if (
       (action === 'lock' && !this.needSyncLockConfirmed) ||
       (action === 'burn' && !this.needSyncBurnConfirmed)
@@ -267,7 +261,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       return;
     }
 
-    let { from, to } = transfer;
+    let { backing: from, issuing: to } = transfer;
 
     if (action === 'burn') {
       [to, from] = [from, to];
@@ -287,6 +281,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       if (action === 'lock' && unconfirmedRecords.length === 0) {
         this.needSyncLockConfirmed[index] = false;
         return;
+        // always has one pending record that can not revert
       } else if (action === 'burn' && unconfirmedRecords.length <= 1) {
         this.needSyncBurnConfirmed[index] = false;
         return;
@@ -305,33 +300,23 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
         })
         .then((res) =>
           action === 'lock'
-            ? (res.data?.data?.s2sEvents?.nodes as Substrate2SubstrateDVMRecord[]).map(
-                (record) => ({
-                  id: this.genID(transfer, action, record.id),
-                  responseTxHash: record.responseTxHash,
-                  endTime: this.toUnixTime(record.endTimestamp),
-                  result: record.result,
-                })
-              )
-            : (res.data?.data?.burnRecordEntities as SubstrateDVM2SubstrateRecord[]).map(
-                (record) => ({
-                  id: this.genID(transfer, action, record.id),
-                  responseTxHash: record.response_transaction,
-                  endTime: Number(record.end_timestamp),
-                  result: record.result,
-                })
-              )
-        );
+            ? (res.data?.data?.s2sEvents?.nodes as SubqlRecord[]).map((record) => ({
+                id: this.genID(transfer, action, record.id),
+                responseTxHash: record.responseTxHash,
+                endTime: this.toUnixTime(record.endTimestamp),
+                result: record.result,
+              }))
+            : (res.data?.data?.burnRecordEntities as ThegraphRecord[]).map((record) => ({
+                id: this.genID(transfer, action, record.id),
+                responseTxHash: record.response_transaction,
+                endTime: Number(record.end_timestamp),
+                result: record.result,
+              }))
+        )
+        .then((records) => records.filter((record) => record.result !== 0));
 
       if (records && records.length > 0) {
-        let newRecordUpdated = false;
-
         for (const record of records) {
-          if (record.result === 0) {
-            continue;
-          }
-
-          newRecordUpdated = true;
           const { id, ...data } = record;
 
           await this.aggregationService.updateHistoryRecord({
@@ -340,19 +325,17 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
           });
         }
 
-        if (newRecordUpdated) {
-          this.logger.log(
-            `update ${from.chain} to ${to.chain} ${action} records success, nonces: ${nonces}`
-          );
-        }
+        this.logger.log(
+          this.checkConfirmRecordsLog(action, from.chain, to.chain, { nonces: nonces.join(',') })
+        );
       }
-    } catch (e) {
-      this.logger.warn(`update ${from.chain} to ${to.chain} ${action} records failed ${e}`);
+    } catch (error) {
+      this.logger.warn(this.checkConfirmRecordsLog(action, from.chain, to.chain, { error }));
     }
   }
 
   async fetchDailyStatistics(transfer: Transfer, action: TransferAction) {
-    let { from, to } = transfer;
+    let { backing: from, issuing: to } = transfer;
 
     if (action === 'burn') {
       [to, from] = [from, to];
@@ -392,12 +375,12 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
         }
 
         this.logger.log(
-          `save new ${from.chain} to ${to.chain} daily statistics from issuing success, latestDay: ${latestDay}, added: ${nodes.length}`
+          `[Statistics] Save new ${from.chain} to ${to.chain} daily statistics from issuing success, latestDay: ${latestDay}, added: ${nodes.length}`
         );
       }
     } catch (e) {
       this.logger.warn(
-        `fetch ${from.chain} to ${to.chain} daily statistics from issuing records failed ${e}`
+        `[Statistics] Fetch ${from.chain} to ${to.chain} daily statistics from issuing records failed ${e}`
       );
     }
   }

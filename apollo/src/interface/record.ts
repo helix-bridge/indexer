@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-magic-numbers
 export type Result = 0 | 1 | 2; // 0 TokenLocked 1 TokenLockedConfirmed success 2 TokenLockedConfirmed fail
 
-export interface SubstrateDVM2SubstrateRecord {
+export interface ThegraphRecord {
   id: string;
   lane_id: string;
   nonce: string;
@@ -17,7 +17,7 @@ export interface SubstrateDVM2SubstrateRecord {
   fee: string;
 }
 
-export interface Substrate2SubstrateDVMRecord {
+export interface SubqlRecord {
   id: string;
   laneId: string;
   nonce: string;

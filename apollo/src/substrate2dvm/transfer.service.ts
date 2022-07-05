@@ -4,20 +4,19 @@ import { BaseTransferService, Transfer } from '../base/TransferService';
 
 @Injectable()
 export class TransferService extends BaseTransferService {
-  private readonly issuingUrl = this.configService.get<string>('SUBSTRATE_DVM_ENDPOINT');
-  private readonly backingUrl = this.configService.get<string>('SUBSTRATE_DVM_ENDPOINT');
+  private readonly endpoint = this.configService.get<string>('SUBSTRATE_DVM_ENDPOINT');
 
   formalChainTransfers: Transfer[] = [
     {
-      from: { chain: 'crab', url: this.issuingUrl, token: 'CRAB', feeToken: 'CRAB' },
-      to: { chain: 'crab-dvm', url: this.backingUrl, token: 'CRAB', feeToken: 'CRAB' },
+      backing: { chain: 'crab', url: this.endpoint, token: 'CRAB', feeToken: 'CRAB' },
+      issuing: { chain: 'crab-dvm', url: this.endpoint, token: 'CRAB', feeToken: 'CRAB' },
     },
   ];
 
   testChainTransfers: Transfer[] = [
     {
-      from: { chain: 'pangolin', url: this.issuingUrl, token: 'PRING', feeToken: 'PRING' },
-      to: { chain: 'pangolin-dvm', url: this.backingUrl, token: 'PRING', feeToken: 'PRING' },
+      backing: { chain: 'pangolin', url: this.endpoint, token: 'PRING', feeToken: 'PRING' },
+      issuing: { chain: 'pangolin-dvm', url: this.endpoint, token: 'PRING', feeToken: 'PRING' },
     },
   ];
 

@@ -1,4 +1,5 @@
 import { getUnixTime } from 'date-fns';
+import { upperFirst } from 'lodash';
 import { Transfer, TransferAction } from './TransferService';
 
 export abstract class RecordsService {
@@ -12,12 +13,12 @@ export abstract class RecordsService {
   protected fetchHistoryDataFirst = 10;
 
   abstract fetchRecords(transfer: Transfer, action: TransferAction, index: number): Promise<void>;
-  abstract checkRecords(transfer: Transfer, action: TransferAction, index: number): Promise<void>;
-  abstract checkConfirmedRecords(
+  abstract checkDispatched(
     transfer: Transfer,
     action: TransferAction,
     index: number
   ): Promise<void>;
+  abstract checkConfirmed(transfer: Transfer, action: TransferAction, index: number): Promise<void>;
 
   protected abstract genID(transfer: Transfer, action: TransferAction, identifier: string): string;
 
@@ -25,9 +26,58 @@ export abstract class RecordsService {
     const timezone = new Date().getTimezoneOffset() * 60;
     return getUnixTime(new Date(time)) - timezone;
   }
-}
 
-/**
- * 1. backingUrl, issuingUrl, fetchDataInterval, fetchDataFirst, needSyncLock, needSyncLockConfirmed, needSyncBurn, needSyncBurnConfirmed, isSyncingHistory, subql
- * 2. log, warn methods
- */
+  private parseInfo(obj: { [key: string]: number | string | bigint }) {
+    return Object.entries(obj)
+      .map(([key, value]) => `${upperFirst(key)}: ${value}`)
+      .join('; ');
+  }
+
+  fetchRecordsLog(
+    action: TransferAction | 'Smart',
+    fromChain: string,
+    toChain: string,
+    info: { error?: any; [key: string]: any }
+  ) {
+    const { error, ...rest } = info;
+    const flag = `[${upperFirst(action)}]`;
+
+    return !!error
+      ? `${flag} Save new ${fromChain} to ${toChain} ${action} records failed ${error}`
+      : `${flag} Save new ${fromChain} to ${toChain} ${action} records success. ${this.parseInfo(
+          rest
+        )}`;
+  }
+
+  checkRecordsLog(
+    action: TransferAction,
+    fromChain: string,
+    toChain: string,
+    info: { error?: any; [key: string]: any }
+  ) {
+    const { error, ...rest } = info;
+    const flag = `[${upperFirst(action)} Dispatch]`;
+
+    return error
+      ? `${flag} Update ${fromChain} to ${toChain} dispatch records failed ${error}`
+      : `${flag} Update ${fromChain} to ${toChain} dispatch records success. ${this.parseInfo(
+          rest
+        )}`;
+  }
+
+  checkConfirmRecordsLog(
+    action: TransferAction,
+    fromChain: string,
+    toChain: string,
+    info: { error?: any; [key: string]: any }
+  ) {
+    const { error, ...rest } = info;
+    const flag = `[${upperFirst(action)} Confirm]`;
+
+    return error
+      ? `${flag} Update ${fromChain} to ${toChain} ${action} records failed. ${error}`
+      : `${flag} Update ${fromChain} to ${toChain} ${action} records success. ${this.parseInfo(
+          rest
+        )}`;
+  }
+}
