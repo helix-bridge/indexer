@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
 import axios from 'axios';
 import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
@@ -93,6 +94,17 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       toChain: transfer.backing.chain,
       token: transfer.issuing.token,
     };
+  }
+
+  private queryUncheckedHistoryRecords(where: Prisma.HistoryRecordWhereInput) {
+    return this.aggregationService
+      .queryHistoryRecords({
+        take: this.fetchHistoryDataFirst,
+        where,
+      })
+      .then((result) =>
+        result.records.filter((item) => !this.requestTxHashOmitList.includes(item.requestTxHash))
+      );
   }
 
   async onModuleInit() {
@@ -203,17 +215,14 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
     }
 
     try {
-      const { records: uncheckedRecords } = await this.aggregationService.queryHistoryRecords({
-        take: this.fetchHistoryDataFirst,
-        where: {
-          fromChain: from.chain,
-          toChain: to.chain,
-          bridge: 'helix',
-          targetTxHash: '',
-        },
+      const uncheckedRecords = await this.queryUncheckedHistoryRecords({
+        fromChain: from.chain,
+        toChain: to.chain,
+        bridge: 'helix',
+        targetTxHash: '',
       });
 
-      if (uncheckedRecords.length <= 1) {
+      if (uncheckedRecords.length === 0) {
         if (action === 'lock') {
           this.needSyncLock[index] = false;
         } else {
@@ -273,22 +282,12 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
     }
 
     try {
-      const { records: unconfirmedRecords } = await this.aggregationService
-        .queryHistoryRecords({
-          take: this.fetchHistoryDataFirst,
-          where: {
-            fromChain: from.chain,
-            toChain: to.chain,
-            bridge: 'helix',
-            result: 0,
-          },
-        })
-        .then((result) => ({
-          ...result,
-          records: result.records.filter(
-            (item) => !this.requestTxHashOmitList.includes(item.requestTxHash)
-          ),
-        }));
+      const unconfirmedRecords = await this.queryUncheckedHistoryRecords({
+        fromChain: from.chain,
+        toChain: to.chain,
+        bridge: 'helix',
+        result: 0,
+      });
 
       if (action === 'lock' && unconfirmedRecords.length === 0) {
         this.needSyncLockConfirmed[index] = false;

@@ -44,6 +44,10 @@ export class Substrate2parachainService extends RecordsService implements OnModu
   }
 
   async onModuleInit() {
+    if (this.configService.get('CHAIN_TYPE') === 'formal') {
+      return;
+    }
+
     this.transferService.transfers.forEach((item, index) => {
       this.taskService.addInterval(
         `${item.backing.chain}-parachain-fetch_history_data`,
