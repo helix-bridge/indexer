@@ -29,6 +29,11 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
 
   private readonly isSyncingStatistics = new Array(this.transfersCount).fill(false);
 
+  // Transactions that will never be done
+  private requestTxHashOmitList = [
+    '0x7d682087bf51311c93896a34e570af3b78eb57f951689f7b6a5965b83024c0f9',
+  ];
+
   constructor(
     public configService: ConfigService,
     private aggregationService: AggregationService,
@@ -268,21 +273,27 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
     }
 
     try {
-      const { records: unconfirmedRecords } = await this.aggregationService.queryHistoryRecords({
-        take: this.fetchHistoryDataFirst,
-        where: {
-          fromChain: from.chain,
-          toChain: to.chain,
-          bridge: 'helix',
-          result: 0,
-        },
-      });
+      const { records: unconfirmedRecords } = await this.aggregationService
+        .queryHistoryRecords({
+          take: this.fetchHistoryDataFirst,
+          where: {
+            fromChain: from.chain,
+            toChain: to.chain,
+            bridge: 'helix',
+            result: 0,
+          },
+        })
+        .then((result) => ({
+          ...result,
+          records: result.records.filter(
+            (item) => !this.requestTxHashOmitList.includes(item.requestTxHash)
+          ),
+        }));
 
       if (action === 'lock' && unconfirmedRecords.length === 0) {
         this.needSyncLockConfirmed[index] = false;
         return;
-        // always has one pending record that can not revert
-      } else if (action === 'burn' && unconfirmedRecords.length <= 1) {
+      } else if (action === 'burn' && unconfirmedRecords.length === 0) {
         this.needSyncBurnConfirmed[index] = false;
         return;
       } else {
