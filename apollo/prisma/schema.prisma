@@ -29,6 +29,8 @@ model HistoryRecord {
   result Int
   fee String
   feeToken String
+  targetTxHash String
+  bridgeDispatchError String
 }
 
 model DailyStatistics {

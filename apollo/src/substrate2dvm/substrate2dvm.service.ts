@@ -1,108 +1,124 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import { getUnixTime } from 'date-fns';
 import { AggregationService } from '../aggregation/aggregation.service';
+import { RecordsService } from '../base/RecordsService';
+import { Transfer } from '../base/TransferService';
 import { TasksService } from '../tasks/tasks.service';
+import { TransferService } from './transfer.service';
 
 @Injectable()
-export class Substrate2dvmService implements OnModuleInit {
-  private readonly logger = new Logger(TasksService.name);
+export class Substrate2dvmService extends RecordsService implements OnModuleInit {
+  private readonly logger = new Logger('Substrate<>DVM');
 
-  private readonly endpoint = this.configService.get<string>('SUBSTRATE_DVM_ENDPOINT');
+  protected isSyncingHistory = new Array(this.transferService.transfers.length).fill(false);
 
-  private readonly fetchDataInterval = 10000;
+  private readonly latestNonce = new Array(this.transferService.transfers.length).fill(-1);
 
-  private readonly fetchDataFirst = 10;
-
-  private readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
-
-  private latestNonce = -1;
-
-  private isSyncing = false;
+  // unused vars
+  protected needSyncLock = [];
+  protected needSyncLockConfirmed = [];
+  protected needSyncBurn = [];
+  protected needSyncBurnConfirmed = [];
 
   constructor(
-    private configService: ConfigService,
+    public configService: ConfigService,
     private aggregationService: AggregationService,
-    private taskService: TasksService
-  ) {}
-
-  private get chain() {
-    return this.isTest ? 'pangolin' : 'crab';
+    private taskService: TasksService,
+    private transferService: TransferService
+  ) {
+    super();
   }
 
-  private get prefix() {
-    return `${this.chain}2${this.chain}dvm`;
+  protected genID(transfer: Transfer, identifier: string) {
+    return `${transfer.backing.chain}2${transfer.issuing.chain}-${identifier}`;
   }
 
   async onModuleInit() {
-    this.taskService.addInterval(`${this.prefix}-fetch_data`, this.fetchDataInterval, async () => {
-      if (this.isSyncing) {
-        return;
-      }
-      this.isSyncing = true;
-      await this.fetchRecords();
-      this.isSyncing = false;
+    this.transferService.transfers.forEach((item, index) => {
+      this.taskService.addInterval(
+        `${item.backing.chain}-dvm-fetch_history_data`,
+        10000,
+        async () => {
+          if (this.isSyncingHistory[index]) {
+            return;
+          }
+          this.isSyncingHistory[index] = true;
+          await this.fetchRecords(item, '', index);
+          this.isSyncingHistory[index] = false;
+        }
+      );
     });
   }
 
-  async fetchRecords() {
-    try {
-      const chainDvm = this.chain + '-dvm';
+  async fetchRecords(transfer: Transfer, _, index: number) {
+    const { backing: from, issuing: to } = transfer;
 
-      if (this.latestNonce == -1) {
+    try {
+      if (this.latestNonce[index] === -1) {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
           OR: [
-            { fromChain: this.chain, toChain: chainDvm },
-            { fromChain: chainDvm, toChain: this.chain },
+            { fromChain: from.chain, toChain: to.chain },
+            { fromChain: to.chain, toChain: from.chain },
           ],
           bridge: 'helix',
         });
 
-        this.latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
+        this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { transfers (first: ${this.fetchDataFirst}, orderBy: TIMESTAMP_ASC, offset: ${this.latestNonce}) { totalCount nodes{id, senderId, recipientId, fromChain, toChain, amount, timestamp }}}`;
-      const res = await axios.post(this.endpoint, {
-        query: query,
-        variables: null,
-      });
-
-      const nodes = res.data?.data?.transfers?.nodes;
-      const timezone = new Date().getTimezoneOffset() * 60;
-      const token = this.isTest ? 'PRING' : 'CRAB';
+      const query = `query { transfers (first: 10, orderBy: TIMESTAMP_ASC, offset: ${this.latestNonce[index]}) { totalCount nodes{id, senderId, recipientId, fromChain, toChain, amount, timestamp }}}`;
+      const nodes = await axios
+        .post(from.url, {
+          query: query,
+          variables: null,
+        })
+        .then((res) => res.data?.data?.transfers?.nodes);
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
           await this.aggregationService.createHistoryRecord({
-            id: `${this.prefix}-${node.id}`,
+            id: this.genID(transfer, node.id),
             fromChain: node.fromChain,
             toChain: node.toChain,
             bridge: 'helix',
             laneId: '0',
-            nonce: this.latestNonce + 1,
+            nonce: this.latestNonce[index] + 1,
             requestTxHash: node.id,
             responseTxHash: node.id,
             sender: node.senderId,
             recipient: node.recipientId,
-            token,
+            token: from.token,
             amount: node.amount,
-            startTime: getUnixTime(new Date(node.timestamp)) - timezone,
-            endTime: getUnixTime(new Date(node.timestamp)) - timezone,
+            startTime: this.toUnixTime(node.timestamp),
+            endTime: this.toUnixTime(node.timestamp),
             result: 1,
             fee: '0',
             feeToken: 'null',
+            targetTxHash: node.id,
+            bridgeDispatchError: '',
           });
-          this.latestNonce = this.latestNonce + 1;
+
+          this.latestNonce[index] += 1;
         }
+
         this.logger.log(
-          `save new ${this.chain} to ${this.chain} DVM records success, latestNonce: ${this.latestNonce}, added: ${nodes.length}`
+          this.fetchRecordsLog('Smart', from.chain, to.chain, {
+            latestNonce: this.latestNonce[index],
+            added: nodes.length,
+          })
         );
       }
-    } catch (e) {
-      this.logger.warn(
-        `update ${this.chain} to ${this.chain} DVM records failed ${e} nonce is ${this.latestNonce}`
-      );
+    } catch (error) {
+      this.logger.warn(this.fetchRecordsLog('Smart', from.chain, to.chain, { error }));
     }
+  }
+
+  async checkDispatched(): Promise<void> {
+    // does not need to check
+  }
+
+  async checkConfirmed(): Promise<void> {
+    // does not need to check
   }
 }
