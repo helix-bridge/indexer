@@ -173,14 +173,28 @@ export class Substrate2parachainService extends RecordsService implements OnModu
         return;
       }
 
-      const ids = uncheckedRecords.map((item) => `"${last(item.id.split('-'))}"`).join(',');
+      const dispatchLaneId = '726f6c69';
+      const recordLaneId = '70616c69';
+
+      const pickId = (id: string) => {
+        const target = last(id.split('-'));
+
+        return action === 'lock' ? target : target.replace(recordLaneId, dispatchLaneId);
+      };
+
+      const ids = uncheckedRecords.map((item) => `"${pickId(item.id)}"`).join(',');
 
       const nodes = await axios
         .post(to.url, {
           query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block }}}`,
           variables: null,
         })
-        .then((res) => res.data?.data?.bridgeDispatchEvents?.nodes);
+        .then((res) =>
+          res.data?.data?.bridgeDispatchEvents?.nodes.map(({ id, ...rest }) => ({
+            ...rest,
+            id: id.replace(dispatchLaneId, recordLaneId),
+          }))
+        );
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
