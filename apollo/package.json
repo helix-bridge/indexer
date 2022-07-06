@@ -8,6 +8,7 @@
   "scripts": {
     "prebuild": "rm -rf dist && tsc -p tsconfig.build.json && copyfiles ./**/*.graphql dist/",
     "build": "nest build",
+    "build:prod": "nest build",
     "build:test": "NODE_ENV=test nest build",
     "package": "nest build && ncc build ./dist/src/main.js -m -C -o ./output && copyfiles ./**/*.graphql output/ && copyfiles .env output/",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
