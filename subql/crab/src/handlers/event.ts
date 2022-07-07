@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { SubstrateEvent } from '@subql/types';
 import { Block, BridgeDispatchEvent, Transfer } from '../types';
 import { AccountHandler } from './account';
@@ -58,8 +59,18 @@ export class EventHandler {
 
     if (this.method === 'DVMTransfer' && this.section === 'ethereum') {
       await this.handleDvmToSubstrate();
-    } else if (this.method === 'Transfer' && this.section === 'balances') {
-      await this.handleSubstrateToDvm();
+    }
+
+    if (this.method === 'Transfer' && this.section === 'balances') {
+      const [from] = JSON.parse(this.data);
+      const sender = AccountHandler.formatAddress(from);
+      const senderIsDvm = AccountHandler.isDvmAddress(sender);
+
+      if (senderIsDvm) {
+        await this.handleDvmToSubstrate();
+      } else {
+        await this.handleSubstrateToDvm();
+      }
     }
   }
 
@@ -77,16 +88,28 @@ export class EventHandler {
 
   // Dvm -> 15 -> Substrate
   private findDvmToSubstrate(router: string, count: number) {
-    const event = this.event?.extrinsic?.events.find((item) => {
+    const dvmTransferEvent = this.event?.extrinsic?.events.find((item) => {
       if (item.event.method === 'DVMTransfer') {
         const [_1, to, amount] = JSON.parse(item.event.data.toString());
         if (count === amount && to === router) {
           return true;
         }
       }
+
       return false;
     });
-    return event;
+
+    const executedEvent = this.event.extrinsic.events.find((item) => {
+      if (item.event.method === 'Executed') {
+        const [_from, to] = JSON.parse(item.event.data.toString());
+
+        return to === router;
+      }
+
+      return false;
+    });
+
+    return { dvmTransferEvent, executedEvent };
   }
 
   private async handleDvmToSubstrate() {
@@ -97,16 +120,19 @@ export class EventHandler {
     const recipientIsDvm = AccountHandler.isDvmAddress(recipient);
 
     if (senderIsDvm && !recipientIsDvm) {
-      const event = this.findDvmToSubstrate(from, amount);
+      const { dvmTransferEvent, executedEvent } = this.findDvmToSubstrate(from, amount);
 
-      if (!event) {
+      if (!dvmTransferEvent) {
         return;
       }
 
-      const [iFrom] = JSON.parse(event.event.data.toString());
+      const [iFrom] = JSON.parse(dvmTransferEvent.event.data.toString());
+      const [_from, _to, txHash] = JSON.parse(executedEvent.event.data.toString());
+
       sender = AccountHandler.formatAddress(iFrom);
+
       const senderDvm = AccountHandler.truncateToDvmAddress(sender);
-      await this.handleTransfer('crab-dvm', 'crab', senderDvm, recipient, amount);
+      await this.handleTransfer('crab-dvm', 'crab', senderDvm, recipient, amount, txHash);
     }
   }
 
@@ -128,14 +154,15 @@ export class EventHandler {
     toChain: string,
     sender: string,
     recipient: string,
-    amount: number
+    amount: number,
+    txHash?: string
   ) {
     await AccountHandler.ensureAccount(recipient);
     await AccountHandler.updateTransferStatistic(recipient);
     await AccountHandler.ensureAccount(sender);
     await AccountHandler.updateTransferStatistic(sender);
 
-    const transfer = new Transfer(this.extrinsicHash);
+    const transfer = new Transfer(txHash ?? this.extrinsicHash);
 
     transfer.recipientId = recipient;
     transfer.senderId = sender;
@@ -147,12 +174,14 @@ export class EventHandler {
     transfer.fromChain = fromChain;
     transfer.toChain = toChain;
 
-    transfer.block = this.simpleBlock();
+    const block = this.simpleBlock();
+
+    transfer.block = txHash ? { ...block, extrinsicHash: txHash } : block;
 
     try {
       await transfer.save();
     } catch (error) {
-      console.log(error.message);
+      logger.warn(error.message);
     }
   }
 
