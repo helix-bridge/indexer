@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { SubstrateEvent } from '@subql/types';
 import { Block, BridgeDispatchEvent, Transfer } from '../types';
 import { AccountHandler } from './account';
@@ -57,9 +58,11 @@ export class EventHandler {
     }
 
     if (this.method === 'DVMTransfer' && this.section === 'ethereum') {
-      await this.handleDvmToSubstrate();
-    } else if (this.method === 'Transfer' && this.section === 'balances') {
-      await this.handleSubstrateToDvm();
+      await this.handleDvmToSubstrateOldVersion();
+    }
+
+    if (this.method === 'Transfer' && this.section === 'balances') {
+      await this.handleProcessTransferUsingDispatchCall();
     }
   }
 
@@ -77,19 +80,24 @@ export class EventHandler {
 
   // Dvm -> 15 -> Substrate
   private findDvmToSubstrate(router: string, count: number) {
-    const event = this.event?.extrinsic?.events.find((item) => {
+    const dvmTransferEvent = this.event?.extrinsic?.events.find((item) => {
       if (item.event.method === 'DVMTransfer') {
         const [_1, to, amount] = JSON.parse(item.event.data.toString());
-        if (count === amount && to === router) {
-          return true;
-        }
+
+        return count === amount && to === router;
       }
+
       return false;
     });
-    return event;
+
+    const executedEvent = this.event?.extrinsic?.events.find(
+      (item) => item.event.method === 'Executed'
+    );
+
+    return { dvmTransferEvent, executedEvent };
   }
 
-  private async handleDvmToSubstrate() {
+  private async handleDvmToSubstrateOldVersion() {
     const [from, to, amount] = JSON.parse(this.data);
     let sender = AccountHandler.formatAddress(from);
     const recipient = AccountHandler.formatAddress(to);
@@ -97,20 +105,23 @@ export class EventHandler {
     const recipientIsDvm = AccountHandler.isDvmAddress(recipient);
 
     if (senderIsDvm && !recipientIsDvm) {
-      const event = this.findDvmToSubstrate(from, amount);
+      const { dvmTransferEvent, executedEvent } = this.findDvmToSubstrate(from, amount);
 
-      if (!event) {
+      if (!dvmTransferEvent) {
         return;
       }
 
-      const [iFrom] = JSON.parse(event.event.data.toString());
+      const [iFrom] = JSON.parse(dvmTransferEvent.event.data.toString());
+      const [_from, _to, txHash] = JSON.parse(executedEvent.event.data.toString());
+
       sender = AccountHandler.formatAddress(iFrom);
+
       const senderDvm = AccountHandler.truncateToDvmAddress(sender);
-      await this.handleTransfer('crab-dvm', 'crab', senderDvm, recipient, amount);
+      await this.handleTransfer('crab-dvm', 'crab', senderDvm, recipient, amount, txHash);
     }
   }
 
-  private async handleSubstrateToDvm() {
+  private async handleProcessTransferUsingDispatchCall() {
     const [from, to, amount] = JSON.parse(this.data);
     const sender = AccountHandler.formatAddress(from);
     const recipient = AccountHandler.formatAddress(to);
@@ -119,7 +130,17 @@ export class EventHandler {
 
     if (!senderIsDvm && recipientIsDvm) {
       const recipientDvm = AccountHandler.truncateToDvmAddress(recipient);
+
       await this.handleTransfer('crab', 'crab-dvm', sender, recipientDvm, amount);
+    } else if (senderIsDvm && !recipientIsDvm) {
+      const senderDvm = AccountHandler.truncateToDvmAddress(sender);
+
+      const executedEvent = this.event.extrinsic.events.find(
+        (item) => item.event.method === 'Executed'
+      );
+      const [_from, _to, txHash] = JSON.parse(executedEvent.event.data.toString());
+
+      await this.handleTransfer('crab-dvm', 'crab', senderDvm, recipient, amount, txHash);
     }
   }
 
@@ -128,14 +149,15 @@ export class EventHandler {
     toChain: string,
     sender: string,
     recipient: string,
-    amount: number
+    amount: number,
+    txHash?: string
   ) {
     await AccountHandler.ensureAccount(recipient);
     await AccountHandler.updateTransferStatistic(recipient);
     await AccountHandler.ensureAccount(sender);
     await AccountHandler.updateTransferStatistic(sender);
 
-    const transfer = new Transfer(this.extrinsicHash);
+    const transfer = new Transfer(txHash ?? this.extrinsicHash);
 
     transfer.recipientId = recipient;
     transfer.senderId = sender;
@@ -147,12 +169,14 @@ export class EventHandler {
     transfer.fromChain = fromChain;
     transfer.toChain = toChain;
 
-    transfer.block = this.simpleBlock();
+    const block = this.simpleBlock();
+
+    transfer.block = txHash ? { ...block, extrinsicHash: txHash } : block;
 
     try {
       await transfer.save();
     } catch (error) {
-      console.log(error.message);
+      logger.warn(error.message);
     }
   }
 

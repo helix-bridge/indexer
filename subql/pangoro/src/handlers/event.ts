@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { SubstrateEvent } from '@subql/types';
 import { Block, BridgeDispatchEvent, S2SEvent, S2sUnlocked, Transfer } from '../types';
 import { AccountHandler } from './account';
@@ -125,7 +126,7 @@ export class EventHandler {
     try {
       await transfer.save();
     } catch (error) {
-      console.log(error.message);
+      logger.warn(error.message);
     }
   }
 

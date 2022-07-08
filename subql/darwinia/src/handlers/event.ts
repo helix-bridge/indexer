@@ -125,7 +125,7 @@ export class EventHandler {
     try {
       await transfer.save();
     } catch (error) {
-      console.log(error.message);
+      logger.warn(error.message);
     }
   }
 
