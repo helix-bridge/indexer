@@ -58,19 +58,11 @@ export class EventHandler {
     }
 
     if (this.method === 'DVMTransfer' && this.section === 'ethereum') {
-      await this.handleDvmToSubstrate();
+      await this.handleDvmToSubstrateOldVersion();
     }
 
     if (this.method === 'Transfer' && this.section === 'balances') {
-      const [from] = JSON.parse(this.data);
-      const sender = AccountHandler.formatAddress(from);
-      const senderIsDvm = AccountHandler.isDvmAddress(sender);
-
-      if (senderIsDvm) {
-        await this.handleDvmToSubstrate();
-      } else {
-        await this.handleSubstrateToDvm();
-      }
+      await this.handleProcessTransferUsingDispatchCall();
     }
   }
 
@@ -112,7 +104,7 @@ export class EventHandler {
     return { dvmTransferEvent, executedEvent };
   }
 
-  private async handleDvmToSubstrate() {
+  private async handleDvmToSubstrateOldVersion() {
     const [from, to, amount] = JSON.parse(this.data);
     let sender = AccountHandler.formatAddress(from);
     const recipient = AccountHandler.formatAddress(to);
@@ -136,7 +128,7 @@ export class EventHandler {
     }
   }
 
-  private async handleSubstrateToDvm() {
+  private async handleProcessTransferUsingDispatchCall() {
     const [from, to, amount] = JSON.parse(this.data);
     const sender = AccountHandler.formatAddress(from);
     const recipient = AccountHandler.formatAddress(to);
@@ -146,6 +138,20 @@ export class EventHandler {
     if (!senderIsDvm && recipientIsDvm) {
       const recipientDvm = AccountHandler.truncateToDvmAddress(recipient);
       await this.handleTransfer('crab', 'crab-dvm', sender, recipientDvm, amount);
+    } else if (senderIsDvm && !recipientIsDvm) {
+      const senderDvm = AccountHandler.truncateToDvmAddress(sender);
+      
+      const executedEvent = this.event.extrinsic.events.find((item) => {
+          if (item.event.method === 'Executed') {
+              const [_from, to] = JSON.parse(item.event.data.toString());
+
+              return true;
+          }
+          return false;
+      });
+      const [_from, _to, txHash] = JSON.parse(executedEvent.event.data.toString());
+
+      await this.handleTransfer('crab-dvm', 'crab', senderDvm, recipient, amount, txHash);
     }
   }
 
