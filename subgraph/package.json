@@ -1,0 +1,11 @@
+{
+  "name": "cBridge",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "graph build"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.21.1",
+    "@graphprotocol/graph-ts": "0.20.0"
+  }
+}
