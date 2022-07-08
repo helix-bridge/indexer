@@ -20,7 +20,7 @@ export class AccountHandler {
   }
 
   static truncateToDvmAddress(address: string) {
-    return '0x' + address.slice(24, 40);
+    return '0x' + address.slice(24, 64);
   }
 
   static async ensureAccount(id: string) {

@@ -83,23 +83,16 @@ export class EventHandler {
     const dvmTransferEvent = this.event?.extrinsic?.events.find((item) => {
       if (item.event.method === 'DVMTransfer') {
         const [_1, to, amount] = JSON.parse(item.event.data.toString());
-        if (count === amount && to === router) {
-          return true;
-        }
+
+        return count === amount && to === router;
       }
 
       return false;
     });
 
-    const executedEvent = this.event?.extrinsic?.events.find((item) => {
-      if (item.event.method === 'Executed') {
-        const [_from, to] = JSON.parse(item.event.data.toString());
-
-        return true;
-      }
-
-      return false;
-    });
+    const executedEvent = this.event?.extrinsic?.events.find(
+      (item) => item.event.method === 'Executed'
+    );
 
     return { dvmTransferEvent, executedEvent };
   }
@@ -137,18 +130,14 @@ export class EventHandler {
 
     if (!senderIsDvm && recipientIsDvm) {
       const recipientDvm = AccountHandler.truncateToDvmAddress(recipient);
+
       await this.handleTransfer('crab', 'crab-dvm', sender, recipientDvm, amount);
     } else if (senderIsDvm && !recipientIsDvm) {
       const senderDvm = AccountHandler.truncateToDvmAddress(sender);
-      
-      const executedEvent = this.event.extrinsic.events.find((item) => {
-          if (item.event.method === 'Executed') {
-              const [_from, to] = JSON.parse(item.event.data.toString());
 
-              return true;
-          }
-          return false;
-      });
+      const executedEvent = this.event.extrinsic.events.find(
+        (item) => item.event.method === 'Executed'
+      );
       const [_from, _to, txHash] = JSON.parse(executedEvent.event.data.toString());
 
       await this.handleTransfer('crab-dvm', 'crab', senderDvm, recipient, amount, txHash);
