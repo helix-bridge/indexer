@@ -155,7 +155,14 @@ export class EventHandler {
       if (executedEvent) {
         const [_from, _to, txHash] = JSON.parse(executedEvent.event.data.toString());
 
-        await this.handleTransfer('pangolin-dvm', 'pangolin', senderDvm, recipient, amount, txHash);
+        await this.handleTransfer(
+          'pangolin-dvm',
+          'pangolin',
+          senderDvm,
+          recipient,
+          amount * 1e9,
+          txHash
+        );
       }
     }
   }
