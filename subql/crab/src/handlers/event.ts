@@ -91,11 +91,11 @@ export class EventHandler {
       return false;
     });
 
-    const executedEvent = this.event.extrinsic.events.find((item) => {
+    const executedEvent = this.event?.extrinsic?.events.find((item) => {
       if (item.event.method === 'Executed') {
         const [_from, to] = JSON.parse(item.event.data.toString());
 
-        return to === router;
+        return true;
       }
 
       return false;
