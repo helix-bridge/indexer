@@ -151,9 +151,12 @@ export class EventHandler {
       const executedEvent = this.event.extrinsic.events.find(
         (item) => item.event.method === 'Executed'
       );
-      const [_from, _to, txHash] = JSON.parse(executedEvent.event.data.toString());
 
-      await this.handleTransfer('pangolin-dvm', 'pangolin', senderDvm, recipient, amount, txHash);
+      if (executedEvent) {
+        const [_from, _to, txHash] = JSON.parse(executedEvent.event.data.toString());
+
+        await this.handleTransfer('pangolin-dvm', 'pangolin', senderDvm, recipient, amount, txHash);
+      }
     }
   }
 
