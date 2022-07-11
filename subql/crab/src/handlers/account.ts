@@ -30,6 +30,8 @@ export class AccountHandler {
       const acc = new Account(id);
 
       acc.transferTotalCount = 0;
+      acc.s2sLockedTotalCount = 0;
+      acc.s2sLockedTotalAmount = BigInt(0);
       acc.save();
 
       return acc;
@@ -60,5 +62,14 @@ export class AccountHandler {
     await this.updateAccount(id, {
       transferTotalCount: account.transferTotalCount + 1,
     });
+  }
+
+  static async updateS2SLockedStatistic(id: string, amount: bigint) {
+      const account = await this.getAccountById(id);
+
+      await this.updateAccount(id, {
+          s2sLockedTotalCount: account.s2sLockedTotalCount + 1,
+          s2sLockedTotalAmount: account.s2sLockedTotalAmount + BigInt(amount),
+      });
   }
 }

@@ -16,7 +16,7 @@ network:
 
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 8305000 # keep the same as dictionary
+    startBlock: 10348480 # keep the same as dictionary
     mapping:
       file: ./dist/index.js
       handlers:
@@ -43,4 +43,15 @@ dataSources:
           filter:
             module: balances
             method: Transfer
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: toCrabParachainBacking
+            method: TokenLocked
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: toCrabParachainBacking
 
