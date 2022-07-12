@@ -61,13 +61,13 @@ export class CbridgeService implements OnModuleInit {
     });
   }
 
-  protected genID(transfer: BridgeChain, identifier: string): string {
-    return `${transfer.chain.split('-')[0]}-cbridge-${identifier}`;
+  protected genID(transfer: BridgeChain, toChainId: string, identifier: string): string {
+    return `${transfer.chain.split('-')[0]}-${toChainId}-cbridge-${identifier}`;
   }
 
-  private getDestChainName(id: number): BridgeChain | null {
+  private getDestChain(id: number): BridgeChain | null {
       for (const chain of this.transferService.transfers) {
-          if (chain.chainId == id) {
+          if (chain.chainId === id) {
               return chain;
           }
       }
@@ -96,13 +96,13 @@ export class CbridgeService implements OnModuleInit {
 
       if (records && records.length > 0) {
         for (const record of records) {
-          const toChain = this.getDestChainName(Number(record.dst_chainid));
-          if (toChain == null) {
+          const toChain = this.getDestChain(Number(record.dst_chainid));
+          if (toChain === null) {
             this.latestNonce[index] += 1;
             continue;
           }
           await this.aggregationService.createHistoryRecord({
-            id: this.genID(transfer, record.id),
+            id: this.genID(transfer, toChain.chainId.toString(), record.id),
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: 'cBridge',
@@ -136,6 +136,25 @@ export class CbridgeService implements OnModuleInit {
     }
   }
 
+  async queryRelay(transfer: BridgeChain, srcChainId: string, srcTransferId: string) {
+      const query = `query { relayRecords(first: 1, where: { src_chainid: "${srcChainId}", src_transferid:"${srcTransferId}"}) { id, amount, timestamp, transaction_hash }}`;
+      return await axios
+      .post(transfer.url, {
+          query: query,
+          variables: null,
+      })
+      .then((res) => res.data?.data?.relayRecords);
+  }
+
+  async queryTransfer(transfer: BridgeChain, srcTransferId: string) {
+      const query = `query { transferRecord(id: "${srcTransferId}") {withdraw_id, withdraw_timestamp, withdraw_transaction}}`;
+      return await axios.post(transfer.url, {
+          query: query,
+          variables: null,
+      })
+      .then((res) => res.data?.data?.relayRecords);
+  }
+
   async fetchStatus(transfer: BridgeChain, index: number) {
     try {
       const uncheckedRecords = await this.aggregationService.queryHistoryRecords({
@@ -153,18 +172,39 @@ export class CbridgeService implements OnModuleInit {
         this.skip[index] += this.takeEachTime;
       }
       for (const record of uncheckedRecords) {
-        const transferId = record.id.split('-')[2];
-        const response = await axios .post(this.sgnUrl, { transfer_id: transferId.substring(2) }).then((res) => res.data);
+        const recordSplited = record.id.split('-');
+        const transferId = recordSplited[3];
+        const dstChainId = recordSplited[2];
+        const response = await axios.post(this.sgnUrl, { transfer_id: transferId.substring(2) }).then((res) => res.data);
         const bridgeError = response.refund_reason;
-        const targetTxHash = (response.status == this.statusTransferCompleted) ? response.dst_block_tx_link.split('/').pop() : '';
+
+        const updateData = {
+          result: response.status,
+          targetTxHash: '',
+          endTime: 0,
+          fee: '',
+          bridgeDispatchError: bridgeError < this.xferStatus.length ? this.xferStatus[bridgeError] : '',
+        }
+        if (response.status === this.statusTransferCompleted) {
+            const dstChain = this.getDestChain(Number(dstChainId));
+            if (dstChain === null) {
+              continue;
+            }
+            const relayInfo = await this.queryRelay(dstChain, transfer.chainId.toString(), transferId)
+            updateData.targetTxHash = relayInfo.transaction_hash;
+            updateData.endTime = Number(relayInfo.timestamp);
+            updateData.fee = (global.BigInt(record.amount) - global.BigInt(relayInfo.amount)).toString();
+        } else if (response.status === this.statusTransferRefunded) {
+            const withdrawInfo = await this.queryTransfer(transfer, transferId);
+            if (withdrawInfo && withdrawInfo.length > 0 && withdrawInfo.withdraw_id !== '') {
+              updateData.targetTxHash = withdrawInfo.withdraw_transaction;
+              updateData.endTime = Number(withdrawInfo.withdraw_timestamp);
+              updateData.fee = '0';
+            }
+        }
         await this.aggregationService.updateHistoryRecord({
           where: { id: record.id },
-          data: {
-            result: response.status,
-            targetTxHash: targetTxHash,
-            endTime: response.block_delay * transfer.blockTime + record.startTime,
-            bridgeDispatchError: bridgeError < this.xferStatus.length ? this.xferStatus[bridgeError] : '',
-          },
+          data: updateData,
         });
       }
     } catch (error) {
