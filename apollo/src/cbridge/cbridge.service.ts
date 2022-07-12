@@ -5,15 +5,34 @@ import { AggregationService } from '../aggregation/aggregation.service';
 import { BridgeChain } from '../base/BridgeTransferService';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
-import { GetTransferStatusRequest } from 'cbridge-typescript-client/ts-proto/gateway/gateway_pb';
-import { WebClient } from 'cbridge-typescript-client/ts-proto/gateway/GatewayServiceClientPb';
 
 @Injectable()
 export class CbridgeService implements OnModuleInit {
   private readonly logger = new Logger('cBridge');
   protected isSyncingHistory = new Array(this.transferService.transfers.length).fill(false);
-  protected fetchSendDataInterval = 10000;
+  protected fetchSendDataInterval = 30000;
   private readonly latestNonce = new Array(this.transferService.transfers.length).fill(-1);
+
+  private readonly takeEachTime = 3;
+  private skip = new Array(this.transferService.transfers.length).fill(0);
+
+  private readonly sgnUrl = this.configService.get<string>('CBRIDGE_SGN_URL');
+
+  private readonly statusTransferCompleted = 5;
+  private readonly statusTransferRefunded = 10;
+
+  private readonly xferStatus = [
+      "unknown",
+      "ok_to_relay",
+      "success",
+      "bad_liquidity",
+      "bad_slippage",
+      "bad_token",
+      "refund_requested",
+      "refund_done",
+      "bad_xfer_disabled",
+      "bad_dest_chain"
+  ];
 
   constructor(
     public configService: ConfigService,
@@ -46,6 +65,15 @@ export class CbridgeService implements OnModuleInit {
     return `${transfer.chain.split('-')[0]}-cbridge-${identifier}`;
   }
 
+  private getDestChainName(id: number): BridgeChain | null {
+      for (const chain of this.transferService.transfers) {
+          if (chain.chainId == id) {
+              return chain;
+          }
+      }
+      return null;
+  }
+
   async fetchSendRecords(transfer: BridgeChain, index: number) {
     // the nonce of cBridge message is not increased
     try {
@@ -58,7 +86,7 @@ export class CbridgeService implements OnModuleInit {
           this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { transferRecords(first: 10, orderBy: start_timestamp, orderDirection: asc, skip: 0) { id, sender, receiver, token, amount, dst_chainid, request_transaction, start_timestamp } }`;
+      const query = `query { transferRecords(first: 10, orderBy: start_timestamp, orderDirection: asc, skip: ${this.latestNonce[index]}) { id, sender, receiver, token, amount, dst_chainid, request_transaction, start_timestamp } }`;
       const records = await axios
         .post(transfer.url, {
           query: query,
@@ -68,10 +96,15 @@ export class CbridgeService implements OnModuleInit {
 
       if (records && records.length > 0) {
         for (const record of records) {
+          const toChain = this.getDestChainName(Number(record.dst_chainid));
+          if (toChain == null) {
+            this.latestNonce[index] += 1;
+            continue;
+          }
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, record.id),
             fromChain: transfer.chain,
-            toChain: '',
+            toChain: toChain.chain,
             bridge: 'cBridge',
             laneId: '',
             nonce: this.latestNonce[index] + 1,
@@ -85,14 +118,15 @@ export class CbridgeService implements OnModuleInit {
             endTime: 0,
             result: 0,
             fee: '',
-            feeToken: '',
+            feeToken: transfer.feeToken,
             targetTxHash: '',
             bridgeDispatchError: '',
           });
+          this.latestNonce[index] += 1;
         }
 
         this.logger.log(
-          `save new send record successed ${transfer.chain}, ${this.latestNonce}, added: ${records.length}`
+          `save new send record successed ${transfer.chain}, nonce: ${this.latestNonce}, added: ${records.length}`
         );
       }
     } catch (error) {
@@ -103,29 +137,39 @@ export class CbridgeService implements OnModuleInit {
   }
 
   async fetchStatus(transfer: BridgeChain, index: number) {
-    const uncheckedRecords = await this.aggregationService
-      .queryHistoryRecords({
-        take: 10,
+    try {
+      const uncheckedRecords = await this.aggregationService.queryHistoryRecords({
+        skip: this.skip[index],
+        take: this.takeEachTime,
         where: {
-            fromChain: transfer.chain,
-            bridge: 'cBridge',
-            targetTxHash: '',
+          fromChain: transfer.chain,
+          bridge: 'cBridge',
+          targetTxHash: '',
         },
-      })
-      .then((result) =>
-        result.records
-      );
-    const request = new GetTransferStatusRequest();
-    const client = new WebClient(`https://cbridge-prod2.celer.network`, null, null);
-      /*
-    for (const record of uncheckedRecords) {
+      }).then((result) => result.records);
+      if (uncheckedRecords.length < this.takeEachTime) {
+        this.skip[index] = 0;
+      } else {
+        this.skip[index] += this.takeEachTime;
+      }
+      for (const record of uncheckedRecords) {
         const transferId = record.id.split('-')[2];
-        console.log(transferId);
-        request.setTransferId(transferId.substring(2));
-        const response = await client.getTransferStatus(request, null);
-        console.log(response);
+        const response = await axios .post(this.sgnUrl, { transfer_id: transferId.substring(2) }).then((res) => res.data);
+        const bridgeError = response.refund_reason;
+        const targetTxHash = (response.status == this.statusTransferCompleted) ? response.dst_block_tx_link.split('/').pop() : '';
+        await this.aggregationService.updateHistoryRecord({
+          where: { id: record.id },
+          data: {
+            result: response.status,
+            targetTxHash: targetTxHash,
+            endTime: response.block_delay * transfer.blockTime + record.startTime,
+            bridgeDispatchError: bridgeError < this.xferStatus.length ? this.xferStatus[bridgeError] : '',
+          },
+        });
+      }
+    } catch (error) {
+      this.logger.warn(`fetch cbridge status failed, error ${error}`);
     }
-    */
   }
 }
 

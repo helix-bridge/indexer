@@ -8,8 +8,8 @@ export class TransferService extends BaseBridgeTransferService {
   private readonly crabSmartEndpoint = this.configService.get<string>('CRAB_SMART_CHAIN_ENDPOINT');
 
   formalChainTransfers: BridgeChain[] = [
-    { chainId: 0, chain: 'heco', url: this.hecoEndpoint, token: 'RING', feeToken: 'RING' },
-    //{ chainId: 0, chain: 'crab-dvm', url: this.crabSmartEndpoint, token: 'xRING', feeToken: 'xRING' },
+    { chainId: 128, chain: 'heco', url: this.hecoEndpoint, token: 'RING', feeToken: 'RING', blockTime: 3 },
+    { chainId: 44, chain: 'crab-dvm', url: this.crabSmartEndpoint, token: 'xRING', feeToken: 'xRING', blockTime: 6 },
   ];
 
   testChainTransfers: BridgeChain[] = [];
