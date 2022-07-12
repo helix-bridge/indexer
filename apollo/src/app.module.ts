@@ -13,6 +13,7 @@ import { Substrate2dvmModule } from './substrate2dvm/substrate2dvm.module';
 import { Substrate2parachainModule } from './substrate2parachain/substrate2parachain.module';
 import { Substrate2substrateDVMModule } from './substrate2substrateDVM/substrate2substrateDVM.module';
 import { TasksModule } from './tasks/tasks.module';
+import { CbridgeModule } from './cbridge/cbridge.module';
 
 const chainEnvFilePath = `.env.${process.env.NODE_ENV || 'prod'}`;
 
@@ -40,6 +41,7 @@ export class BigIntScalar extends BigInt {}
     Substrate2substrateDVMModule,
     Substrate2dvmModule,
     Substrate2parachainModule,
+    CbridgeModule,
   ],
   controllers: [AppController],
   providers: [AppService, BigIntScalar],
