@@ -58,7 +58,7 @@ export class EventHandler {
 
   public async save() {
     // s2s darwinia<>crab dispatch event
-    if (this.section === 'bridgeDarwiniaDispatch') {
+    if (this.section === 'bridgeDarwiniaDispatch' || this.section === 'bridgeCrabParachainDispatch') {
       await this.handleBridgeDispatchEvent();
     }
 
@@ -218,6 +218,7 @@ export class EventHandler {
     event.startTimestamp = this.timestamp;
     event.senderId = sender;
     event.recipient = recipient;
+    event.token = 'crab';
     event.amount = value.toString();
     event.result = 0;
     event.endTimestamp = null;
