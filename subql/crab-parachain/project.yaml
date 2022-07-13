@@ -8,7 +8,7 @@ schema:
   file: ./schema.graphql
 
 network:
-  genesisHash: '0x83014e567e2b0b67dfa85c9427d8679cacf932f6fd4d750701c6dc07a19c4905'
+  genesisHash: '0xeac895d7768b17837a9c3a9f0280c01502c3ef40193df923490a0fa9c60ea076'
   endpoint: wss://crab-parachain-rpc.darwinia.network
   chaintypes:
     file: ./types.yaml
