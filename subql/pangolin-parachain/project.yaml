@@ -40,6 +40,12 @@ dataSources:
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
+            module: bridgePangolinDispatch
+            method: MessageCallValidateFailed
+       
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
             module: fromPangolinIssuing
             method: TokenBurnAndRemoteUnlocked
 

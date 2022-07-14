@@ -36,6 +36,12 @@ dataSources:
           kind: substrate/EventHandler
           filter:
             module: bridgeDarwiniaDispatch
+            method: MessageCallValidateFailed 
+       
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeDarwiniaDispatch
             method: MessageDispatched
 
         - handler: handleEvent
@@ -49,6 +55,12 @@ dataSources:
           filter:
             module: bridgeCrabParachainDispatch
             method: MessageWeightMismatch 
+       
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeCrabParachainDispatch
+            method: MessageCallValidateFailed 
        
         - handler: handleEvent
           kind: substrate/EventHandler

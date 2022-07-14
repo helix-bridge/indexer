@@ -48,6 +48,18 @@ dataSources:
           kind: substrate/EventHandler
           filter:
             module: bridgePangolinDispatch
+            method: MessageCallValidateFailed
+ 
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgePangolinDispatch
+            method: MessageWeightMismatch
+ 
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgePangolinDispatch
             method: MessageDispatched
 
         - handler: handleEvent

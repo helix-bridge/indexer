@@ -56,7 +56,7 @@ export class EventHandler {
   }
 
   public async save() {
-    if (this.method === 'MessageVersionSpecMismatch' || this.method === 'MessageWeightMismatch') {
+    if (this.section === 'bridgeCrabDispatch') {
       await this.handleBridgeDispatchEvent();
     }
 

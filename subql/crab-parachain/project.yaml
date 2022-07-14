@@ -36,6 +36,12 @@ dataSources:
           filter:
             module: bridgeCrabDispatch
             method: MessageDispatched
+            
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeCrabDispatch
+            method: MessageCallValidateFailed
        
         - handler: handleEvent
           kind: substrate/EventHandler
