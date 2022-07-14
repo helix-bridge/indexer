@@ -113,13 +113,17 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             bridgeDispatchError: '',
           });
 
+          if (!this.needSyncLock[index] && isLock) {
+              this.needSyncLock[index] = true;
+          } else if (!this.needSyncBurn[index] && !isLock) {
+              this.needSyncBurn[index] = true;
+          }
+
           if (node.result === 0) {
             if (!this.needSyncLockConfirmed[index] && isLock) {
               this.needSyncLockConfirmed[index] = true;
-              this.needSyncLock[index] = true;
             } else if (!this.needSyncBurnConfirmed && !isLock) {
               this.needSyncBurnConfirmed[index] = true;
-              this.needSyncBurn[index] = true;
             }
           }
         }
@@ -168,7 +172,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
         return;
       }
 
-      const ids = uncheckedRecords.map((item) => `"${item.id}"`).join(',');
+      const ids = uncheckedRecords.map((item) => `"${item.id.split('-')[3]}"`).join(',');
 
       const nodes = await axios
         .post(to.url, {
