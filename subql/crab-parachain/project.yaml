@@ -1,0 +1,51 @@
+specVersion: 0.2.0
+name: helix-crab-parachain
+version: 1.0.0
+description: ''
+repository: git@github.com:helix-bridge/indexer.git
+
+schema:
+  file: ./schema.graphql
+
+network:
+  genesisHash: '0xeac895d7768b17837a9c3a9f0280c01502c3ef40193df923490a0fa9c60ea076'
+  endpoint: wss://crab-parachain-rpc.darwinia.network
+  chaintypes:
+    file: ./types.yaml
+
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 535900
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeCrabDispatch
+            method: MessageVersionSpecMismatch 
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeCrabDispatch
+            method: MessageWeightMismatch 
+       
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeCrabDispatch
+            method: MessageDispatched
+       
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: fromCrabIssuing
+            method: TokenBurnAndRemoteUnlocked
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: fromCrabIssuing
+            method: TokenUnlockedConfirmed
+
