@@ -44,11 +44,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
   }
 
   async onModuleInit() {
-    if (this.configService.get('CHAIN_TYPE') === 'formal') {
-      return;
-    }
-
-    this.transferService.transfers.forEach((item, index) => {
+      this.transferService.transfers.forEach((item, index) => {
       this.taskService.addInterval(
         `${item.backing.chain}-parachain-fetch_history_data`,
         this.fetchHistoryDataInterval,
@@ -173,8 +169,8 @@ export class Substrate2parachainService extends RecordsService implements OnModu
         return;
       }
 
-      const dispatchLaneId = '726f6c69';
-      const recordLaneId = '70616c69';
+      const dispatchLaneId = '70616372';
+      const recordLaneId = '70616372';
 
       const pickId = (id: string) => {
         const target = last(id.split('-'));
