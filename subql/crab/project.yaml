@@ -16,7 +16,7 @@ network:
 
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 10348480 # keep the same as dictionary
+    startBlock: 8305000 # keep the same as dictionary
     mapping:
       file: ./dist/index.js
       handlers:
