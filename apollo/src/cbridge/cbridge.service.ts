@@ -138,8 +138,7 @@ export class CbridgeService implements OnModuleInit {
 
   async queryRelay(transfer: BridgeChain, srcChainId: string, srcTransferId: string) {
       const query = `query { relayRecords(first: 1, where: { src_chainid: "${srcChainId}", src_transferid:"${srcTransferId}"}) { id, amount, timestamp, transaction_hash }}`;
-      return await axios
-      .post(transfer.url, {
+      return await axios.post(transfer.url, {
           query: query,
           variables: null,
       })
@@ -174,7 +173,7 @@ export class CbridgeService implements OnModuleInit {
       for (const record of uncheckedRecords) {
         const recordSplited = record.id.split('-');
         const transferId = recordSplited[3];
-        const dstChainId = recordSplited[2];
+        const dstChainId = recordSplited[1];
         const response = await axios.post(this.sgnUrl, { transfer_id: transferId.substring(2) }).then((res) => res.data);
         const bridgeError = response.refund_reason;
 
@@ -191,9 +190,13 @@ export class CbridgeService implements OnModuleInit {
               continue;
             }
             const relayInfo = await this.queryRelay(dstChain, transfer.chainId.toString(), transferId)
-            updateData.targetTxHash = relayInfo.transaction_hash;
-            updateData.endTime = Number(relayInfo.timestamp);
-            updateData.fee = (global.BigInt(record.amount) - global.BigInt(relayInfo.amount)).toString();
+            if (relayInfo.length === 0) {
+                continue;
+            }
+            const firstRelay = relayInfo[0];
+            updateData.targetTxHash = firstRelay.transaction_hash;
+            updateData.endTime = Number(firstRelay.timestamp);
+            updateData.fee = (global.BigInt(record.amount) - global.BigInt(firstRelay.amount) * global.BigInt(1e9)).toString();
         } else if (response.status === this.statusTransferRefunded) {
             const withdrawInfo = await this.queryTransfer(transfer, transferId);
             if (withdrawInfo && withdrawInfo.length > 0 && withdrawInfo.withdraw_id !== '') {
