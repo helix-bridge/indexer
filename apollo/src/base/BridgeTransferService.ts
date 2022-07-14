@@ -7,6 +7,7 @@ export interface BridgeChain {
   token: string;
   feeToken: string;
   blockTime: number;
+  feeDecimals: number;
 }
 
 export abstract class BaseBridgeTransferService {

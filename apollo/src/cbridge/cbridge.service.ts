@@ -196,7 +196,13 @@ export class CbridgeService implements OnModuleInit {
             const firstRelay = relayInfo[0];
             updateData.targetTxHash = firstRelay.transaction_hash;
             updateData.endTime = Number(firstRelay.timestamp);
-            updateData.fee = (global.BigInt(record.amount) - global.BigInt(firstRelay.amount) * global.BigInt(1e9)).toString();
+            const sendAmount = global.BigInt(record.amount);
+            const recvAmount = global.BigInt(firstRelay.amount);
+            if (transfer.feeDecimals > dstChain.feeDecimals) {
+                updateData.fee = (sendAmount - recvAmount * global.BigInt(transfer.feeDecimals/dstChain.feeDecimals)).toString();
+            } else {
+                updateData.fee = (sendAmount - recvAmount / global.BigInt(dstChain.feeDecimals/transfer.feeDecimals)).toString();
+            }
         } else if (response.status === this.statusTransferRefunded) {
             const withdrawInfo = await this.queryTransfer(transfer, transferId);
             if (withdrawInfo && withdrawInfo.length > 0 && withdrawInfo.withdraw_id !== '') {
