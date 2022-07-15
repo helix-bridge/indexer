@@ -10,7 +10,7 @@ export class TransferService extends BaseTransferService {
   formalChainTransfers: Transfer[] = [
     {
       backing: { chain: 'darwinia', url: this.backingUrl, token: 'RING', feeToken: 'RING' },
-      issuing: { chain: 'crab-dvm', url: this.issuingUrl, token: 'xRING', feeToken: 'RING' },
+      issuing: { chain: 'crab-dvm', url: this.issuingUrl, token: 'xRING', feeToken: 'CRAB' },
     },
   ];
 
