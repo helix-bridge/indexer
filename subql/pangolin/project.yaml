@@ -30,7 +30,43 @@ dataSources:
           kind: substrate/EventHandler
           filter:
             module: bridgePangoroDispatch
+            method: MessageWeightMismatch
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgePangoroDispatch
             method: MessageDispatched
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgePangoroDispatch
+            method: MessageCallValidateFailed
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgePangolinParachainDispatch
+            method: MessageVersionSpecMismatch 
+       
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgePangolinParachainDispatch
+            method: MessageWeightMismatch
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgePangolinParachainDispatch
+            method: MessageDispatched
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgePangolinParachainDispatch
+            method: MessageCallValidateFailed
 
         - handler: handleEvent
           kind: substrate/EventHandler

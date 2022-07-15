@@ -25,11 +25,47 @@ dataSources:
           filter:
             module: bridgeDarwiniaDispatch
             method: MessageVersionSpecMismatch 
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeDarwiniaDispatch
+            method: MessageWeightMismatch 
        
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
             module: bridgeDarwiniaDispatch
+            method: MessageCallValidateFailed 
+       
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeDarwiniaDispatch
+            method: MessageDispatched
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeCrabParachainDispatch
+            method: MessageVersionSpecMismatch 
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeCrabParachainDispatch
+            method: MessageWeightMismatch 
+       
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeCrabParachainDispatch
+            method: MessageCallValidateFailed 
+       
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeCrabParachainDispatch
             method: MessageDispatched
 
         - handler: handleEvent
@@ -43,4 +79,16 @@ dataSources:
           filter:
             module: balances
             method: Transfer
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: toCrabParachainBacking
+            method: TokenLocked
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: toCrabParachainBacking
+            method: TokenLockedConfirmed
 

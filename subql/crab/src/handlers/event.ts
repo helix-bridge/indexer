@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { SubstrateEvent } from '@subql/types';
-import { Block, BridgeDispatchEvent, Transfer } from '../types';
+import { Block, BridgeDispatchEvent, S2SEvent, Transfer } from '../types';
 import { AccountHandler } from './account';
 
 export class EventHandler {
@@ -38,6 +38,10 @@ export class EventHandler {
     return this.event.event.data.toString();
   }
 
+  get args() {
+    return this.event.extrinsic.extrinsic.args.toString().split(',');
+  }
+
   get extrinsicHash() {
     const i = this.event?.extrinsic?.extrinsic?.hash?.toString();
 
@@ -53,16 +57,27 @@ export class EventHandler {
   }
 
   public async save() {
-    if (this.section === 'bridgeDarwiniaDispatch') {
+    // s2s darwinia<>crab dispatch event
+    if (this.section === 'bridgeDarwiniaDispatch' || this.section === 'bridgeCrabParachainDispatch') {
       await this.handleBridgeDispatchEvent();
     }
 
+    // old crab <> crab smart chain
     if (this.method === 'DVMTransfer' && this.section === 'ethereum') {
       await this.handleDvmToSubstrateOldVersion();
     }
 
+    // crab <> crab smart chain
     if (this.method === 'Transfer' && this.section === 'balances') {
       await this.handleProcessTransferUsingDispatchCall();
+    }
+
+    // s2s crab <> crab parachain
+    if (this.method === 'TokenLocked') {
+      await this.handleTokenLocked();
+    }
+    if (this.method === 'TokenLockedConfirmed') {
+      await this.handleTokenLockedConfirmed();
     }
   }
 
@@ -180,6 +195,64 @@ export class EventHandler {
       await transfer.save();
     } catch (error) {
       logger.warn(error.message);
+    }
+  }
+
+  private async handleTokenLocked() {
+    // [lane_id, message_nonce, sender, recipient, amount]
+    const [laneId, nonce, from, to, value] = JSON.parse(this.data) as [
+      string,
+      bigint,
+      string,
+      string,
+      number
+    ];
+    const event = new S2SEvent(this.s2sEventId(laneId, nonce));
+    const sender = AccountHandler.formatAddress(from);
+    const recipient = AccountHandler.formatAddress(to);
+    const [_specVersion, _weight, _value, fee, _recipient] = this.args;
+
+    event.laneId = laneId;
+    event.nonce = nonce;
+    event.requestTxHash = this.extrinsicHash;
+    event.startTimestamp = this.timestamp;
+    event.senderId = sender;
+    event.recipient = recipient;
+    event.token = 'crab';
+    event.amount = value.toString();
+    event.result = 0;
+    event.endTimestamp = null;
+    event.responseTxHash = null;
+    event.block = this.simpleBlock();
+    event.fee = fee;
+
+    await AccountHandler.ensureAccount(sender);
+    await event.save();
+  }
+
+  private async handleTokenLockedConfirmed() {
+    // [lane_id, message_nonce, user, amount, result]
+    const [laneId, nonce, from, amount, confirmResult] = JSON.parse(this.data) as [
+      string,
+      bigint,
+      string,
+      bigint,
+      boolean
+    ];
+    const sender = AccountHandler.formatAddress(from);
+    const event = await S2SEvent.get(this.s2sEventId(laneId, nonce));
+
+    if (event) {
+      event.responseTxHash = this.extrinsicHash;
+      event.endTimestamp = this.timestamp;
+      event.result = confirmResult ? 1 : 2;
+      event.block = this.simpleBlock();
+
+      await event.save();
+
+      if (confirmResult) {
+        await AccountHandler.updateS2SLockedStatistic(sender, amount);
+      }
     }
   }
 

@@ -1,57 +1,57 @@
 specVersion: 0.2.0
-name: wormhole-pangolin
+name: helix-crab-parachain
 version: 1.0.0
 description: ''
-repository: git@github.com:darwinia-network/subql-wormhole.git
+repository: git@github.com:helix-bridge/indexer.git
 
 schema:
   file: ./schema.graphql
 
 network:
-  genesisHash: '0x9426ba4cc73993fc77e77221f797573dc5c63d418d0478a0a01fab9798fdcceb'
-  endpoint: wss://pangolin-parachain-rpc.darwinia.network
+  genesisHash: '0xeac895d7768b17837a9c3a9f0280c01502c3ef40193df923490a0fa9c60ea076'
+  endpoint: wss://crab-parachain-rpc.darwinia.network
   chaintypes:
     file: ./types.yaml
 
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 231000
+    startBlock: 535900
     mapping:
       file: ./dist/index.js
       handlers:
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: bridgePangolinDispatch
+            module: bridgeCrabDispatch
             method: MessageVersionSpecMismatch 
 
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: bridgePangolinDispatch
+            module: bridgeCrabDispatch
             method: MessageWeightMismatch 
        
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: bridgePangolinDispatch
+            module: bridgeCrabDispatch
             method: MessageDispatched
-       
+            
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: bridgePangolinDispatch
+            module: bridgeCrabDispatch
             method: MessageCallValidateFailed
        
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: fromPangolinIssuing
+            module: fromCrabIssuing
             method: TokenBurnAndRemoteUnlocked
 
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: fromPangolinIssuing
+            module: fromCrabIssuing
             method: TokenUnlockedConfirmed
 

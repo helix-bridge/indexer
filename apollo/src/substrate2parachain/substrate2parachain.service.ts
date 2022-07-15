@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
 import { RecordsService } from '../base/RecordsService';
 import { Transfer, TransferAction } from '../base/TransferService';
@@ -44,10 +43,6 @@ export class Substrate2parachainService extends RecordsService implements OnModu
   }
 
   async onModuleInit() {
-    if (this.configService.get('CHAIN_TYPE') === 'formal') {
-      return;
-    }
-
     this.transferService.transfers.forEach((item, index) => {
       this.taskService.addInterval(
         `${item.backing.chain}-parachain-fetch_history_data`,
@@ -118,13 +113,17 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             bridgeDispatchError: '',
           });
 
+          if (!this.needSyncLock[index] && isLock) {
+              this.needSyncLock[index] = true;
+          } else if (!this.needSyncBurn[index] && !isLock) {
+              this.needSyncBurn[index] = true;
+          }
+
           if (node.result === 0) {
             if (!this.needSyncLockConfirmed[index] && isLock) {
               this.needSyncLockConfirmed[index] = true;
-              this.needSyncLock[index] = true;
             } else if (!this.needSyncBurnConfirmed && !isLock) {
               this.needSyncBurnConfirmed[index] = true;
-              this.needSyncBurn[index] = true;
             }
           }
         }
@@ -173,28 +172,14 @@ export class Substrate2parachainService extends RecordsService implements OnModu
         return;
       }
 
-      const dispatchLaneId = '726f6c69';
-      const recordLaneId = '70616c69';
-
-      const pickId = (id: string) => {
-        const target = last(id.split('-'));
-
-        return action === 'lock' ? target : target.replace(recordLaneId, dispatchLaneId);
-      };
-
-      const ids = uncheckedRecords.map((item) => `"${pickId(item.id)}"`).join(',');
+      const ids = uncheckedRecords.map((item) => `"${item.id.split('-')[3]}"`).join(',');
 
       const nodes = await axios
         .post(to.url, {
           query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block }}}`,
           variables: null,
         })
-        .then((res) =>
-          res.data?.data?.bridgeDispatchEvents?.nodes.map(({ id, ...rest }) => ({
-            ...rest,
-            id: id.replace(dispatchLaneId, recordLaneId),
-          }))
-        );
+        .then((res) => res.data?.data?.bridgeDispatchEvents?.nodes);
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
