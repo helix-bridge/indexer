@@ -14,8 +14,6 @@ import { TransferService } from './transfer.service';
 export class Substrate2substrateDVMService extends RecordsService implements OnModuleInit {
   private readonly logger = new Logger('Substrate<>SubstrateDVM');
 
-  private readonly subql = this.configService.get<string>('SUBQL');
-
   private readonly transfersCount = this.transferService.transfers.length;
 
   protected readonly needSyncLock = new Array(this.transfersCount).fill(true);
@@ -236,7 +234,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
 
       const nodes = await axios
         .post<{ data: { bridgeDispatchEvents: { nodes: any[] } } }>(
-          this.subql + to.chain.split('-')[0],
+          this.transferService.dispatchEndPoints[to.chain.split('-')[0]],
           {
             query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block }}}`,
             variables: null,
