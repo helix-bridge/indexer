@@ -1,4 +1,5 @@
 import { Args, Query, Resolver } from '@nestjs/graphql';
+import { isUndefined } from 'lodash';
 import { AggregationService } from './aggregation.service';
 
 @Resolver()
@@ -17,21 +18,14 @@ export class AggregationResolver {
     @Args('sender') sender: string,
     @Args('recipient') recipient: string,
     @Args('row') row: number,
-    @Args('page') page: number
+    @Args('page') page: number,
+    @Args('result') result: number
   ) {
     const skip = row * page || undefined;
     const take = row || undefined;
-    const filter = [];
+    const filters = [{ sender }, { recipient }, { result }].filter((item) => !isUndefined(item));
 
-    if (sender) {
-      filter.push({ sender });
-    }
-
-    if (recipient) {
-      filter.push({ recipient });
-    }
-
-    const where = sender || recipient ? { OR: filter } : undefined;
+    const where = filters.length ? { OR: filters } : undefined;
     return this.aggregationService.queryHistoryRecords({
       skip,
       take,
