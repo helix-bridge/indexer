@@ -4,6 +4,9 @@ import { BaseTransferService, Transfer, TransferAction } from '../base/TransferS
 
 @Injectable()
 export class TransferService extends BaseTransferService {
+  private readonly subql = this.configService.get<string>('SUBQL');
+  private readonly subqlX = this.configService.get<string>('SUBQL_X');
+  private readonly subqlS = this.configService.get<string>('SUBQL_S');
   private readonly issuingUrl = this.configService.get<string>('SUBSTRATE_SUBSTRATE_ISSUING');
   private readonly backingUrl = this.configService.get<string>('SUBSTRATE_SUBSTRATE_BACKING');
 
@@ -20,6 +23,13 @@ export class TransferService extends BaseTransferService {
       issuing: { chain: 'pangolin-dvm', url: this.issuingUrl, token: 'xORING', feeToken: 'PRING' },
     },
   ];
+
+  dispatchEndPoints = {
+    pangolin: this.subqlX + 'pchain',
+    pangoro: this.subqlS + 'pochain',
+    crab: this.subql + 'crab',
+    darwinia: this.subql + 'darwinia',
+  };
 
   constructor(public configService: ConfigService) {
     super(configService);
