@@ -114,9 +114,9 @@ export class Substrate2parachainService extends RecordsService implements OnModu
           });
 
           if (!this.needSyncLock[index] && isLock) {
-              this.needSyncLock[index] = true;
+            this.needSyncLock[index] = true;
           } else if (!this.needSyncBurn[index] && !isLock) {
-              this.needSyncBurn[index] = true;
+            this.needSyncBurn[index] = true;
           }
 
           if (node.result === 0) {
