@@ -6,6 +6,8 @@ import {
 } from "../generated/Bridge/Bridge"
 import { TransferRecord, RelayRecord } from "../generated/schema"
 
+let HelixPrefix: BigInt = BigInt.fromI32(26744);
+
 // target chain
 export function handleRelay(event: Relay): void {
   let id = event.params.transferId.toHexString();
@@ -26,6 +28,9 @@ export function handleRelay(event: Relay): void {
 
 // source chain
 export function handleSend(event: Send): void {
+  if (event.params.nonce >> 48 != HelixPrefix) {
+      return;
+  }
   let message_id = event.params.transferId.toHexString();
   let entity = TransferRecord.load(message_id);
   if (entity == null) {
