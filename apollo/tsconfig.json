@@ -2,6 +2,9 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "paths": {
+        "cbridge-typescript-client": ["node_modules/cbridge-typescript-client/ts-proto/gateway"]
+    }
   }
 }
