@@ -58,7 +58,10 @@ export class EventHandler {
 
   public async save() {
     // s2s darwinia<>crab dispatch event
-    if (this.section === 'bridgeDarwiniaDispatch' || this.section === 'bridgeCrabParachainDispatch') {
+    if (
+      this.section === 'bridgeDarwiniaDispatch' ||
+      this.section === 'bridgeCrabParachainDispatch'
+    ) {
       await this.handleBridgeDispatchEvent();
     }
 

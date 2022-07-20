@@ -19,7 +19,7 @@
     "start:apollo:dev": "cd apollo && yarn start:dev",
     "start:apollo:debug": "cd apollo && yarn start:debug",
     "build:apollo": "cd apollo && yarn build",
-    "lint": "cd apollo && yarn lint",
+    "lint": "eslint **/src/**/*.ts **/**/src/**/*.ts --fix",
     "format": "prettier **/src/**/*.ts --write"
   },
   "devDependencies": {

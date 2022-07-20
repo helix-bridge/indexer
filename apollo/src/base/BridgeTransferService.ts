@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 
 export interface BridgeChain {
-  chainId: number,
+  chainId: number;
   chain: string;
   url: string; // record api endpoint
   token: string;

@@ -1,19 +1,15 @@
-import { BigInt } from "@graphprotocol/graph-ts"
-import {
-  Relay,
-  Send,
-  WithdrawDone
-} from "../generated/Bridge/Bridge"
-import { TransferRecord, RelayRecord } from "../generated/schema"
+import { BigInt } from '@graphprotocol/graph-ts';
+import { Relay, Send, WithdrawDone } from '../generated/Bridge/Bridge';
+import { TransferRecord, RelayRecord } from '../generated/schema';
 
-let HelixPrefix: BigInt = BigInt.fromI32(26744);
+const HelixPrefix: BigInt = BigInt.fromI32(26744);
 
 // target chain
 export function handleRelay(event: Relay): void {
-  let id = event.params.transferId.toHexString();
+  const id = event.params.transferId.toHexString();
   let entity = RelayRecord.load(id);
   if (entity == null) {
-      entity = new RelayRecord(id);
+    entity = new RelayRecord(id);
   }
   entity.sender = event.params.sender;
   entity.receiver = event.params.receiver;
@@ -29,12 +25,12 @@ export function handleRelay(event: Relay): void {
 // source chain
 export function handleSend(event: Send): void {
   if (event.params.nonce >> 48 != HelixPrefix) {
-      return;
+    return;
   }
-  let message_id = event.params.transferId.toHexString();
+  const message_id = event.params.transferId.toHexString();
   let entity = TransferRecord.load(message_id);
   if (entity == null) {
-      entity = new TransferRecord(message_id);
+    entity = new TransferRecord(message_id);
   }
   entity.sender = event.params.sender;
   entity.receiver = event.params.receiver;
@@ -50,14 +46,13 @@ export function handleSend(event: Send): void {
 
 // source chain
 export function handleWithdrawDone(event: WithdrawDone): void {
-  let message_id = event.params.refid.toHexString();
-  let entity = TransferRecord.load(message_id);
+  const message_id = event.params.refid.toHexString();
+  const entity = TransferRecord.load(message_id);
   if (entity == null) {
-      return;
+    return;
   }
   entity.withdraw_id = event.params.withdrawId;
   entity.withdraw_transaction = event.transaction.hash;
   entity.withdraw_timestamp = event.block.timestamp;
   entity.save();
 }
-
