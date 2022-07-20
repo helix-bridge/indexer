@@ -1,0 +1,26 @@
+specVersion: 0.0.2
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Erc20Sub2SubBacking
+    network: pangolin
+    source:
+      address: "0x1A0eBB54719dD596047ccAD229c942a50bc9c7c4"
+      abi: Erc20Sub2SubBacking
+      startBlock: 16176000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - TokenLocked
+      abis:
+        - name: Erc20Sub2SubBacking
+          file: Erc20Sub2SubBacking/abis/Erc20Sub2SubBacking.json
+      eventHandlers:
+        - event: TokenLocked(uint256,bytes32,address,address,address,uint256)
+          handler: handleTokenLocked
+        - event: TokenUnlockedForFailed(uint256,address,address,uint256)
+          handler: handleTokenUnlockedForFailed
+      file: Erc20Sub2SubBacking/Erc20Sub2SubBacking.wasm
