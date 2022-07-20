@@ -6,4 +6,3 @@ export async function handleEvent(event: SubstrateEvent): Promise<void> {
 
   await entity.save();
 }
-

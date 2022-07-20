@@ -65,11 +65,11 @@ export class AccountHandler {
   }
 
   static async updateS2SLockedStatistic(id: string, amount: bigint) {
-      const account = await this.getAccountById(id);
+    const account = await this.getAccountById(id);
 
-      await this.updateAccount(id, {
-          s2sLockedTotalCount: account.s2sLockedTotalCount + 1,
-          s2sLockedTotalAmount: account.s2sLockedTotalAmount + BigInt(amount),
-      });
+    await this.updateAccount(id, {
+      s2sLockedTotalCount: account.s2sLockedTotalCount + 1,
+      s2sLockedTotalAmount: account.s2sLockedTotalAmount + BigInt(amount),
+    });
   }
 }

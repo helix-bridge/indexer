@@ -1,0 +1,17 @@
+name: Lint
+
+on:
+  pull_request:
+
+jobs:
+  eslint_check:
+    name: Eslint
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout action must run prior to eslint check
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: install
+        run: yarn
+      - name: Lint
+        run: yarn lint
