@@ -19,19 +19,21 @@ export class AggregationResolver {
     @Args('recipient') recipient: string,
     @Args('row') row: number,
     @Args('page') page: number,
-    @Args('result') result: number
+    @Args('results') results: number[]
   ) {
     const skip = row * page || 0;
     const take = row || 10;
     const isValid = (item) =>
       !Object.values(item).some((value) => isUndefined(value) || isNull(value) || value === '');
 
-    const conditions = Object.fromEntries(
-      Object.entries({
-        OR: [{ sender }, { recipient }].filter(isValid),
-        AND: [{ result }].filter(isValid),
-      }).filter(([_, value]) => !!value.length)
-    );
+    const accFilters = [{ sender }, { recipient }].filter(isValid);
+    const accountCondition = accFilters.length ? { OR: accFilters } : {};
+    const resultCondition = results && results.length ? { AND: { result: { in: results } } } : {};
+
+    const conditions = {
+      ...accountCondition,
+      ...resultCondition,
+    };
 
     const where = isEmpty(conditions) ? undefined : conditions;
 

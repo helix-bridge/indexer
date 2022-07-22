@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { RecordsService } from '../base/RecordsService';
+import { RecordsService, RecordStatus } from '../base/RecordsService';
 import { Transfer, TransferAction } from '../base/TransferService';
 import { SubqlRecord } from '../interface/record';
 import { TasksService } from '../tasks/tasks.service';
@@ -106,11 +106,11 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             amount: node.amount,
             startTime: this.toUnixTime(node.startTimestamp),
             endTime: this.toUnixTime(node.endTimestamp),
-            result: node.result,
+            result: this.toRecordStatus(node.result),
             fee: node.fee,
             feeToken: this.lockFeeToken,
             targetTxHash: '',
-            bridgeDispatchError: '',
+            reason: '',
           });
 
           if (!this.needSyncLock[index] && isLock) {
@@ -119,7 +119,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             this.needSyncBurn[index] = true;
           }
 
-          if (node.result === 0) {
+          if (node.result === RecordStatus.pending) {
             if (!this.needSyncLockConfirmed[index] && isLock) {
               this.needSyncLockConfirmed[index] = true;
             } else if (!this.needSyncBurnConfirmed && !isLock) {
@@ -187,7 +187,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             where: { id: this.genID(transfer, action, node.id) },
             data: {
               targetTxHash: node.block.extrinsicHash,
-              bridgeDispatchError: node.method,
+              reason: node.method,
             },
           });
         }
@@ -224,7 +224,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
           fromChain: from.chain,
           toChain: to.chain,
           bridge: 'helix',
-          result: 0,
+          result: RecordStatus.pending,
         },
       });
 
@@ -254,7 +254,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             data: {
               responseTxHash: node.responseTxHash,
               endTime: this.toUnixTime(node.endTimestamp),
-              result: node.result,
+              result: this.toRecordStatus(node.result),
             },
           });
         }
