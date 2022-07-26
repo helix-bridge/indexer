@@ -8,7 +8,7 @@ dataSources:
     source:
       address: "0xDF0f067D367C379902a1efD38fcec68D238ae504"
       abi: Erc20Sub2SubMappingTokenFactory
-      startBlock: 3315820
+      startBlock: 3393800
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
