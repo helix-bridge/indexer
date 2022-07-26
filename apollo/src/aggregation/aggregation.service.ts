@@ -1,5 +1,5 @@
 import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
-import { HistoryRecord, DailyStatistics, Prisma, PrismaClient } from '@prisma/client';
+import { DailyStatistics, HistoryRecord, Prisma, PrismaClient } from '@prisma/client';
 import { HistoryRecords } from '../graphql';
 
 @Injectable()

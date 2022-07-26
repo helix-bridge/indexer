@@ -2,6 +2,20 @@ import { getUnixTime } from 'date-fns';
 import { upperFirst } from 'lodash';
 import { Transfer, TransferAction } from './TransferService';
 
+export enum RecordStatus {
+  pending,
+  pendingToRefund,
+  pendingToClaim,
+  success,
+  refunded,
+}
+
+export enum SubqlRecordStatus {
+  pending,
+  success,
+  revert,
+}
+
 export abstract class RecordsService {
   protected abstract needSyncLock: boolean[];
   protected abstract needSyncLockConfirmed: boolean[];
@@ -79,5 +93,18 @@ export abstract class RecordsService {
       : `${flag} Update ${fromChain} to ${toChain} ${action} records success. ${this.parseInfo(
           rest
         )}`;
+  }
+
+  toRecordStatus(status: SubqlRecordStatus): RecordStatus {
+    switch (status) {
+      case SubqlRecordStatus.pending:
+        return RecordStatus.pending;
+      case SubqlRecordStatus.success:
+        return RecordStatus.success;
+      case SubqlRecordStatus.revert:
+        return RecordStatus.refunded;
+      default:
+        return RecordStatus.pending;
+    }
   }
 }

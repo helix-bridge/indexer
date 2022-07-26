@@ -4,7 +4,7 @@ type HistoryRecord {
   fromChain: String!
   toChain: String!
   bridge: String!
-  bridgeDispatchError: String
+  reason: String # result 的补充说明
   laneId: String!
   nonce: BigInt!
   requestTxHash: String!
@@ -39,5 +39,5 @@ type HistoryRecords {
 type Query {
   historyRecordById(id: String): HistoryRecord
   queryDailyStatistics(timepast: Int!, first: Int, from: String, to: String, bridge: String, token: String): [DailyStatistics]
-  historyRecords(sender: String, recipient: String, row: Int, page: Int, result: Int): HistoryRecords
+  historyRecords(sender: String, recipient: String, row: Int, page: Int, results: [Int]): HistoryRecords
 }

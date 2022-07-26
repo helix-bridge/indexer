@@ -18,7 +18,7 @@ export abstract class IQuery {
 
     abstract queryDailyStatistics(timepast: number, first?: Nullable<number>, from?: Nullable<string>, to?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>): Nullable<Nullable<DailyStatistics>[]> | Promise<Nullable<Nullable<DailyStatistics>[]>>;
 
-    abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>, result?: Nullable<number>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
+    abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>, results?: Nullable<Nullable<number>[]>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
 }
 
 export class HistoryRecord {
@@ -26,7 +26,7 @@ export class HistoryRecord {
     fromChain: string;
     toChain: string;
     bridge: string;
-    bridgeDispatchError?: Nullable<string>;
+    reason?: Nullable<string>;
     laneId: string;
     nonce: BigInt;
     requestTxHash: string;
