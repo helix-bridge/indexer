@@ -153,7 +153,8 @@ export class EventHandler {
     } else if (senderIsDvm && !recipientIsDvm) {
       const senderDvm = AccountHandler.truncateToDvmAddress(sender);
 
-      const executedEvent = this.event.extrinsic.events.find(
+      // @see https://crab.subscan.io/extrinsic/11451549-0 治理或 evm 发出的交易可能没有extrinsics
+      const executedEvent = this.event.extrinsic?.events.find(
         (item) => item.event.method === 'Executed'
       );
 
