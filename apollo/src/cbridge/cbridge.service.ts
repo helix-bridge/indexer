@@ -77,8 +77,8 @@ export class CbridgeService implements OnModuleInit {
     });
   }
 
-  protected genID(transfer: BridgeChain, toChainId: string, identifier: string): string {
-    return `${transfer.chain.split('-')[0]}-${toChainId}-cbridge-${identifier}`;
+  protected genID(transfer: BridgeChain, toChainId: string, transferId: string): string {
+    return `${transfer.chain.split('-')[0]}-${toChainId}-cbridge-${transferId}`;
   }
 
   private getDestChain(id: number): BridgeChain | null {
@@ -101,7 +101,7 @@ export class CbridgeService implements OnModuleInit {
         this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { transferRecords(first: 10, orderBy: start_timestamp, orderDirection: asc, skip: ${this.latestNonce[index]}) { id, sender, receiver, token, amount, dst_chainid, request_transaction, start_timestamp } }`;
+      const query = `query { transferRecords(first: 10, orderBy: start_timestamp, orderDirection: asc, skip: ${this.latestNonce[index]}) { id, sender, receiver, token, amount, dst_chainid, request_transaction, start_timestamp, nonce } }`;
       const records = await axios
         .post(transfer.url, {
           query: query,
@@ -121,7 +121,7 @@ export class CbridgeService implements OnModuleInit {
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: 'cBridge',
-            laneId: '',
+            laneId: record.nonce,
             nonce: this.latestNonce[index] + 1,
             requestTxHash: record.request_transaction,
             responseTxHash: '',
@@ -283,7 +283,7 @@ export class CbridgeService implements OnModuleInit {
       case CBridgeRecordStatus.requestingRefund:
         return { result: RecordStatus.pendingToRefund, reason: CBridgeRecordStatus[7] };
       case CBridgeRecordStatus.refundToBeConfirmed:
-        return { result: RecordStatus.pending, reason: CBridgeRecordStatus[8] };
+        return { result: RecordStatus.pendingToRefund, reason: CBridgeRecordStatus[8] };
       case CBridgeRecordStatus.confirmingYourRefund:
         return { result: RecordStatus.pending, reason: CBridgeRecordStatus[9] };
       case CBridgeRecordStatus.refunded:
