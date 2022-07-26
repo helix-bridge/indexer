@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
 import { BridgeChain } from '../base/BridgeTransferService';
 import { RecordStatus } from '../base/RecordsService';
@@ -82,12 +83,7 @@ export class CbridgeService implements OnModuleInit {
   }
 
   private getDestChain(id: number): BridgeChain | null {
-    for (const chain of this.transferService.transfers) {
-      if (chain.chainId === id) {
-        return chain;
-      }
-    }
-    return null;
+    return this.transferService.transfers.find((transfer) => transfer.chainId === id) ?? null;
   }
 
   async fetchRecords(transfer: BridgeChain, index: number) {
@@ -112,10 +108,12 @@ export class CbridgeService implements OnModuleInit {
       if (records && records.length > 0) {
         for (const record of records) {
           const toChain = this.getDestChain(Number(record.dst_chainid));
+
           if (toChain === null) {
             this.latestNonce[index] += 1;
             continue;
           }
+
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, toChain.chainId.toString(), record.id),
             fromChain: transfer.chain,
@@ -163,12 +161,13 @@ export class CbridgeService implements OnModuleInit {
 
   async queryTransfer(transfer: BridgeChain, srcTransferId: string) {
     const query = `query { transferRecord(id: "${srcTransferId}") {withdraw_id, withdraw_timestamp, withdraw_transaction}}`;
+
     return await axios
       .post(transfer.url, {
         query: query,
         variables: null,
       })
-      .then((res) => res.data?.data?.relayRecords);
+      .then((res) => res.data?.data?.transferRecord);
   }
 
   async fetchStatus(transfer: BridgeChain, index: number) {
@@ -193,12 +192,14 @@ export class CbridgeService implements OnModuleInit {
 
       for (const record of uncheckedRecords) {
         const recordSplitted = record.id.split('-');
-        const transferId = recordSplitted[3];
+        const transferId = last(recordSplitted);
         const dstChainId = recordSplitted[1];
+
         const response = await axios
           .post(this.sgnUrl, { transfer_id: transferId.substring(2) })
           .then((res) => res.data);
-        const bridgeError = response.refund_reason;
+
+        const refundReason = response.refund_reason;
         const { result, reason } = this.toRecordStatus(response.status);
 
         const updateData = {
@@ -214,27 +215,34 @@ export class CbridgeService implements OnModuleInit {
         }
 
         if (response.status === CBridgeRecordStatus.toBeRefunded) {
-          updateData.reason = XferStatus[bridgeError];
+          updateData.reason = XferStatus[refundReason];
         }
 
         if (response.status === CBridgeRecordStatus.completed) {
           const dstChain = this.getDestChain(Number(dstChainId));
+
           if (dstChain === null) {
             continue;
           }
+
           const relayInfo = await this.queryRelay(
             dstChain,
             transfer.chainId.toString(),
             transferId
           );
+
           if (relayInfo.length === 0) {
             continue;
           }
+
           const firstRelay = relayInfo[0];
+
           updateData.targetTxHash = firstRelay.transaction_hash;
           updateData.endTime = Number(firstRelay.timestamp);
+
           const sendAmount = global.BigInt(record.amount);
           const recvAmount = global.BigInt(firstRelay.amount);
+
           if (transfer.feeDecimals > dstChain.feeDecimals) {
             updateData.fee = (
               sendAmount -
@@ -248,12 +256,14 @@ export class CbridgeService implements OnModuleInit {
           }
         } else if (response.status === CBridgeRecordStatus.refunded) {
           const withdrawInfo = await this.queryTransfer(transfer, transferId);
-          if (withdrawInfo && withdrawInfo.length > 0 && withdrawInfo.withdraw_id !== '') {
+
+          if (withdrawInfo) {
             updateData.targetTxHash = withdrawInfo.withdraw_transaction;
             updateData.endTime = Number(withdrawInfo.withdraw_timestamp);
             updateData.fee = '0';
           }
         }
+
         await this.aggregationService.updateHistoryRecord({
           where: { id: record.id },
           data: updateData,
@@ -287,7 +297,7 @@ export class CbridgeService implements OnModuleInit {
       case CBridgeRecordStatus.confirmingYourRefund:
         return { result: RecordStatus.pending, reason: CBridgeRecordStatus[9] };
       case CBridgeRecordStatus.refunded:
-        return { result: RecordStatus.refunded, reason: '' };
+        return { result: RecordStatus.refunded, reason: 'refunded' };
       default:
         return { result: RecordStatus.pending, reason: 'unknown status' };
     }
