@@ -1,10 +1,44 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
 import { BridgeChain } from '../base/BridgeTransferService';
+import { RecordStatus } from '../base/RecordsService';
+import { HistoryRecord } from '../graphql';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
+
+export enum CBridgeRecordStatus {
+  unknown, // 0
+  submitting, // 0 dispatchError: submitting
+  failed, // drop 4 理论上不应该出现
+  waitingForSgnConfirmation, // 0 dispatchError
+  waitingForFundRelease, // 0 dispatchError
+  completed, // 3
+  toBeRefunded, // 1
+  requestingRefund, // 1 dispatchError
+  refundToBeConfirmed, // 0
+  confirmingYourRefund, // 0
+  refunded, // 4
+}
+
+/**
+ * explain the reason for CBridgeRecordStatus.toBeRefunded
+ * @see https://cbridge-docs.celer.network/developer/api-reference/gateway-gettransferstatus
+ */
+export enum XferStatus {
+  unknown,
+  okToRelay,
+  success,
+  badLiquidity,
+  badSlippage,
+  badToken,
+  refundRequested,
+  refundDone,
+  badXferDisabled,
+  badDestChain,
+}
 
 @Injectable()
 export class CbridgeService implements OnModuleInit {
@@ -17,22 +51,6 @@ export class CbridgeService implements OnModuleInit {
   private skip = new Array(this.transferService.transfers.length).fill(0);
 
   private readonly sgnUrl = this.configService.get<string>('CBRIDGE_SGN_URL');
-
-  private readonly statusTransferCompleted = 5;
-  private readonly statusTransferRefunded = 10;
-
-  private readonly xferStatus = [
-    'unknown',
-    'ok_to_relay',
-    'success',
-    'bad_liquidity',
-    'bad_slippage',
-    'bad_token',
-    'refund_requested',
-    'refund_done',
-    'bad_xfer_disabled',
-    'bad_dest_chain',
-  ];
 
   constructor(
     public configService: ConfigService,
@@ -52,7 +70,7 @@ export class CbridgeService implements OnModuleInit {
             return;
           }
           this.isSyncingHistory[index] = true;
-          await this.fetchSendRecords(item, index);
+          await this.fetchRecords(item, index);
           await this.fetchStatus(item, index);
           this.isSyncingHistory[index] = false;
         }
@@ -60,20 +78,15 @@ export class CbridgeService implements OnModuleInit {
     });
   }
 
-  protected genID(transfer: BridgeChain, toChainId: string, identifier: string): string {
-    return `${transfer.chain.split('-')[0]}-${toChainId}-cbridge-${identifier}`;
+  protected genID(transfer: BridgeChain, toChainId: string, transferId: string): string {
+    return `${transfer.chain.split('-')[0]}-${toChainId}-cbridge-${transferId}`;
   }
 
   private getDestChain(id: number): BridgeChain | null {
-    for (const chain of this.transferService.transfers) {
-      if (chain.chainId === id) {
-        return chain;
-      }
-    }
-    return null;
+    return this.transferService.transfers.find((transfer) => transfer.chainId === id) ?? null;
   }
 
-  async fetchSendRecords(transfer: BridgeChain, index: number) {
+  async fetchRecords(transfer: BridgeChain, index: number) {
     // the nonce of cBridge message is not increased
     try {
       if (this.latestNonce[index] === -1) {
@@ -84,7 +97,7 @@ export class CbridgeService implements OnModuleInit {
         this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { transferRecords(first: 10, orderBy: start_timestamp, orderDirection: asc, skip: ${this.latestNonce[index]}) { id, sender, receiver, token, amount, dst_chainid, request_transaction, start_timestamp } }`;
+      const query = `query { transferRecords(first: 10, orderBy: start_timestamp, orderDirection: asc, skip: ${this.latestNonce[index]}) { id, sender, receiver, token, amount, dst_chainid, request_transaction, start_timestamp, nonce } }`;
       const records = await axios
         .post(transfer.url, {
           query: query,
@@ -95,16 +108,18 @@ export class CbridgeService implements OnModuleInit {
       if (records && records.length > 0) {
         for (const record of records) {
           const toChain = this.getDestChain(Number(record.dst_chainid));
+
           if (toChain === null) {
             this.latestNonce[index] += 1;
             continue;
           }
+
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, toChain.chainId.toString(), record.id),
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: 'cBridge',
-            laneId: '',
+            laneId: record.nonce,
             nonce: this.latestNonce[index] + 1,
             requestTxHash: record.request_transaction,
             responseTxHash: '',
@@ -118,13 +133,13 @@ export class CbridgeService implements OnModuleInit {
             fee: '',
             feeToken: transfer.feeToken,
             targetTxHash: '',
-            bridgeDispatchError: '',
+            reason: '',
           });
           this.latestNonce[index] += 1;
         }
 
         this.logger.log(
-          `save new send record successed ${transfer.chain}, nonce: ${this.latestNonce}, added: ${records.length}`
+          `save new send record succeeded ${transfer.chain}, nonce: ${this.latestNonce}, added: ${records.length}`
         );
       }
     } catch (error) {
@@ -146,12 +161,13 @@ export class CbridgeService implements OnModuleInit {
 
   async queryTransfer(transfer: BridgeChain, srcTransferId: string) {
     const query = `query { transferRecord(id: "${srcTransferId}") {withdraw_id, withdraw_timestamp, withdraw_transaction}}`;
+
     return await axios
       .post(transfer.url, {
         query: query,
         variables: null,
       })
-      .then((res) => res.data?.data?.relayRecords);
+      .then((res) => res.data?.data?.transferRecord);
   }
 
   async fetchStatus(transfer: BridgeChain, index: number) {
@@ -167,46 +183,66 @@ export class CbridgeService implements OnModuleInit {
           },
         })
         .then((result) => result.records);
+
       if (uncheckedRecords.length < this.takeEachTime) {
         this.skip[index] = 0;
       } else {
         this.skip[index] += this.takeEachTime;
       }
+
       for (const record of uncheckedRecords) {
-        const recordSplited = record.id.split('-');
-        const transferId = recordSplited[3];
-        const dstChainId = recordSplited[1];
+        const recordSplitted = record.id.split('-');
+        const transferId = last(recordSplitted);
+        const dstChainId = recordSplitted[1];
+
         const response = await axios
           .post(this.sgnUrl, { transfer_id: transferId.substring(2) })
           .then((res) => res.data);
-        const bridgeError = response.refund_reason;
+
+        const refundReason = response.refund_reason;
+        const { result, reason } = this.toRecordStatus(response.status);
 
         const updateData = {
-          result: response.status,
+          result,
           targetTxHash: '',
           endTime: 0,
           fee: '',
-          bridgeDispatchError:
-            bridgeError < this.xferStatus.length ? this.xferStatus[bridgeError] : '',
+          reason: record.reason,
         };
-        if (response.status === this.statusTransferCompleted) {
+
+        if (response.status !== CBridgeRecordStatus.refunded) {
+          updateData.reason = reason;
+        }
+
+        if (response.status === CBridgeRecordStatus.toBeRefunded) {
+          updateData.reason = XferStatus[refundReason];
+        }
+
+        if (response.status === CBridgeRecordStatus.completed) {
           const dstChain = this.getDestChain(Number(dstChainId));
+
           if (dstChain === null) {
             continue;
           }
+
           const relayInfo = await this.queryRelay(
             dstChain,
             transfer.chainId.toString(),
             transferId
           );
+
           if (relayInfo.length === 0) {
             continue;
           }
+
           const firstRelay = relayInfo[0];
+
           updateData.targetTxHash = firstRelay.transaction_hash;
           updateData.endTime = Number(firstRelay.timestamp);
+
           const sendAmount = global.BigInt(record.amount);
           const recvAmount = global.BigInt(firstRelay.amount);
+
           if (transfer.feeDecimals > dstChain.feeDecimals) {
             updateData.fee = (
               sendAmount -
@@ -218,14 +254,16 @@ export class CbridgeService implements OnModuleInit {
               recvAmount / global.BigInt(dstChain.feeDecimals / transfer.feeDecimals)
             ).toString();
           }
-        } else if (response.status === this.statusTransferRefunded) {
+        } else if (response.status === CBridgeRecordStatus.refunded) {
           const withdrawInfo = await this.queryTransfer(transfer, transferId);
-          if (withdrawInfo && withdrawInfo.length > 0 && withdrawInfo.withdraw_id !== '') {
+
+          if (withdrawInfo) {
             updateData.targetTxHash = withdrawInfo.withdraw_transaction;
             updateData.endTime = Number(withdrawInfo.withdraw_timestamp);
             updateData.fee = '0';
           }
         }
+
         await this.aggregationService.updateHistoryRecord({
           where: { id: record.id },
           data: updateData,
@@ -233,6 +271,35 @@ export class CbridgeService implements OnModuleInit {
       }
     } catch (error) {
       this.logger.warn(`fetch cbridge status failed, error ${error}`);
+    }
+  }
+
+  private toRecordStatus(status: CBridgeRecordStatus): Pick<HistoryRecord, 'result' | 'reason'> {
+    switch (status) {
+      case CBridgeRecordStatus.unknown:
+        return { result: RecordStatus.pending, reason: '' };
+      case CBridgeRecordStatus.submitting:
+        return { result: RecordStatus.pending, reason: CBridgeRecordStatus[1] };
+      case CBridgeRecordStatus.failed:
+        return { result: RecordStatus.refunded, reason: CBridgeRecordStatus[2] };
+      case CBridgeRecordStatus.waitingForSgnConfirmation:
+        return { result: RecordStatus.pending, reason: CBridgeRecordStatus[3] };
+      case CBridgeRecordStatus.waitingForFundRelease:
+        return { result: RecordStatus.pending, reason: CBridgeRecordStatus[4] };
+      case CBridgeRecordStatus.completed:
+        return { result: RecordStatus.success, reason: '' };
+      case CBridgeRecordStatus.toBeRefunded:
+        return { result: RecordStatus.pendingToRefund, reason: CBridgeRecordStatus[6] };
+      case CBridgeRecordStatus.requestingRefund:
+        return { result: RecordStatus.pendingToRefund, reason: CBridgeRecordStatus[7] };
+      case CBridgeRecordStatus.refundToBeConfirmed:
+        return { result: RecordStatus.pendingToRefund, reason: CBridgeRecordStatus[8] };
+      case CBridgeRecordStatus.confirmingYourRefund:
+        return { result: RecordStatus.pending, reason: CBridgeRecordStatus[9] };
+      case CBridgeRecordStatus.refunded:
+        return { result: RecordStatus.refunded, reason: 'refunded' };
+      default:
+        return { result: RecordStatus.pending, reason: 'unknown status' };
     }
   }
 }

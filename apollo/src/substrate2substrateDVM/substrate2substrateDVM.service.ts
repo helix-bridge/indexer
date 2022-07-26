@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import axios from 'axios';
 import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { RecordsService } from '../base/RecordsService';
+import { RecordsService, RecordStatus } from '../base/RecordsService';
 import { Transfer, TransferAction } from '../base/TransferService';
 import { SubqlRecord, ThegraphRecord } from '../interface/record';
 import { TasksService } from '../tasks/tasks.service';
@@ -50,7 +50,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
     return {
       amount: record.amount,
       bridge: 'helix',
-      bridgeDispatchError: '',
+      reason: '',
       endTime: this.toUnixTime(record.endTimestamp),
       fee: record.fee,
       feeToken: transfer.issuing.token,
@@ -61,7 +61,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       recipient: record.recipient,
       requestTxHash: record.requestTxHash,
       responseTxHash: record.responseTxHash,
-      result: record.result,
+      result: this.toRecordStatus(record.result),
       sender: record.senderId,
       startTime: this.toUnixTime(record.startTimestamp),
       targetTxHash: '',
@@ -74,7 +74,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
     return {
       amount: record.amount,
       bridge: 'helix',
-      bridgeDispatchError: '',
+      reason: '',
       endTime: Number(record.end_timestamp),
       fee: record.fee.toString(),
       feeToken: transfer.issuing.feeToken,
@@ -85,7 +85,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       recipient: record.recipient,
       requestTxHash: record.request_transaction,
       responseTxHash: record.response_transaction,
-      result: record.result,
+      result: this.toRecordStatus(record.result),
       sender: record.sender,
       startTime: Number(record.start_timestamp),
       targetTxHash: '',
@@ -177,7 +177,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
           await this.aggregationService.createHistoryRecord(record);
         }
 
-        if (records.some((record) => record.result === 0)) {
+        if (records.some((record) => record.result === RecordStatus.pending)) {
           if (action === 'lock' && !this.needSyncLockConfirmed[index]) {
             this.needSyncLockConfirmed[index] = true;
             this.needSyncLock[index] = true;
@@ -248,7 +248,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
             where: { id: this.genID(transfer, action, node.id) },
             data: {
               targetTxHash: node.block.extrinsicHash,
-              bridgeDispatchError: node.method,
+              reason: node.method,
             },
           });
         }
@@ -284,7 +284,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
         fromChain: from.chain,
         toChain: to.chain,
         bridge: 'helix',
-        result: 0,
+        result: RecordStatus.pending,
       });
 
       if (action === 'lock' && unconfirmedRecords.length === 0) {
@@ -312,16 +312,16 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
                 id: this.genID(transfer, action, record.id),
                 responseTxHash: record.responseTxHash,
                 endTime: this.toUnixTime(record.endTimestamp),
-                result: record.result,
+                result: this.toRecordStatus(record.result),
               }))
             : (res.data?.data?.burnRecordEntities as ThegraphRecord[]).map((record) => ({
                 id: this.genID(transfer, action, record.id),
                 responseTxHash: record.response_transaction,
                 endTime: Number(record.end_timestamp),
-                result: record.result,
+                result: this.toRecordStatus(record.result),
               }))
         )
-        .then((records) => records.filter((record) => record.result !== 0));
+        .then((records) => records.filter((record) => record.result !== RecordStatus.pending));
 
       if (records && records.length > 0) {
         for (const record of records) {

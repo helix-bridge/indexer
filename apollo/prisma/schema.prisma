@@ -30,7 +30,7 @@ model HistoryRecord {
   fee String
   feeToken String
   targetTxHash String
-  bridgeDispatchError String
+  reason String
 }
 
 model DailyStatistics {

@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { RecordsService } from '../base/RecordsService';
+import { RecordsService, RecordStatus } from '../base/RecordsService';
 import { Transfer } from '../base/TransferService';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
@@ -92,11 +92,11 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
             amount: node.amount,
             startTime: this.toUnixTime(node.timestamp),
             endTime: this.toUnixTime(node.timestamp),
-            result: 1,
+            result: RecordStatus.success,
             fee: '0',
             feeToken: 'null',
             targetTxHash: node.id,
-            bridgeDispatchError: '',
+            reason: '',
           });
 
           this.latestNonce[index] += 1;
