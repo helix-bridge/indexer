@@ -3,13 +3,13 @@ import {
   TokenLocked,
   TokenUnlockedForFailed,
 } from "../generated/Erc20Sub2SubBacking/Erc20Sub2SubBacking"
-import { TokenLockedRecord } from "../generated/schema"
+import { TransferRecord } from "../generated/schema"
 
 export function handleTokenLocked(event: TokenLocked): void {
   let message_id = event.params.transferId.toHexString();
-  let entity = TokenLockedRecord.load(message_id);
+  let entity = TransferRecord.load(message_id);
   if (entity == null) {
-      entity = new TokenLockedRecord(message_id);
+      entity = new TransferRecord(message_id);
   }
   entity.sender = event.params.sender;
   entity.receiver = event.params.recipient;
@@ -18,13 +18,14 @@ export function handleTokenLocked(event: TokenLocked): void {
   entity.transaction_hash = event.transaction.hash;
   entity.start_timestamp = event.block.timestamp;
   entity.messageHash = event.params.hash;
+  entity.fee = event.params.fee;
   entity.save();
 }
 
 
 export function handleTokenUnlockedForFailed(event: TokenUnlockedForFailed): void {
   let id = event.params.transferId.toHexString();
-  let entity = TokenLockedRecord.load(id);
+  let entity = TransferRecord.load(id);
   if (entity == null) {
       return;
   }

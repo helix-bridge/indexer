@@ -6,9 +6,9 @@ dataSources:
     name: Erc20Sub2SubBacking
     network: pangoro
     source:
-      address: "0xb33471ad7eEAf16B6D18a7D53927F25AF4A72132"
+      address: "0x91Cdd894aD5cC203A026115B33e30670E5166504"
       abi: Erc20Sub2SubBacking
-      startBlock: 3412360
+      startBlock: 3426260
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -19,7 +19,7 @@ dataSources:
         - name: Erc20Sub2SubBacking
           file: ./abis/Erc20Sub2SubBacking.json
       eventHandlers:
-        - event: TokenLocked(uint256,bytes32,address,address,address,uint256)
+        - event: TokenLocked(uint256,bytes32,address,address,address,uint256,uint256)
           handler: handleTokenLocked
         - event: TokenUnlockedForFailed(uint256,address,address,uint256)
           handler: handleTokenUnlockedForFailed

@@ -1,4 +1,4 @@
-type TokenLockedRecord @entity {
+type TransferRecord @entity {
   id: ID!
   sender: Bytes!
   receiver: Bytes!
@@ -7,6 +7,7 @@ type TokenLockedRecord @entity {
   messageHash: Bytes!
   start_timestamp: BigInt!
   transaction_hash: Bytes!
+  fee: BigInt
 
   withdraw_timestamp: BigInt
   withdraw_amount: BigInt

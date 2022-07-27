@@ -46,6 +46,10 @@ export class BurnAndRemoteUnlocked__Params {
   get amount(): BigInt {
     return this._event.parameters[5].value.toBigInt();
   }
+
+  get fee(): BigInt {
+    return this._event.parameters[6].value.toBigInt();
+  }
 }
 
 export class DailyLimitChange extends ethereum.Event {

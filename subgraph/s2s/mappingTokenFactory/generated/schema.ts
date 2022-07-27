@@ -12,7 +12,7 @@ import {
   BigDecimal
 } from "@graphprotocol/graph-ts";
 
-export class TokenBurnAndUnlockedRecord extends Entity {
+export class TransferRecord extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -20,23 +20,17 @@ export class TokenBurnAndUnlockedRecord extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(
-      id !== null,
-      "Cannot save TokenBurnAndUnlockedRecord entity without an ID"
-    );
+    assert(id !== null, "Cannot save TransferRecord entity without an ID");
     assert(
       id.kind == ValueKind.STRING,
-      "Cannot save TokenBurnAndUnlockedRecord entity with non-string ID. " +
+      "Cannot save TransferRecord entity with non-string ID. " +
         'Considering using .toHex() to convert the "id" to a string.'
     );
-    store.set("TokenBurnAndUnlockedRecord", id.toString(), this);
+    store.set("TransferRecord", id.toString(), this);
   }
 
-  static load(id: string): TokenBurnAndUnlockedRecord | null {
-    return store.get(
-      "TokenBurnAndUnlockedRecord",
-      id
-    ) as TokenBurnAndUnlockedRecord | null;
+  static load(id: string): TransferRecord | null {
+    return store.get("TransferRecord", id) as TransferRecord | null;
   }
 
   get id(): string {
@@ -109,6 +103,23 @@ export class TokenBurnAndUnlockedRecord extends Entity {
 
   set transaction_hash(value: Bytes) {
     this.set("transaction_hash", Value.fromBytes(value));
+  }
+
+  get fee(): BigInt | null {
+    let value = this.get("fee");
+    if (value === null || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set fee(value: BigInt | null) {
+    if (value === null) {
+      this.unset("fee");
+    } else {
+      this.set("fee", Value.fromBigInt(value as BigInt));
+    }
   }
 
   get withdraw_timestamp(): BigInt | null {
