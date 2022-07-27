@@ -53,7 +53,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       reason: '',
       endTime: this.toUnixTime(record.endTimestamp),
       fee: record.fee,
-      feeToken: transfer.issuing.token,
+      feeToken: transfer.backing.feeToken,
       fromChain: transfer.backing.chain,
       id: this.genID(transfer, 'lock', record.id),
       laneId: record.laneId,
