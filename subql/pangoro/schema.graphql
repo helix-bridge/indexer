@@ -32,6 +32,7 @@ type BridgeDispatchEvent @entity {
   index: Int!
 
   block: Block
+  timestamp: Date
 }
 
 type Account @entity {

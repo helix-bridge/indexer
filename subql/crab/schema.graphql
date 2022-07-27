@@ -11,6 +11,7 @@ type BridgeDispatchEvent @entity {
   method: String!
   data: String!
   index: Int!
+  timestamp: Date
 
   block: Block
 }
