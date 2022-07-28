@@ -1,0 +1,27 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Erc20Sub2SubBacking
+    network: pangoro
+    source:
+      address: "0x91Cdd894aD5cC203A026115B33e30670E5166504"
+      abi: Erc20Sub2SubBacking
+      startBlock: 3426260
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - TokenLocked
+      abis:
+        - name: Erc20Sub2SubBacking
+          file: ./abis/Erc20Sub2SubBacking.json
+      eventHandlers:
+        - event: TokenLocked(uint256,bytes32,address,address,address,uint256,uint256)
+          handler: handleTokenLocked
+        - event: TokenUnlockedForFailed(uint256,address,address,uint256)
+          handler: handleTokenUnlockedForFailed
+      file: ./src/mapping.ts
+

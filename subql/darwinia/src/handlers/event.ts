@@ -82,6 +82,7 @@ export class EventHandler {
     event.method = this.method;
     event.data = this.data;
     event.block = this.simpleBlock();
+    event.timestamp = this.timestamp;
 
     await event.save();
   }
