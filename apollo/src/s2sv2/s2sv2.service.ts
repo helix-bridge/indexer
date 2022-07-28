@@ -4,7 +4,6 @@ import axios from 'axios';
 import { last } from 'lodash';
 import { getUnixTime } from 'date-fns';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { BridgeChain } from '../base/BridgeTransferService';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 import { TransferT1 } from '../base/TransferServiceT1';
@@ -101,7 +100,6 @@ export class S2sv2Service implements OnModuleInit {
           latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      let subql = this.transferService.getRecordQueryString( this.fetchHistoryDataFirst, latestNonce);
       const records = await axios
         .post(from.url, {
           query: this.transferService.getRecordQueryString(
