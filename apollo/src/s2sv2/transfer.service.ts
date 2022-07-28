@@ -8,8 +8,8 @@ export class TransferService extends BaseTransferServiceT1 {
   private readonly subqlX = this.configService.get<string>('SUBQL_X');
   private readonly subqlS = this.configService.get<string>('SUBQL_S');
   
-  private readonly issuingSubgraphUrl = this.configService.get<string>('SUBSTRATE_SUBSTRATE_ISSUING');
-  private readonly backingSubgraphUrl = this.configService.get<string>('SUBSTRATE_SUBSTRATE_BACKING');
+  private readonly issuingSubgraphUrl = this.configService.get<string>('S2S_ISSUING');
+  private readonly backingSubgraphUrl = this.configService.get<string>('S2S_BACKING');
 
   /* todo add crab <> darwinia
   formalChainTransfers: TransferT1[] = [
