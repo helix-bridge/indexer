@@ -25,8 +25,8 @@ export class S2sv2Service implements OnModuleInit {
   private skip = new Array(this.transferService.transfers.length).fill(0);
 
   private fetchCache = new Array(this.transferService.transfers.length).fill({
-      latestNonce: -1,
-      isSyncingHistory: false,
+    latestNonce: -1,
+    isSyncingHistory: false,
   });
 
   constructor(
@@ -64,11 +64,14 @@ export class S2sv2Service implements OnModuleInit {
 
   // 0x726f6c690000000000000099 -> 0x726f6c690x99
   private trimId(id: string) {
-      return id.substring(0, 10) + id.substring(10, 27).replace(/^0+/g, '0x');
+    return id.substring(0, 10) + id.substring(10, 27).replace(/^0+/g, '0x');
   }
 
   private expendId(id: string) {
-      return id.substring(0, 10) + id.substring(10, id.length + 1).replace('0x', '0'.repeat(28 - id.length));
+    return (
+      id.substring(0, 10) +
+      id.substring(10, id.length + 1).replace('0x', '0'.repeat(28 - id.length))
+    );
   }
 
   private toUnixTime(time: string) {
@@ -88,51 +91,47 @@ export class S2sv2Service implements OnModuleInit {
 
   async fetchRecords(transfer: TransferT1, index: number) {
     let latestNonce = this.fetchCache[index].latestNonce;
-    let { source: from, target: to } = transfer;
+    const { source: from, target: to } = transfer;
     try {
-      if ( latestNonce === -1) {
-          const firstRecord = await this.aggregationService
-          .queryHistoryRecordFirst({
-              fromChain: from.chain,
-              toChain: to.chain,
-              bridge: 'helix-s2sv2',
-          });
-          latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
+      if (latestNonce === -1) {
+        const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
+          fromChain: from.chain,
+          toChain: to.chain,
+          bridge: 'helix-s2sv2',
+        });
+        latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
       const records = await axios
         .post(from.url, {
-          query: this.transferService.getRecordQueryString(
-            this.fetchHistoryDataFirst,
-            latestNonce
-          ),
+          query: this.transferService.getRecordQueryString(this.fetchHistoryDataFirst, latestNonce),
           variables: null,
         })
         .then((res) => res.data?.data?.transferRecords);
 
       if (records && records.length > 0) {
         for (const record of records) {
-          let trimId = this.trimId(record.id);
+          const trimId = this.trimId(record.id);
           await this.aggregationService.createHistoryRecord({
-              id: this.genID(transfer, trimId),
-              amount: record.amount,
-              bridge: 'helix-s2sv2',
-              reason: '',
-              endTime: 0,
-              fee: record.fee,
-              feeToken: from.feeToken,
-              fromChain: from.chain,
-              laneId: '',
-              nonce: latestNonce + 1,
-              recipient: record.receiver,
-              requestTxHash: record.transaction_hash,
-              responseTxHash: '',
-              result: 0,
-              sender: record.sender,
-              startTime: Number(record.start_timestamp),
-              targetTxHash: '',
-              toChain: to.chain,
-              token: record.token,
+            id: this.genID(transfer, trimId),
+            amount: record.amount,
+            bridge: 'helix-s2sv2',
+            reason: '',
+            endTime: 0,
+            fee: record.fee,
+            feeToken: from.feeToken,
+            fromChain: from.chain,
+            laneId: '',
+            nonce: latestNonce + 1,
+            recipient: record.receiver,
+            requestTxHash: record.transaction_hash,
+            responseTxHash: '',
+            result: 0,
+            sender: record.sender,
+            startTime: Number(record.start_timestamp),
+            targetTxHash: '',
+            toChain: to.chain,
+            token: record.token,
           });
           latestNonce += 1;
         }
@@ -143,14 +142,12 @@ export class S2sv2Service implements OnModuleInit {
         );
       }
     } catch (error) {
-      this.logger.warn(
-          `s2s v2 fetch record failed, from ${from.chain}, to ${to.chain}, ${error}`
-      );
+      this.logger.warn(`s2s v2 fetch record failed, from ${from.chain}, to ${to.chain}, ${error}`);
     }
   }
 
   async fetchStatus(transfer: TransferT1, index: number) {
-    let { source: from, target: to } = transfer;
+    const { source: from, target: to } = transfer;
 
     try {
       const uncheckedRecords = await this.aggregationService
@@ -170,62 +167,67 @@ export class S2sv2Service implements OnModuleInit {
       } else {
         this.skip[index] += this.takeEachTime;
       }
-      const ids = uncheckedRecords.filter((item) => item.reason === '').map((item) => `"${last(item.id.split('-'))}"`).join(',');
+      const ids = uncheckedRecords
+        .filter((item) => item.reason === '')
+        .map((item) => `"${last(item.id.split('-'))}"`)
+        .join(',');
 
       if (ids.length > 0) {
         const nodes = await axios
-        .post<{ data: { bridgeDispatchEvents: { nodes: any[] } } }>(
+          .post<{ data: { bridgeDispatchEvents: { nodes: any[] } } }>(
             this.transferService.dispatchEndPoints[to.chain.split('-')[0]],
             {
-                query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block, timestamp }}}`,
-                variables: null,
+              query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block, timestamp }}}`,
+              variables: null,
             }
-        )
-        .then((res) => res.data?.data?.bridgeDispatchEvents?.nodes);
+          )
+          .then((res) => res.data?.data?.bridgeDispatchEvents?.nodes);
 
         if (nodes && nodes.length > 0) {
-            for (const node of nodes) {
-                let targetTxHash = node.method === 'MessageDispatched' ?  node.block.extrinsicHash : '';
-                let result = node.method === 'MessageDispatched' ?  RecordStatus.success : RecordStatus.pendingToRefund;
-                await this.aggregationService.updateHistoryRecord({
-                    where: { id: this.genID(transfer, node.id) },
-                    data: {
-                        targetTxHash,
-                        reason: node.method,
-                        result,
-                        endTime: this.toUnixTime(node.timestamp),
-                    },
-                });
-            }
+          for (const node of nodes) {
+            const targetTxHash =
+              node.method === 'MessageDispatched' ? node.block.extrinsicHash : '';
+            const result =
+              node.method === 'MessageDispatched'
+                ? RecordStatus.success
+                : RecordStatus.pendingToRefund;
+            await this.aggregationService.updateHistoryRecord({
+              where: { id: this.genID(transfer, node.id) },
+              data: {
+                targetTxHash,
+                reason: node.method,
+                result,
+                endTime: this.toUnixTime(node.timestamp),
+              },
+            });
+          }
         }
       }
       let refunded = 0;
       for (const node of uncheckedRecords) {
-          if (node.reason !== '') {
-              const transferId = last(node.id.split('-'));
-              let withdrawInfo = await this.queryTransfer(transfer, this.expendId(transferId));
-              if (withdrawInfo) {
-                  refunded += 1
-                  await this.aggregationService.updateHistoryRecord({
-                      where: { id: node.id },
-                      data: {
-                          targetTxHash: withdrawInfo.withdraw_transaction,
-                          endTime: Number(withdrawInfo.withdraw_timestamp),
-                          result: RecordStatus.refunded,
-                      },
-                  });
-              }
+        if (node.reason !== '') {
+          const transferId = last(node.id.split('-'));
+          const withdrawInfo = await this.queryTransfer(transfer, this.expendId(transferId));
+          if (withdrawInfo) {
+            refunded += 1;
+            await this.aggregationService.updateHistoryRecord({
+              where: { id: node.id },
+              data: {
+                targetTxHash: withdrawInfo.withdraw_transaction,
+                endTime: Number(withdrawInfo.withdraw_timestamp),
+                result: RecordStatus.refunded,
+              },
+            });
           }
+        }
       }
       if (refunded > 0 || ids.length > 0) {
-          this.logger.log(
-              `s2s v2 update records, from ${from.chain}, to ${to.chain}, ids ${ids}, refunded ${refunded}`
-          );
+        this.logger.log(
+          `s2s v2 update records, from ${from.chain}, to ${to.chain}, ids ${ids}, refunded ${refunded}`
+        );
       }
     } catch (error) {
-      this.logger.warn(
-          `s2s v2 update record failed, from ${from.chain}, to ${to.chain}, ${error}`
-      );
+      this.logger.warn(`s2s v2 update record failed, from ${from.chain}, to ${to.chain}, ${error}`);
     }
   }
 }
