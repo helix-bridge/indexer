@@ -48,10 +48,6 @@ export class EventHandler {
     return i === 'null' ? undefined : i;
   }
 
-  get eventHash() {
-    return this.event.event.hash.toString();
-  }
-
   get timestamp() {
     return this.event.block.timestamp;
   }

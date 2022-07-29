@@ -7,7 +7,7 @@ export class TransferService extends BaseTransferServiceT1 {
   private readonly subql = this.configService.get<string>('SUBQL');
   private readonly subqlX = this.configService.get<string>('SUBQL_X');
   private readonly subqlS = this.configService.get<string>('SUBQL_S');
-  
+
   private readonly issuingSubgraphUrl = this.configService.get<string>('S2S_ISSUING');
   private readonly backingSubgraphUrl = this.configService.get<string>('S2S_BACKING');
 
@@ -40,6 +40,6 @@ export class TransferService extends BaseTransferServiceT1 {
   }
 
   getRecordQueryString(first: number, latestNonce: bigint | number) {
-      return `query { transferRecords (first: ${first}, orderBy: start_timestamp, orderDirection: asc, skip: ${latestNonce}) {id, sender, receiver, token, amount, fee, start_timestamp, transaction_hash}}`
+    return `query { transferRecords (first: ${first}, orderBy: start_timestamp, orderDirection: asc, skip: ${latestNonce}) {id, sender, receiver, token, amount, fee, start_timestamp, transaction_hash}}`;
   }
 }
