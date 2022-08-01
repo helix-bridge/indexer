@@ -4,7 +4,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: Bridge
-    network: heco
+    network: optimistic
     source:
       address: "0x9D39Fc627A6d9d9F8C831c16995b209548cc3401"
       abi: Bridge

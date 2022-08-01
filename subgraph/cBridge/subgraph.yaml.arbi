@@ -4,7 +4,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: Bridge
-    network: heco
+    network: arbi
     source:
       address: "0x1619DE6B6B20eD217a58d00f37B9d47C7663feca"
       abi: Bridge
