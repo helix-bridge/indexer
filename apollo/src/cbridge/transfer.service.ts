@@ -6,6 +6,8 @@ import { BaseBridgeTransferService, BridgeChain } from '../base/BridgeTransferSe
 export class TransferService extends BaseBridgeTransferService {
   private readonly hecoEndpoint = this.configService.get<string>('HECO_ENDPOINT');
   private readonly crabSmartEndpoint = this.configService.get<string>('CRAB_SMART_CHAIN_ENDPOINT');
+  private readonly polygonEndpoint = this.configService.get<string>('POLYGON_ENDPOINT');
+  private readonly ethereumEndpoint = this.configService.get<string>('ETHEREUM_ENDPOINT');
 
   formalChainTransfers: BridgeChain[] = [
     {
@@ -14,7 +16,6 @@ export class TransferService extends BaseBridgeTransferService {
       url: this.hecoEndpoint,
       token: 'RING',
       feeToken: 'RING',
-      blockTime: 3,
       feeDecimals: 1e18,
     },
     {
@@ -23,8 +24,23 @@ export class TransferService extends BaseBridgeTransferService {
       url: this.crabSmartEndpoint,
       token: 'xRING',
       feeToken: 'xRING',
-      blockTime: 6,
       feeDecimals: 1e9,
+    },
+    {
+      chainId: 137,
+      chain: 'polygon',
+      url: this.polygonEndpoint,
+      token: 'RING',
+      feeToken: 'RING',
+      feeDecimals: 1e18,
+    },
+    {
+      chainId: 1,
+      chain: 'ethereum',
+      url: this.ethereumEndpoint,
+      token: 'RING',
+      feeToken: 'RING',
+      feeDecimals: 1e18,
     },
   ];
 

@@ -6,7 +6,6 @@ export interface BridgeChain {
   url: string; // record api endpoint
   token: string;
   feeToken: string;
-  blockTime: number;
   feeDecimals: number;
 }
 

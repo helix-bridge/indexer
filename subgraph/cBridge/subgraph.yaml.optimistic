@@ -1,0 +1,30 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Bridge
+    network: optimistic
+    source:
+      address: "0x9D39Fc627A6d9d9F8C831c16995b209548cc3401"
+      abi: Bridge
+      startBlock: 105426
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Send
+        - Relay
+        - WithdrawDone
+      abis:
+        - name: Bridge
+          file: ./abis/Bridge.json
+      eventHandlers:
+        - event: Relay(bytes32,address,address,address,uint256,uint64,bytes32)
+          handler: handleRelay
+        - event: Send(bytes32,address,address,address,uint256,uint64,uint64,uint32)
+          handler: handleSend
+        - event: WithdrawDone(bytes32,uint64,address,address,uint256,bytes32)
+          handler: handleWithdrawDone
+      file: ./src/mapping.ts
