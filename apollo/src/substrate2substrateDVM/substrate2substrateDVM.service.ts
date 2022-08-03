@@ -48,7 +48,8 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
 
   private lockRecordToHistory(record: SubqlRecord, transfer: Transfer) {
     return {
-      amount: record.amount,
+      sendAmount: record.amount,
+      recvAmount: record.amount,
       bridge: 'helix',
       reason: '',
       endTime: this.toUnixTime(record.endTimestamp),
@@ -56,11 +57,10 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       feeToken: transfer.backing.feeToken,
       fromChain: transfer.backing.chain,
       id: this.genID(transfer, 'lock', record.id),
-      laneId: record.laneId,
+      messageNonce: record.nonce,
       nonce: global.BigInt(record.nonce),
       recipient: record.recipient,
       requestTxHash: record.requestTxHash,
-      responseTxHash: record.responseTxHash,
       result: this.toRecordStatus(record.result),
       sender: record.senderId,
       startTime: this.toUnixTime(record.startTimestamp),
@@ -72,7 +72,8 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
 
   private burnRecordToHistory(record: ThegraphRecord, transfer: Transfer) {
     return {
-      amount: record.amount,
+      sendAmount: record.amount,
+      recvAmount: record.amount,
       bridge: 'helix',
       reason: '',
       endTime: Number(record.end_timestamp),
@@ -80,11 +81,10 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       feeToken: transfer.issuing.feeToken,
       fromChain: transfer.issuing.chain,
       id: this.genID(transfer, 'burn', record.id),
-      laneId: record.lane_id,
+      messageNonce: record.nonce,
       nonce: global.BigInt(record.nonce),
       recipient: record.recipient,
       requestTxHash: record.request_transaction,
-      responseTxHash: record.response_transaction,
       result: this.toRecordStatus(record.result),
       sender: record.sender,
       startTime: Number(record.start_timestamp),

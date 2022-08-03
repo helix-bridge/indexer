@@ -74,6 +74,10 @@ export class S2sv2Service implements OnModuleInit {
     );
   }
 
+  private getMessageNonceFromId(id: string) {
+    return id.substring(10, id.length + 1);
+  }
+
   private toUnixTime(time: string) {
     const timezone = new Date().getTimezoneOffset() * 60;
     return getUnixTime(new Date(time)) - timezone;
@@ -114,18 +118,18 @@ export class S2sv2Service implements OnModuleInit {
           const trimId = this.trimId(record.id);
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, trimId),
-            amount: record.amount,
+            sendAmount: record.amount,
+            recvAmount: record.amount,
             bridge: 'helix-s2sv2',
             reason: '',
             endTime: 0,
             fee: record.fee,
             feeToken: from.feeToken,
             fromChain: from.chain,
-            laneId: '',
+            messageNonce: this.getMessageNonceFromId(trimId),
             nonce: latestNonce + 1,
             recipient: record.receiver,
             requestTxHash: record.transaction_hash,
-            responseTxHash: '',
             result: 0,
             sender: record.sender,
             startTime: Number(record.start_timestamp),

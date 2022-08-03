@@ -16,14 +16,13 @@ model HistoryRecord {
   fromChain String
   toChain String
   bridge String
-  laneId String
   nonce BigInt
   requestTxHash String
-  responseTxHash String?
   sender String
   recipient String
   token String
-  amount String
+  sendAmount String
+  recvAmount String
   startTime Int
   endTime Int?
   result Int
@@ -31,6 +30,7 @@ model HistoryRecord {
   feeToken String
   targetTxHash String
   reason String
+  messageNonce String
 }
 
 model DailyStatistics {

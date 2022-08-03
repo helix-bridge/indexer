@@ -119,14 +119,14 @@ export class CbridgeService implements OnModuleInit {
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: 'cBridge',
-            laneId: record.nonce,
+            messageNonce: record.nonce,
             nonce: this.latestNonce[index] + 1,
             requestTxHash: record.request_transaction,
-            responseTxHash: '',
             sender: record.sender,
             recipient: record.receiver,
             token: transfer.token,
-            amount: record.amount,
+            sendAmount: record.amount,
+            recvAmount: '0',
             startTime: Number(record.start_timestamp),
             endTime: 0,
             result: 0,
@@ -208,6 +208,7 @@ export class CbridgeService implements OnModuleInit {
           endTime: 0,
           fee: '',
           reason: record.reason,
+          recvAmount: '0',
         };
 
         if (response.status !== CBridgeRecordStatus.refunded) {
@@ -239,8 +240,9 @@ export class CbridgeService implements OnModuleInit {
 
           updateData.targetTxHash = firstRelay.transaction_hash;
           updateData.endTime = Number(firstRelay.timestamp);
+          updateData.recvAmount = firstRelay.amount;
 
-          const sendAmount = global.BigInt(record.amount);
+          const sendAmount = global.BigInt(record.sendAmount);
           const recvAmount = global.BigInt(firstRelay.amount);
 
           if (transfer.feeDecimals > dstChain.feeDecimals) {
@@ -261,6 +263,7 @@ export class CbridgeService implements OnModuleInit {
             updateData.targetTxHash = withdrawInfo.withdraw_transaction;
             updateData.endTime = Number(withdrawInfo.withdraw_timestamp);
             updateData.fee = '0';
+            updateData.recvAmount = record.sendAmount;
           }
         }
 

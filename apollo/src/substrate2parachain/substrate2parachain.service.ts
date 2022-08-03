@@ -82,7 +82,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
 
       const nodes = await axios
         .post(from.url, {
-          query: `query { s2sEvents (first: ${this.fetchHistoryDataFirst}, orderBy: NONCE_ASC, filter: {nonce: {greaterThan: "${latestNonce}"}}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, senderId, recipient, fee}}}`,
+          query: `query { s2sEvents (first: ${this.fetchHistoryDataFirst}, orderBy: NONCE_ASC, filter: {nonce: {greaterThan: "${latestNonce}"}}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, result, senderId, recipient, fee}}}`,
           variables: null,
         })
         .then((res) => res.data?.data?.s2sEvents?.nodes);
@@ -96,14 +96,14 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             fromChain: from.chain,
             toChain: to.chain,
             bridge: 'helix',
-            laneId: node.laneId,
+            messageNonce: node.nonce,
             nonce: global.BigInt(node.nonce),
             requestTxHash: node.requestTxHash,
-            responseTxHash: node.responseTxHash,
             sender: node.senderId,
             recipient: node.recipient,
             token: from.token,
-            amount: node.amount,
+            sendAmount: node.amount,
+            recvAmount: node.amount,
             startTime: this.toUnixTime(node.startTimestamp),
             endTime: this.toUnixTime(node.endTimestamp),
             result: this.toRecordStatus(node.result),
@@ -242,7 +242,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
 
       const nodes = await axios
         .post<{ data: { s2sEvents: { nodes: SubqlRecord[] } } }>(from.url, {
-          query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) { nodes {id, endTimestamp, responseTxHash, result }}}`,
+          query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) { nodes {id, endTimestamp, result }}}`,
           variables: null,
         })
         .then((res) => res.data?.data?.s2sEvents?.nodes.filter((item) => item.result > 0));
@@ -252,7 +252,6 @@ export class Substrate2parachainService extends RecordsService implements OnModu
           await this.aggregationService.updateHistoryRecord({
             where: { id: this.genID(transfer, action, node.id) },
             data: {
-              responseTxHash: node.responseTxHash,
               endTime: this.toUnixTime(node.endTimestamp),
               result: this.toRecordStatus(node.result),
             },
