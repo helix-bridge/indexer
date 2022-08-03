@@ -119,10 +119,10 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             this.needSyncBurn[index] = true;
           }
 
-          if (node.result === RecordStatus.pending) {
+          if (this.toRecordStatus(node.result) === RecordStatus.pending) {
             if (!this.needSyncLockConfirmed[index] && isLock) {
               this.needSyncLockConfirmed[index] = true;
-            } else if (!this.needSyncBurnConfirmed && !isLock) {
+            } else if (!this.needSyncBurnConfirmed[index] && !isLock) {
               this.needSyncBurnConfirmed[index] = true;
             }
           }
