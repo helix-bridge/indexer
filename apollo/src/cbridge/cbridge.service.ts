@@ -92,7 +92,7 @@ export class CbridgeService implements OnModuleInit {
       if (this.latestNonce[index] === -1) {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
           fromChain: transfer.chain,
-          bridge: 'cBridge',
+          bridge: 'cBridge-' + transfer.chain,
         });
         this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
       }
@@ -118,7 +118,7 @@ export class CbridgeService implements OnModuleInit {
             id: this.genID(transfer, toChain.chainId.toString(), record.id),
             fromChain: transfer.chain,
             toChain: toChain.chain,
-            bridge: 'cBridge',
+            bridge: 'cBridge-' + transfer.chain,
             messageNonce: record.nonce,
             nonce: this.latestNonce[index] + 1,
             requestTxHash: record.request_transaction,
@@ -178,7 +178,7 @@ export class CbridgeService implements OnModuleInit {
           take: this.takeEachTime,
           where: {
             fromChain: transfer.chain,
-            bridge: 'cBridge',
+            bridge: 'cBridge-' + transfer.chain,
             responseTxHash: '',
           },
         })

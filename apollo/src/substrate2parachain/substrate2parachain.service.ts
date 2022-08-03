@@ -76,7 +76,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
         .queryHistoryRecordFirst({
           fromChain: from.chain,
           toChain: to.chain,
-          bridge: 'helix',
+          bridge: 'helix-s2p',
         })
         .then((firstRecord) => (firstRecord ? firstRecord.nonce : -1));
 
@@ -95,7 +95,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             id: this.genID(transfer, action, node.id),
             fromChain: from.chain,
             toChain: to.chain,
-            bridge: 'helix',
+            bridge: 'helix-s2p',
             messageNonce: node.nonce,
             nonce: global.BigInt(node.nonce),
             requestTxHash: node.requestTxHash,
@@ -157,7 +157,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
         where: {
           fromChain: from.chain,
           toChain: to.chain,
-          bridge: 'helix',
+          bridge: 'helix-s2p',
           responseTxHash: '',
         },
       });
@@ -223,7 +223,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
         where: {
           fromChain: from.chain,
           toChain: to.chain,
-          bridge: 'helix',
+          bridge: 'helix-s2p',
           result: RecordStatus.pending,
         },
       });

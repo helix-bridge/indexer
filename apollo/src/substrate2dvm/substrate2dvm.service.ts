@@ -61,7 +61,7 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
             { fromChain: from.chain, toChain: to.chain },
             { fromChain: to.chain, toChain: from.chain },
           ],
-          bridge: 'helix',
+          bridge: 'helix-s2dvm',
         });
 
         this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
@@ -81,7 +81,7 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
             id: this.genID(transfer, node.id),
             fromChain: node.fromChain,
             toChain: node.toChain,
-            bridge: 'helix',
+            bridge: 'helix-s2dvm',
             messageNonce: '0',
             nonce: this.latestNonce[index] + 1,
             requestTxHash: node.id,

@@ -50,7 +50,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
     return {
       sendAmount: record.amount,
       recvAmount: record.amount,
-      bridge: 'helix',
+      bridge: 'helix-s2s',
       reason: '',
       endTime: this.toUnixTime(record.endTimestamp),
       fee: record.fee,
@@ -74,7 +74,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
     return {
       sendAmount: record.amount,
       recvAmount: record.amount,
-      bridge: 'helix',
+      bridge: 'helix-s2s',
       reason: '',
       endTime: Number(record.end_timestamp),
       fee: record.fee.toString(),
@@ -149,7 +149,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
         .queryHistoryRecordFirst({
           fromChain: from.chain,
           toChain: to.chain,
-          bridge: 'helix',
+          bridge: 'helix-s2s',
         })
         .then((record) => (record ? record.nonce : -1));
 
@@ -216,7 +216,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       const uncheckedRecords = await this.queryUncheckedHistoryRecords({
         fromChain: from.chain,
         toChain: to.chain,
-        bridge: 'helix',
+        bridge: 'helix-s2s',
         responseTxHash: '',
       });
 
@@ -283,7 +283,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       const unconfirmedRecords = await this.queryUncheckedHistoryRecords({
         fromChain: from.chain,
         toChain: to.chain,
-        bridge: 'helix',
+        bridge: 'helix-s2s',
         result: RecordStatus.pending,
       });
 
@@ -354,7 +354,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
         .queryDailyStatisticsFirst({
           fromChain: from.chain,
           toChain: to.chain,
-          bridge: 'helix',
+          bridge: 'helix-s2s',
         })
         .then((firstRecord) => (firstRecord ? firstRecord.timestamp : -1));
 
@@ -374,7 +374,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
           await this.aggregationService.createDailyStatistics({
             fromChain: from.chain,
             toChain: to.chain,
-            bridge: 'helix',
+            bridge: 'helix-s2s',
             timestamp: Number(node.id),
             token: 'native-ring',
             dailyVolume: global.BigInt(node.dailyVolume),
