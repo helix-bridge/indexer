@@ -29,7 +29,7 @@ export class HistoryRecord {
     reason?: Nullable<string>;
     nonce: BigInt;
     requestTxHash: string;
-    targetTxHash?: Nullable<string>;
+    responseTxHash?: Nullable<string>;
     sender: string;
     recipient: string;
     token: string;

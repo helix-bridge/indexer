@@ -109,7 +109,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             result: this.toRecordStatus(node.result),
             fee: node.fee,
             feeToken: this.lockFeeToken,
-            targetTxHash: '',
+            responseTxHash: '',
             reason: '',
           });
 
@@ -158,7 +158,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
           fromChain: from.chain,
           toChain: to.chain,
           bridge: 'helix',
-          targetTxHash: '',
+          responseTxHash: '',
         },
       });
 
@@ -186,7 +186,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
           await this.aggregationService.updateHistoryRecord({
             where: { id: this.genID(transfer, action, node.id) },
             data: {
-              targetTxHash: node.block.extrinsicHash,
+              responseTxHash: node.block.extrinsicHash,
               reason: node.method,
             },
           });

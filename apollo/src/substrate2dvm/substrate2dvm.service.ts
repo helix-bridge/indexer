@@ -95,7 +95,7 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
             result: RecordStatus.success,
             fee: '0',
             feeToken: 'null',
-            targetTxHash: node.id,
+            responseTxHash: node.id,
             reason: '',
           });
 

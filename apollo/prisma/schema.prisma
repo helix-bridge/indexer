@@ -28,7 +28,7 @@ model HistoryRecord {
   result Int
   fee String
   feeToken String
-  targetTxHash String
+  responseTxHash String
   reason String
   messageNonce String
 }

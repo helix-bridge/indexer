@@ -64,7 +64,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       result: this.toRecordStatus(record.result),
       sender: record.senderId,
       startTime: this.toUnixTime(record.startTimestamp),
-      targetTxHash: '',
+      responseTxHash: '',
       toChain: transfer.issuing.chain,
       token: transfer.backing.token,
     };
@@ -88,7 +88,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       result: this.toRecordStatus(record.result),
       sender: record.sender,
       startTime: Number(record.start_timestamp),
-      targetTxHash: '',
+      responseTxHash: '',
       toChain: transfer.backing.chain,
       token: transfer.issuing.token,
     };
@@ -217,7 +217,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
         fromChain: from.chain,
         toChain: to.chain,
         bridge: 'helix',
-        targetTxHash: '',
+        responseTxHash: '',
       });
 
       if (uncheckedRecords.length === 0) {
@@ -247,7 +247,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
           await this.aggregationService.updateHistoryRecord({
             where: { id: this.genID(transfer, action, node.id) },
             data: {
-              targetTxHash: node.block.extrinsicHash,
+              responseTxHash: node.block.extrinsicHash,
               reason: node.method,
             },
           });
