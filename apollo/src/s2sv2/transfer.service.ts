@@ -26,6 +26,10 @@ export class TransferService extends BaseTransferServiceT1 {
       source: { chain: 'pangoro-dvm', url: this.backingSubgraphUrl, feeToken: 'PRING' },
       target: { chain: 'pangolin-dvm', url: this.issuingSubgraphUrl, feeToken: 'PRING' },
     },
+    {
+      source: { chain: 'pangolin-dvm', url: this.issuingSubgraphUrl, feeToken: 'ORING' },
+      target: { chain: 'pangoro-dvm', url: this.backingSubgraphUrl, feeToken: 'ORING' },
+    },
   ];
 
   dispatchEndPoints = {

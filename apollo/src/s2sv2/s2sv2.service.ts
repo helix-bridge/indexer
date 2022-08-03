@@ -24,10 +24,9 @@ export class S2sv2Service implements OnModuleInit {
   private readonly takeEachTime = 3;
   private skip = new Array(this.transferService.transfers.length).fill(0);
 
-  private fetchCache = new Array(this.transferService.transfers.length).fill({
-    latestNonce: -1,
-    isSyncingHistory: false,
-  });
+  private fetchCache = new Array(this.transferService.transfers.length)
+    .fill('')
+    .map((_) => ({ latestNonce: -1, isSyncingHistory: false }));
 
   constructor(
     public configService: ConfigService,
@@ -139,12 +138,11 @@ export class S2sv2Service implements OnModuleInit {
           });
           latestNonce += 1;
         }
-        this.fetchCache[index].latestNonce = latestNonce;
-
         this.logger.log(
           `s2s v2 new records, from ${from.chain}, to ${to.chain}, latest nonce ${latestNonce}, added ${records.length}`
         );
       }
+      this.fetchCache[index].latestNonce = latestNonce;
     } catch (error) {
       this.logger.warn(`s2s v2 fetch record failed, from ${from.chain}, to ${to.chain}, ${error}`);
     }
