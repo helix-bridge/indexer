@@ -67,9 +67,3 @@ dataSources:
           filter:
             module: balances
             method: Endowed # ring: dvm -> mainnet
-
-        # - handler: handleEvent
-        #   kind: substrate/EventHandler
-        #   filter:
-        #     module: balances
-        #     method: Transfer
