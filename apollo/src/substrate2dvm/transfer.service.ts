@@ -8,15 +8,39 @@ export class TransferService extends BaseTransferService {
 
   formalChainTransfers: Transfer[] = [
     {
-      backing: { chain: 'crab', url: this.endpoint, token: 'CRAB', feeToken: 'CRAB' },
-      issuing: { chain: 'crab-dvm', url: this.endpoint, token: 'CRAB', feeToken: 'CRAB' },
+      backing: { chain: 'crab', url: this.endpoint + 'crab', token: 'CRAB', feeToken: 'CRAB' },
+      issuing: { chain: 'crab-dvm', url: this.endpoint + 'crab', token: 'CRAB', feeToken: 'CRAB' },
+    },
+    {
+      backing: {
+        chain: 'darwinia',
+        url: this.endpoint + 'darwinia',
+        token: 'RING',
+        feeToken: 'RING',
+      },
+      issuing: {
+        chain: 'darwinia-dvm',
+        url: this.endpoint + 'darwinia',
+        token: 'RING',
+        feeToken: 'RING',
+      },
     },
   ];
 
   testChainTransfers: Transfer[] = [
     {
-      backing: { chain: 'pangolin', url: this.endpoint, token: 'PRING', feeToken: 'PRING' },
-      issuing: { chain: 'pangolin-dvm', url: this.endpoint, token: 'PRING', feeToken: 'PRING' },
+      backing: {
+        chain: 'pangolin',
+        url: this.endpoint + 'pchain',
+        token: 'PRING',
+        feeToken: 'PRING',
+      },
+      issuing: {
+        chain: 'pangolin-dvm',
+        url: this.endpoint + 'pchain',
+        token: 'PRING',
+        feeToken: 'PRING',
+      },
     },
   ];
 

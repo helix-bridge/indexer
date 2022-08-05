@@ -16,7 +16,7 @@ network:
 
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 6358000
+    startBlock: 9682750
     mapping:
       file: ./dist/index.js
       handlers:
@@ -67,9 +67,3 @@ dataSources:
           filter:
             module: balances
             method: Endowed # ring: dvm -> mainnet
-
-        # - handler: handleEvent
-        #   kind: substrate/EventHandler
-        #   filter:
-        #     module: balances
-        #     method: Transfer
