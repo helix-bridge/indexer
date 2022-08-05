@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { BridgeChain } from '../base/BridgeTransferService';
+import { PartnerT2 } from '../base/TransferServiceT2';
 import { RecordStatus } from '../base/RecordsService';
 import { HistoryRecord } from '../graphql';
 import { TasksService } from '../tasks/tasks.service';
@@ -78,15 +78,15 @@ export class CbridgeService implements OnModuleInit {
     });
   }
 
-  protected genID(transfer: BridgeChain, toChainId: string, transferId: string): string {
+  protected genID(transfer: PartnerT2, toChainId: string, transferId: string): string {
     return `${transfer.chain.split('-')[0]}-${toChainId}-cbridge-${transferId}`;
   }
 
-  private getDestChain(id: number): BridgeChain | null {
+  private getDestChain(id: number): PartnerT2 | null {
     return this.transferService.transfers.find((transfer) => transfer.chainId === id) ?? null;
   }
 
-  async fetchRecords(transfer: BridgeChain, index: number) {
+  async fetchRecords(transfer: PartnerT2, index: number) {
     // the nonce of cBridge message is not increased
     try {
       if (this.latestNonce[index] === -1) {
@@ -149,7 +149,7 @@ export class CbridgeService implements OnModuleInit {
     }
   }
 
-  async queryRelay(transfer: BridgeChain, srcChainId: string, srcTransferId: string) {
+  async queryRelay(transfer: PartnerT2, srcChainId: string, srcTransferId: string) {
     const query = `query { relayRecords(first: 1, where: { src_chainid: "${srcChainId}", src_transferid:"${srcTransferId}"}) { id, amount, timestamp, transaction_hash }}`;
     return await axios
       .post(transfer.url, {
@@ -159,7 +159,7 @@ export class CbridgeService implements OnModuleInit {
       .then((res) => res.data?.data?.relayRecords);
   }
 
-  async queryTransfer(transfer: BridgeChain, srcTransferId: string) {
+  async queryTransfer(transfer: PartnerT2, srcTransferId: string) {
     const query = `query { transferRecord(id: "${srcTransferId}") {withdraw_id, withdraw_timestamp, withdraw_transaction}}`;
 
     return await axios
@@ -170,7 +170,7 @@ export class CbridgeService implements OnModuleInit {
       .then((res) => res.data?.data?.transferRecord);
   }
 
-  async fetchStatus(transfer: BridgeChain, index: number) {
+  async fetchStatus(transfer: PartnerT2, index: number) {
     try {
       const uncheckedRecords = await this.aggregationService
         .queryHistoryRecords({

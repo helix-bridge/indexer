@@ -1,5 +1,9 @@
 import { ConfigService } from '@nestjs/config';
 
+/*
+This model is suitable for scenarios where each bridge is deployed independently, and one source chain corresponds to one target chain.
+*/
+
 export interface PartnerT1 {
   chain: string;
   url: string; // record api endpoint
