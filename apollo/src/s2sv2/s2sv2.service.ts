@@ -210,7 +210,7 @@ export class S2sv2Service implements OnModuleInit {
         if (node.reason !== '') {
           const transferId = last(node.id.split('-'));
           const withdrawInfo = await this.queryTransfer(transfer, this.expendId(transferId));
-          if (withdrawInfo) {
+          if (withdrawInfo && withdrawInfo.withdraw_transaction) {
             refunded += 1;
             await this.aggregationService.updateHistoryRecord({
               where: { id: node.id },
