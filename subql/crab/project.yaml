@@ -83,6 +83,12 @@ dataSources:
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
+            module: kton
+            method: Transfer
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
             module: toCrabParachainBacking
             method: TokenLocked
 

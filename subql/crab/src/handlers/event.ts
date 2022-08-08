@@ -67,7 +67,7 @@ export class EventHandler {
     }
 
     // crab <> crab smart chain
-    if (this.method === 'Transfer' && this.section === 'balances') {
+    if (this.method === 'Transfer') {
       await this.handleProcessTransferUsingDispatchCall();
     }
 

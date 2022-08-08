@@ -61,7 +61,7 @@ export class EventHandler {
       await this.handleDvmToSubstrateOldVersion();
     }
 
-    if (this.method === 'Transfer' && this.section === 'balances') {
+    if (this.method === 'Transfer') {
       await this.handleProcessTransferUsingDispatchCall();
     }
 

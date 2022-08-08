@@ -62,7 +62,7 @@ export class EventHandler {
     }
 
     // darwinia <> darwinia smart chain
-    if (this.method === 'Transfer' && this.section === 'balances') {
+    if (this.method === 'Transfer') {
       await this.handleProcessTransferUsingDispatchCall();
     }
   }
