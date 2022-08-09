@@ -67,7 +67,8 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
         this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { transfers (first: 10, orderBy: TIMESTAMP_ASC, offset: ${this.latestNonce[index]}) { totalCount nodes{id, senderId, recipientId, fromChain, toChain, amount, timestamp }}}`;
+      const section = /kton/i.test(from.token) ? 'kton' : 'balances';
+      const query = `query { transfers (first: 10, orderBy: TIMESTAMP_ASC, offset: ${this.latestNonce[index]}, filter: { section: { equalTo: "${section}" }}) { totalCount nodes{id, senderId, recipientId, fromChain, toChain, amount, timestamp }}}`;
       const nodes = await axios
         .post(from.url, {
           query: query,

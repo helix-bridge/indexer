@@ -61,12 +61,9 @@ export class EventHandler {
       await this.handleBridgeDispatchEvent();
     }
 
-    if (this.method === 'Transfer' && (this.section === 'balances' || this.section === 'kton')) {
-      await this.handleMainToSmartTransfer();
-    }
-
-    if (this.method === 'Endowed' && this.section === 'balances') {
-      await this.handleSmartToMainTransfer();
+    // darwinia <> darwinia smart chain
+    if (this.method === 'Transfer') {
+      await this.handleProcessTransferUsingDispatchCall();
     }
   }
 
@@ -98,16 +95,54 @@ export class EventHandler {
     }
   }
 
-  private async handleTransfer(from: string, to: string, amount: number) {
+  private async handleProcessTransferUsingDispatchCall() {
+    const [from, to, amount] = JSON.parse(this.data);
     const sender = AccountHandler.formatAddress(from);
     const recipient = AccountHandler.formatAddress(to);
+    const senderIsDvm = AccountHandler.isDvmAddress(sender);
+    const recipientIsDvm = AccountHandler.isDvmAddress(recipient);
 
+    if (!senderIsDvm && recipientIsDvm) {
+      const recipientDvm = AccountHandler.truncateToDvmAddress(recipient);
+
+      await this.handleTransfer('darwinia', 'darwinia-dvm', sender, recipientDvm, amount);
+    } else if (senderIsDvm && !recipientIsDvm) {
+      const senderDvm = AccountHandler.truncateToDvmAddress(sender);
+
+      // @see https://crab.subscan.io/extrinsic/11451549-0 治理或 evm 发出的交易可能没有extrinsics
+      const executedEvent = this.event.extrinsic?.events.find(
+        (item) => item.event.method === 'Executed'
+      );
+
+      if (executedEvent) {
+        const [_from, _to, txHash] = JSON.parse(executedEvent.event.data.toString());
+
+        await this.handleTransfer(
+          'darwinia-dvm',
+          'darwinia',
+          senderDvm,
+          recipient,
+          amount * 1e9,
+          txHash
+        );
+      }
+    }
+  }
+
+  private async handleTransfer(
+    fromChain: string,
+    toChain: string,
+    sender: string,
+    recipient: string,
+    amount: number,
+    txHash?: string
+  ) {
     await AccountHandler.ensureAccount(recipient);
     await AccountHandler.updateTransferStatistic(recipient);
     await AccountHandler.ensureAccount(sender);
     await AccountHandler.updateTransferStatistic(sender);
 
-    const transfer = new Transfer(this.extrinsicHash);
+    const transfer = new Transfer(txHash ?? this.extrinsicHash);
 
     transfer.recipientId = recipient;
     transfer.senderId = sender;
@@ -116,27 +151,18 @@ export class EventHandler {
     transfer.method = this.method;
     transfer.amount = BigInt(amount ?? 0);
     transfer.timestamp = this.timestamp;
+    transfer.fromChain = fromChain;
+    transfer.toChain = toChain;
 
-    transfer.block = this.simpleBlock();
+    const block = this.simpleBlock();
+
+    transfer.block = txHash ? { ...block, extrinsicHash: txHash } : block;
 
     try {
       await transfer.save();
     } catch (error) {
       logger.warn(error.message);
     }
-  }
-
-  private async handleMainToSmartTransfer() {
-    const [from, to, amount] = JSON.parse(this.data);
-
-    await this.handleTransfer(from, to, amount);
-  }
-
-  private async handleSmartToMainTransfer() {
-    const [to, amount] = JSON.parse(this.data);
-    const from = '0x0000000000000000000000000000000000000015';
-
-    await this.handleTransfer(from, to, amount);
   }
 
   private async handleTokenLocked() {
