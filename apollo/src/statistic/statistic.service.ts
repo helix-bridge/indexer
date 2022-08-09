@@ -3,7 +3,7 @@ import { AggregationService } from '../aggregation/aggregation.service';
 import { TasksService } from '../tasks/tasks.service';
 
 @Injectable()
-export class StatisticService {
+export class StatisticService implements OnModuleInit {
   private readonly logger = new Logger('statistic');
   // start at 2021-12-15 00:00:00
   private readonly startDay = 1639497600;
