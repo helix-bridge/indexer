@@ -12,6 +12,15 @@ export class TransferService extends BaseTransferService {
       issuing: { chain: 'crab-dvm', url: this.endpoint + 'crab', token: 'CRAB', feeToken: 'CRAB' },
     },
     {
+      backing: { chain: 'crab', url: this.endpoint + 'crab', token: 'CKTON', feeToken: 'CRAB' },
+      issuing: {
+        chain: 'crab-dvm',
+        url: this.endpoint + 'crab',
+        token: 'WCKTON',
+        feeToken: 'CRAB',
+      },
+    },
+    {
       backing: {
         chain: 'darwinia',
         url: this.endpoint + 'darwinia',
@@ -22,6 +31,20 @@ export class TransferService extends BaseTransferService {
         chain: 'darwinia-dvm',
         url: this.endpoint + 'darwinia',
         token: 'RING',
+        feeToken: 'RING',
+      },
+    },
+    {
+      backing: {
+        chain: 'darwinia',
+        url: this.endpoint + 'darwinia',
+        token: 'KTON',
+        feeToken: 'RING',
+      },
+      issuing: {
+        chain: 'darwinia-dvm',
+        url: this.endpoint + 'darwinia',
+        token: 'WKTON',
         feeToken: 'RING',
       },
     },
@@ -39,6 +62,20 @@ export class TransferService extends BaseTransferService {
         chain: 'pangolin-dvm',
         url: this.endpoint + 'pchain',
         token: 'PRING',
+        feeToken: 'PRING',
+      },
+    },
+    {
+      backing: {
+        chain: 'pangolin',
+        url: this.endpoint + 'pchain',
+        token: 'PKTON',
+        feeToken: 'PRING',
+      },
+      issuing: {
+        chain: 'pangolin-dvm',
+        url: this.endpoint + 'pchain',
+        token: 'WPKTON',
         feeToken: 'PRING',
       },
     },
