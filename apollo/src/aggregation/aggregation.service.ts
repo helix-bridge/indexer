@@ -72,6 +72,17 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     });
   }
 
+  async updateDailyStatistics(params: {
+    where: Prisma.DailyStatisticsWhereUniqueInput;
+    data: Prisma.DailyStatisticsUpdateInput;
+  }): Promise<DailyStatistics> {
+    const { where, data } = params;
+    return this.dailyStatistics.update({
+      data,
+      where,
+    });
+  }
+
   async queryDailyStatistics(params: {
     skip?: number;
     take?: number;

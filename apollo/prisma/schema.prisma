@@ -41,5 +41,5 @@ model DailyStatistics {
   token String
   dailyVolume BigInt?
   dailyCount BigInt?
-  @@unique([fromChain, toChain, timestamp, token], name: "daily_statistics_id")
+  @@unique([fromChain, toChain, bridge, timestamp, token], name: "daily_statistics_id")
 }

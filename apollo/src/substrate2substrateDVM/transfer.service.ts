@@ -48,10 +48,4 @@ export class TransferService extends BaseTransferService {
       ? `query { burnRecordEntities (where: { nonce_in: [${nonceList}] }) {id, lane_id, nonce, amount, start_timestamp, end_timestamp, request_transaction, response_transaction, result, token, sender, recipient, fee}}`
       : `query { s2sEvents (filter: {nonce: {in: [${nonceList}]}}) { nodes{id, responseTxHash, result, endTimestamp }}}`;
   }
-
-  getDailyStatisticsQueryString(action: TransferAction, latestDay: number) {
-    return action === 'burn'
-      ? `query { burnDailyStatistics (first: 10, orderBy: id, orderDirection: asc, where: {id_gt: "${latestDay}"}) {id, dailyVolume, dailyCount}}`
-      : `query { s2sDailyStatistics (first: 10, orderBy: ID_ASC, filter: {id: {greaterThan: "${latestDay}"}}) {nodes{id, dailyVolume, dailyCount}}}`;
-  }
 }
