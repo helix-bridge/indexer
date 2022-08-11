@@ -14,7 +14,7 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:test": "NODE_ENV=test nest start",
-    "start:dev": "nest start --watch",
+    "start:dev": "export CBRIDGE_SGN_URL=http://g1.generic.darwinia.network:1810/v2/getTransferStatus && nest start --watch --debug",
     "start:dev:test": "NODE_ENV=test nest start --watch",
     "start:debug": "NODE_ENV=test nest start --debug --watch",
     "start:prod": "node dist/src/main",
