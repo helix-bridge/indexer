@@ -91,6 +91,11 @@ export class Substrate2parachainService extends RecordsService implements OnModu
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
+          const amount = BigInt(node.amount);
+          const recvAmount = from.chain.includes('parachain')
+            ? (amount / BigInt(1e9)).toString()
+            : (amount * BigInt(1e9)).toString();
+
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, action, node.id),
             fromChain: from.chain,
@@ -103,8 +108,8 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             recipient: node.recipient,
             sendToken: from.token,
             recvToken: to.token,
-            sendAmount: node.amount,
-            recvAmount: node.amount,
+            sendAmount: amount.toString(),
+            recvAmount: recvAmount,
             startTime: this.toUnixTime(node.startTimestamp),
             endTime: this.toUnixTime(node.endTimestamp),
             result: this.toRecordStatus(node.result),
