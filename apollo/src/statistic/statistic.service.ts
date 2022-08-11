@@ -88,8 +88,8 @@ export class StatisticService implements OnModuleInit {
           token: token,
         })
         .then((firstRecord) => (firstRecord ? firstRecord.startTime : this.startDay));
-      let nextStartTimestamp = lastStatisticDay + this.secondPerDay;
-      let nextEndTimestamp = nextStartTimestamp + this.secondPerDay;
+      const nextStartTimestamp = lastStatisticDay + this.secondPerDay;
+      const nextEndTimestamp = nextStartTimestamp + this.secondPerDay;
       const records = await this.aggregationService.queryHistoryRecords({
         where: {
           fromChain: from,
@@ -102,7 +102,7 @@ export class StatisticService implements OnModuleInit {
           },
         },
       });
-      let count = records.total;
+      const count = records.total;
       let volume = global.BigInt(0);
       for (const record of records.records) {
         volume = volume + global.BigInt(record.sendAmount);

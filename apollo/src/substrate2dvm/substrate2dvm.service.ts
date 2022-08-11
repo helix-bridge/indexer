@@ -37,7 +37,7 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
   async onModuleInit() {
     this.transferService.transfers.forEach((item, index) => {
       this.taskService.addInterval(
-        `${item.backing.chain}-dvm-fetch_history_data`,
+        `${item.backing.chain}-dvm-fetch_history_${item.backing.token}`,
         10000,
         async () => {
           if (this.isSyncingHistory[index]) {
