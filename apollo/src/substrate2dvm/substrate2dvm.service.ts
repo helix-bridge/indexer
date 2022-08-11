@@ -78,6 +78,11 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
+          const amount = BigInt(node.amount);
+          const recvAmount = node.fromChain.includes('dvm')
+            ? (amount / BigInt(1e9)).toString()
+            : (amount * BigInt(1e9)).toString();
+
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, node.id),
             fromChain: node.fromChain,
@@ -90,7 +95,7 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
             recipient: node.recipientId,
             token: from.token,
             sendAmount: node.amount,
-            recvAmount: node.amount,
+            recvAmount,
             startTime: this.toUnixTime(node.timestamp),
             endTime: this.toUnixTime(node.timestamp),
             result: RecordStatus.success,
