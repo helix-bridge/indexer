@@ -8,6 +8,7 @@ export interface PartnerT1 {
   chain: string;
   url: string; // record api endpoint
   feeToken: string;
+  token: string;
 }
 
 export interface TransferT1 {

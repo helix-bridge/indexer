@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Prisma } from '@prisma/client';
+import { HistoryRecord, Prisma } from '@prisma/client';
 import axios from 'axios';
 import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
@@ -44,7 +44,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
     return `${transfer.backing.chain}2${transfer.issuing.chain}-${action}-${id}`;
   }
 
-  private lockRecordToHistory(record: SubqlRecord, transfer: Transfer) {
+  private lockRecordToHistory(record: SubqlRecord, transfer: Transfer): HistoryRecord {
     return {
       sendAmount: record.amount,
       recvAmount: record.amount,
@@ -64,11 +64,12 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       startTime: this.toUnixTime(record.startTimestamp),
       responseTxHash: '',
       toChain: transfer.issuing.chain,
-      token: transfer.backing.token,
+      sendToken: transfer.backing.token,
+      recvToken: transfer.issuing.token,
     };
   }
 
-  private burnRecordToHistory(record: ThegraphRecord, transfer: Transfer) {
+  private burnRecordToHistory(record: ThegraphRecord, transfer: Transfer): HistoryRecord {
     return {
       sendAmount: record.amount,
       recvAmount: record.amount,
@@ -88,7 +89,8 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       startTime: Number(record.start_timestamp),
       responseTxHash: '',
       toChain: transfer.backing.chain,
-      token: transfer.issuing.token,
+      sendToken: transfer.issuing.token,
+      recvToken: transfer.backing.token,
     };
   }
 
@@ -318,7 +320,10 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
 
           await this.aggregationService.updateHistoryRecord({
             where: { id },
-            data,
+            data: {
+              ...data,
+              recvToken: data.result === RecordStatus.refunded ? from.token : to.token,
+            },
           });
         }
 

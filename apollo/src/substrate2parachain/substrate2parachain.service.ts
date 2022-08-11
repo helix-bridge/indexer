@@ -101,7 +101,8 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             requestTxHash: node.requestTxHash,
             sender: node.senderId,
             recipient: node.recipient,
-            token: from.token,
+            sendToken: from.token,
+            recvToken: to.token,
             sendAmount: node.amount,
             recvAmount: node.amount,
             startTime: this.toUnixTime(node.startTimestamp),
@@ -249,11 +250,14 @@ export class Substrate2parachainService extends RecordsService implements OnModu
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
+          const result = this.toRecordStatus(node.result);
+
           await this.aggregationService.updateHistoryRecord({
             where: { id: this.genID(transfer, action, node.id) },
             data: {
               endTime: this.toUnixTime(node.endTimestamp),
-              result: this.toRecordStatus(node.result),
+              result,
+              recvToken: result === RecordStatus.refunded ? from.token : to.token,
             },
           });
         }
