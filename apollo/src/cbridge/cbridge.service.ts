@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { BridgeChain } from '../base/BridgeTransferService';
+import { PartnerT2 } from '../base/TransferServiceT2';
 import { RecordStatus } from '../base/RecordsService';
 import { HistoryRecord } from '../graphql';
 import { TasksService } from '../tasks/tasks.service';
@@ -78,21 +78,21 @@ export class CbridgeService implements OnModuleInit {
     });
   }
 
-  protected genID(transfer: BridgeChain, toChainId: string, transferId: string): string {
+  protected genID(transfer: PartnerT2, toChainId: string, transferId: string): string {
     return `${transfer.chain.split('-')[0]}-${toChainId}-cbridge-${transferId}`;
   }
 
-  private getDestChain(id: number): BridgeChain | null {
+  private getDestChain(id: number): PartnerT2 | null {
     return this.transferService.transfers.find((transfer) => transfer.chainId === id) ?? null;
   }
 
-  async fetchRecords(transfer: BridgeChain, index: number) {
+  async fetchRecords(transfer: PartnerT2, index: number) {
     // the nonce of cBridge message is not increased
     try {
       if (this.latestNonce[index] === -1) {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
           fromChain: transfer.chain,
-          bridge: 'cBridge',
+          bridge: 'cBridge-' + transfer.chain,
         });
         this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
       }
@@ -118,21 +118,21 @@ export class CbridgeService implements OnModuleInit {
             id: this.genID(transfer, toChain.chainId.toString(), record.id),
             fromChain: transfer.chain,
             toChain: toChain.chain,
-            bridge: 'cBridge',
-            laneId: record.nonce,
+            bridge: 'cBridge-' + transfer.chain,
+            messageNonce: record.nonce,
             nonce: this.latestNonce[index] + 1,
             requestTxHash: record.request_transaction,
-            responseTxHash: '',
             sender: record.sender,
             recipient: record.receiver,
             token: transfer.token,
-            amount: record.amount,
+            sendAmount: record.amount,
+            recvAmount: '0',
             startTime: Number(record.start_timestamp),
             endTime: 0,
             result: 0,
             fee: '',
             feeToken: transfer.feeToken,
-            targetTxHash: '',
+            responseTxHash: '',
             reason: '',
           });
           this.latestNonce[index] += 1;
@@ -149,7 +149,7 @@ export class CbridgeService implements OnModuleInit {
     }
   }
 
-  async queryRelay(transfer: BridgeChain, srcChainId: string, srcTransferId: string) {
+  async queryRelay(transfer: PartnerT2, srcChainId: string, srcTransferId: string) {
     const query = `query { relayRecords(first: 1, where: { src_chainid: "${srcChainId}", src_transferid:"${srcTransferId}"}) { id, amount, timestamp, transaction_hash }}`;
     return await axios
       .post(transfer.url, {
@@ -159,7 +159,7 @@ export class CbridgeService implements OnModuleInit {
       .then((res) => res.data?.data?.relayRecords);
   }
 
-  async queryTransfer(transfer: BridgeChain, srcTransferId: string) {
+  async queryTransfer(transfer: PartnerT2, srcTransferId: string) {
     const query = `query { transferRecord(id: "${srcTransferId}") {withdraw_id, withdraw_timestamp, withdraw_transaction}}`;
 
     return await axios
@@ -170,7 +170,7 @@ export class CbridgeService implements OnModuleInit {
       .then((res) => res.data?.data?.transferRecord);
   }
 
-  async fetchStatus(transfer: BridgeChain, index: number) {
+  async fetchStatus(transfer: PartnerT2, index: number) {
     try {
       const uncheckedRecords = await this.aggregationService
         .queryHistoryRecords({
@@ -178,8 +178,8 @@ export class CbridgeService implements OnModuleInit {
           take: this.takeEachTime,
           where: {
             fromChain: transfer.chain,
-            bridge: 'cBridge',
-            targetTxHash: '',
+            bridge: 'cBridge-' + transfer.chain,
+            responseTxHash: '',
           },
         })
         .then((result) => result.records);
@@ -204,10 +204,11 @@ export class CbridgeService implements OnModuleInit {
 
         const updateData = {
           result,
-          targetTxHash: '',
+          responseTxHash: '',
           endTime: 0,
           fee: '',
           reason: record.reason,
+          recvAmount: '0',
         };
 
         if (response.status !== CBridgeRecordStatus.refunded) {
@@ -237,10 +238,11 @@ export class CbridgeService implements OnModuleInit {
 
           const firstRelay = relayInfo[0];
 
-          updateData.targetTxHash = firstRelay.transaction_hash;
+          updateData.responseTxHash = firstRelay.transaction_hash;
           updateData.endTime = Number(firstRelay.timestamp);
+          updateData.recvAmount = firstRelay.amount;
 
-          const sendAmount = global.BigInt(record.amount);
+          const sendAmount = global.BigInt(record.sendAmount);
           const recvAmount = global.BigInt(firstRelay.amount);
 
           if (transfer.feeDecimals > dstChain.feeDecimals) {
@@ -258,9 +260,10 @@ export class CbridgeService implements OnModuleInit {
           const withdrawInfo = await this.queryTransfer(transfer, transferId);
 
           if (withdrawInfo) {
-            updateData.targetTxHash = withdrawInfo.withdraw_transaction;
+            updateData.responseTxHash = withdrawInfo.withdraw_transaction;
             updateData.endTime = Number(withdrawInfo.withdraw_timestamp);
             updateData.fee = '0';
+            updateData.recvAmount = record.sendAmount;
           }
         }
 

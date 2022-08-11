@@ -7,6 +7,7 @@
 
 /* tslint:disable */
 /* eslint-disable */
+
 export class Accounts {
     total: number;
 }
@@ -27,20 +28,20 @@ export class HistoryRecord {
     toChain: string;
     bridge: string;
     reason?: Nullable<string>;
-    laneId: string;
     nonce: BigInt;
     requestTxHash: string;
-    targetTxHash?: Nullable<string>;
     responseTxHash?: Nullable<string>;
     sender: string;
     recipient: string;
     token: string;
-    amount: string;
+    sendAmount: string;
+    recvAmount?: Nullable<string>;
     startTime: number;
     endTime?: Nullable<number>;
     result: number;
     fee: string;
     feeToken: string;
+    messageNonce?: Nullable<string>;
 }
 
 export class DailyStatistics {

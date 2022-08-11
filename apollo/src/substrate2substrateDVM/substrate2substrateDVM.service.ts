@@ -26,8 +26,6 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
 
   protected readonly isSyncingHistory = new Array(this.transfersCount).fill(false);
 
-  private readonly isSyncingStatistics = new Array(this.transfersCount).fill(false);
-
   // Transactions that will never be done
   private requestTxHashOmitList = [
     '0x7d682087bf51311c93896a34e570af3b78eb57f951689f7b6a5965b83024c0f9',
@@ -48,23 +46,23 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
 
   private lockRecordToHistory(record: SubqlRecord, transfer: Transfer) {
     return {
-      amount: record.amount,
-      bridge: 'helix',
+      sendAmount: record.amount,
+      recvAmount: record.amount,
+      bridge: 'helix-s2s',
       reason: '',
       endTime: this.toUnixTime(record.endTimestamp),
       fee: record.fee,
       feeToken: transfer.backing.feeToken,
       fromChain: transfer.backing.chain,
       id: this.genID(transfer, 'lock', record.id),
-      laneId: record.laneId,
+      messageNonce: record.nonce,
       nonce: global.BigInt(record.nonce),
       recipient: record.recipient,
       requestTxHash: record.requestTxHash,
-      responseTxHash: record.responseTxHash,
       result: this.toRecordStatus(record.result),
       sender: record.senderId,
       startTime: this.toUnixTime(record.startTimestamp),
-      targetTxHash: '',
+      responseTxHash: '',
       toChain: transfer.issuing.chain,
       token: transfer.backing.token,
     };
@@ -72,23 +70,23 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
 
   private burnRecordToHistory(record: ThegraphRecord, transfer: Transfer) {
     return {
-      amount: record.amount,
-      bridge: 'helix',
+      sendAmount: record.amount,
+      recvAmount: record.amount,
+      bridge: 'helix-s2s',
       reason: '',
       endTime: Number(record.end_timestamp),
       fee: record.fee.toString(),
       feeToken: transfer.issuing.feeToken,
       fromChain: transfer.issuing.chain,
       id: this.genID(transfer, 'burn', record.id),
-      laneId: record.lane_id,
+      messageNonce: record.nonce,
       nonce: global.BigInt(record.nonce),
       recipient: record.recipient,
       requestTxHash: record.request_transaction,
-      responseTxHash: record.response_transaction,
       result: this.toRecordStatus(record.result),
       sender: record.sender,
       startTime: Number(record.start_timestamp),
-      targetTxHash: '',
+      responseTxHash: '',
       toChain: transfer.backing.chain,
       token: transfer.issuing.token,
     };
@@ -125,15 +123,6 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
           this.isSyncingHistory[index] = false;
         }
       );
-      this.taskService.addInterval(`${prefix}-fetch_statistics_data`, 60 * 60 * 1000, async () => {
-        if (this.isSyncingStatistics[index]) {
-          return;
-        }
-        this.isSyncingStatistics[index] = true;
-        await this.fetchDailyStatistics(item, 'lock');
-        await this.fetchDailyStatistics(item, 'burn');
-        this.isSyncingStatistics[index] = false;
-      });
     });
   }
 
@@ -149,7 +138,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
         .queryHistoryRecordFirst({
           fromChain: from.chain,
           toChain: to.chain,
-          bridge: 'helix',
+          bridge: 'helix-s2s',
         })
         .then((record) => (record ? record.nonce : -1));
 
@@ -216,8 +205,8 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       const uncheckedRecords = await this.queryUncheckedHistoryRecords({
         fromChain: from.chain,
         toChain: to.chain,
-        bridge: 'helix',
-        targetTxHash: '',
+        bridge: 'helix-s2s',
+        responseTxHash: '',
       });
 
       if (uncheckedRecords.length === 0) {
@@ -247,7 +236,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
           await this.aggregationService.updateHistoryRecord({
             where: { id: this.genID(transfer, action, node.id) },
             data: {
-              targetTxHash: node.block.extrinsicHash,
+              responseTxHash: node.block.extrinsicHash,
               reason: node.method,
             },
           });
@@ -283,7 +272,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       const unconfirmedRecords = await this.queryUncheckedHistoryRecords({
         fromChain: from.chain,
         toChain: to.chain,
-        bridge: 'helix',
+        bridge: 'helix-s2s',
         result: RecordStatus.pending,
       });
 
@@ -339,57 +328,6 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       }
     } catch (error) {
       this.logger.warn(this.checkConfirmRecordsLog(action, from.chain, to.chain, { error }));
-    }
-  }
-
-  async fetchDailyStatistics(transfer: Transfer, action: TransferAction) {
-    let { backing: from, issuing: to } = transfer;
-
-    if (action === 'burn') {
-      [to, from] = [from, to];
-    }
-
-    try {
-      const latestDay = await this.aggregationService
-        .queryDailyStatisticsFirst({
-          fromChain: from.chain,
-          toChain: to.chain,
-          bridge: 'helix',
-        })
-        .then((firstRecord) => (firstRecord ? firstRecord.timestamp : -1));
-
-      const nodes = await axios
-        .post(from.url, {
-          query: this.transferService.getDailyStatisticsQueryString(action, latestDay),
-          variables: null,
-        })
-        .then((res) =>
-          action === 'lock'
-            ? res.data?.data?.s2sDailyStatistics?.nodes
-            : res.data?.data?.burnDailyStatistics
-        );
-
-      if (nodes && nodes.length > 0) {
-        for (const node of nodes) {
-          await this.aggregationService.createDailyStatistics({
-            fromChain: from.chain,
-            toChain: to.chain,
-            bridge: 'helix',
-            timestamp: Number(node.id),
-            token: 'native-ring',
-            dailyVolume: global.BigInt(node.dailyVolume),
-            dailyCount: node.dailyCount,
-          });
-        }
-
-        this.logger.log(
-          `[Statistics] Save new ${from.chain} to ${to.chain} daily statistics from issuing success, latestDay: ${latestDay}, added: ${nodes.length}`
-        );
-      }
-    } catch (e) {
-      this.logger.warn(
-        `[Statistics] Fetch ${from.chain} to ${to.chain} daily statistics from issuing records failed ${e}`
-      );
     }
   }
 }

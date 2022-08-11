@@ -73,6 +73,10 @@ export class S2sv2Service implements OnModuleInit {
     );
   }
 
+  private getMessageNonceFromId(id: string) {
+    return id.substring(10, id.length + 1);
+  }
+
   private toUnixTime(time: string) {
     const timezone = new Date().getTimezoneOffset() * 60;
     return getUnixTime(new Date(time)) - timezone;
@@ -113,22 +117,22 @@ export class S2sv2Service implements OnModuleInit {
           const trimId = this.trimId(record.id);
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, trimId),
-            amount: record.amount,
+            sendAmount: record.amount,
+            recvAmount: record.amount,
             bridge: 'helix-s2sv2',
             reason: '',
             endTime: 0,
             fee: record.fee,
             feeToken: from.feeToken,
             fromChain: from.chain,
-            laneId: '',
+            messageNonce: this.getMessageNonceFromId(trimId),
             nonce: latestNonce + 1,
             recipient: record.receiver,
             requestTxHash: record.transaction_hash,
-            responseTxHash: '',
             result: 0,
             sender: record.sender,
             startTime: Number(record.start_timestamp),
-            targetTxHash: '',
+            responseTxHash: '',
             toChain: to.chain,
             token: record.token,
           });
@@ -156,7 +160,7 @@ export class S2sv2Service implements OnModuleInit {
             fromChain: from.chain,
             toChain: to.chain,
             bridge: 'helix-s2sv2',
-            targetTxHash: '',
+            responseTxHash: '',
           },
         })
         .then((result) => result.records);
@@ -183,7 +187,7 @@ export class S2sv2Service implements OnModuleInit {
 
         if (nodes && nodes.length > 0) {
           for (const node of nodes) {
-            const targetTxHash =
+            const responseTxHash =
               node.method === 'MessageDispatched' ? node.block.extrinsicHash : '';
             const result =
               node.method === 'MessageDispatched'
@@ -192,7 +196,7 @@ export class S2sv2Service implements OnModuleInit {
             await this.aggregationService.updateHistoryRecord({
               where: { id: this.genID(transfer, node.id) },
               data: {
-                targetTxHash,
+                responseTxHash,
                 reason: node.method,
                 result,
                 endTime: this.toUnixTime(node.timestamp),
@@ -211,7 +215,7 @@ export class S2sv2Service implements OnModuleInit {
             await this.aggregationService.updateHistoryRecord({
               where: { id: node.id },
               data: {
-                targetTxHash: withdrawInfo.withdraw_transaction,
+                responseTxHash: withdrawInfo.withdraw_transaction,
                 endTime: Number(withdrawInfo.withdraw_timestamp),
                 result: RecordStatus.refunded,
               },

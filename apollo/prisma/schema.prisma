@@ -16,21 +16,21 @@ model HistoryRecord {
   fromChain String
   toChain String
   bridge String
-  laneId String
   nonce BigInt
   requestTxHash String
-  responseTxHash String?
   sender String
   recipient String
   token String
-  amount String
+  sendAmount String
+  recvAmount String
   startTime Int
   endTime Int?
   result Int
   fee String
   feeToken String
-  targetTxHash String
+  responseTxHash String
   reason String
+  messageNonce String
 }
 
 model DailyStatistics {
@@ -41,5 +41,5 @@ model DailyStatistics {
   token String
   dailyVolume BigInt?
   dailyCount BigInt?
-  @@unique([fromChain, toChain, timestamp, token], name: "daily_statistics_id")
+  @@unique([fromChain, toChain, bridge, timestamp, token], name: "daily_statistics_id")
 }

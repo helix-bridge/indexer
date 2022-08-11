@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BaseBridgeTransferService, BridgeChain } from '../base/BridgeTransferService';
+import { BaseTransferServiceT2, PartnerT2 } from '../base/TransferServiceT2';
 
 @Injectable()
-export class TransferService extends BaseBridgeTransferService {
+export class TransferService extends BaseTransferServiceT2 {
   private readonly hecoEndpoint = this.configService.get<string>('HECO_ENDPOINT');
   private readonly crabSmartEndpoint = this.configService.get<string>('CRAB_SMART_CHAIN_ENDPOINT');
   private readonly polygonEndpoint = this.configService.get<string>('POLYGON_ENDPOINT');
   private readonly ethereumEndpoint = this.configService.get<string>('ETHEREUM_ENDPOINT');
 
-  formalChainTransfers: BridgeChain[] = [
+  formalChainTransfers: PartnerT2[] = [
     {
       chainId: 128,
       chain: 'heco',
@@ -44,7 +44,7 @@ export class TransferService extends BaseBridgeTransferService {
     },
   ];
 
-  testChainTransfers: BridgeChain[] = [];
+  testChainTransfers: PartnerT2[] = [];
 
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
 

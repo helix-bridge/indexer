@@ -5,20 +5,20 @@ type HistoryRecord {
   toChain: String!
   bridge: String!
   reason: String # result 的补充说明
-  laneId: String!
   nonce: BigInt!
   requestTxHash: String!
-  targetTxHash: String
   responseTxHash: String
   sender: String!
   recipient: String!
   token: String!
-  amount: String!
+  sendAmount: String!
+  recvAmount: String
   startTime: Int!
   endTime: Int
   result: Int!
   fee: String!
   feeToken: String!
+  messageNonce: String
 }
 
 type DailyStatistics {
