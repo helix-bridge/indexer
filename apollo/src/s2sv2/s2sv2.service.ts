@@ -134,7 +134,8 @@ export class S2sv2Service implements OnModuleInit {
             startTime: Number(record.start_timestamp),
             responseTxHash: '',
             toChain: to.chain,
-            token: record.token,
+            sendToken: record.token,
+            recvToken: to.token,
           });
           latestNonce += 1;
         }
@@ -218,6 +219,7 @@ export class S2sv2Service implements OnModuleInit {
                 responseTxHash: withdrawInfo.withdraw_transaction,
                 endTime: Number(withdrawInfo.withdraw_timestamp),
                 result: RecordStatus.refunded,
+                recvToken: node.sendToken,
               },
             });
           }

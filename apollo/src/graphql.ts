@@ -32,7 +32,8 @@ export class HistoryRecord {
     responseTxHash?: Nullable<string>;
     sender: string;
     recipient: string;
-    token: string;
+    sendToken: string;
+    recvToken: string;
     sendAmount: string;
     recvAmount?: Nullable<string>;
     startTime: number;
