@@ -85,7 +85,7 @@ export class StatisticService implements OnModuleInit {
           fromChain: from,
           toChain: to,
           bridge: bridge,
-          token: token,
+          sendToken: token,
         })
         .then((firstRecord) => (firstRecord ? firstRecord.startTime : this.startDay));
       const nextStartTimestamp = lastStatisticDay + this.secondPerDay;
@@ -95,7 +95,7 @@ export class StatisticService implements OnModuleInit {
           fromChain: from,
           toChain: to,
           bridge: bridge,
-          token: token,
+          sendToken: token,
           startTime: {
             gt: nextStartTimestamp,
             lt: nextEndTimestamp,

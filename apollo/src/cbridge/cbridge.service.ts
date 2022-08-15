@@ -124,7 +124,8 @@ export class CbridgeService implements OnModuleInit {
             requestTxHash: record.request_transaction,
             sender: record.sender,
             recipient: record.receiver,
-            token: transfer.token,
+            sendToken: transfer.token,
+            recvToken: toChain.token,
             sendAmount: record.amount,
             recvAmount: '0',
             startTime: Number(record.start_timestamp),
@@ -209,6 +210,7 @@ export class CbridgeService implements OnModuleInit {
           fee: '',
           reason: record.reason,
           recvAmount: '0',
+          recvToken: record.recvToken,
         };
 
         if (response.status !== CBridgeRecordStatus.refunded) {
@@ -217,6 +219,7 @@ export class CbridgeService implements OnModuleInit {
 
         if (response.status === CBridgeRecordStatus.toBeRefunded) {
           updateData.reason = XferStatus[refundReason];
+          updateData.recvToken = record.sendToken;
         }
 
         if (response.status === CBridgeRecordStatus.completed) {
@@ -264,6 +267,7 @@ export class CbridgeService implements OnModuleInit {
             updateData.endTime = Number(withdrawInfo.withdraw_timestamp);
             updateData.fee = '0';
             updateData.recvAmount = record.sendAmount;
+            updateData.recvToken = record.sendToken;
           }
         }
 

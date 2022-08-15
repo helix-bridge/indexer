@@ -91,6 +91,11 @@ export class Substrate2parachainService extends RecordsService implements OnModu
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
+          const amount = BigInt(node.amount);
+          const recvAmount = from.chain.includes('parachain')
+            ? (amount / BigInt(1e9)).toString()
+            : (amount * BigInt(1e9)).toString();
+
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, action, node.id),
             fromChain: from.chain,
@@ -101,9 +106,10 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             requestTxHash: node.requestTxHash,
             sender: node.senderId,
             recipient: node.recipient,
-            token: from.token,
-            sendAmount: node.amount,
-            recvAmount: node.amount,
+            sendToken: from.token,
+            recvToken: to.token,
+            sendAmount: amount.toString(),
+            recvAmount: recvAmount,
             startTime: this.toUnixTime(node.startTimestamp),
             endTime: this.toUnixTime(node.endTimestamp),
             result: this.toRecordStatus(node.result),
@@ -249,11 +255,14 @@ export class Substrate2parachainService extends RecordsService implements OnModu
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
+          const result = this.toRecordStatus(node.result);
+
           await this.aggregationService.updateHistoryRecord({
             where: { id: this.genID(transfer, action, node.id) },
             data: {
               endTime: this.toUnixTime(node.endTimestamp),
-              result: this.toRecordStatus(node.result),
+              result,
+              recvToken: result === RecordStatus.refunded ? from.token : to.token,
             },
           });
         }

@@ -23,12 +23,32 @@ export class TransferService extends BaseTransferServiceT1 {
 
   testChainTransfers: TransferT1[] = [
     {
-      source: { chain: 'pangoro-dvm', url: this.backingSubgraphUrl, feeToken: 'PRING' },
-      target: { chain: 'pangolin-dvm', url: this.issuingSubgraphUrl, feeToken: 'PRING' },
+      source: {
+        chain: 'pangoro-dvm',
+        url: this.backingSubgraphUrl,
+        feeToken: 'PRING',
+        token: 'wORING',
+      },
+      target: {
+        chain: 'pangolin-dvm',
+        url: this.issuingSubgraphUrl,
+        feeToken: 'PRING',
+        token: 'xWORING',
+      },
     },
     {
-      source: { chain: 'pangolin-dvm', url: this.issuingSubgraphUrl, feeToken: 'ORING' },
-      target: { chain: 'pangoro-dvm', url: this.backingSubgraphUrl, feeToken: 'ORING' },
+      source: {
+        chain: 'pangolin-dvm',
+        url: this.issuingSubgraphUrl,
+        feeToken: 'ORING',
+        token: 'xWORING',
+      },
+      target: {
+        chain: 'pangoro-dvm',
+        url: this.backingSubgraphUrl,
+        feeToken: 'ORING',
+        token: 'wORING',
+      },
     },
   ];
 

@@ -20,7 +20,8 @@ model HistoryRecord {
   requestTxHash String
   sender String
   recipient String
-  token String
+  sendToken String
+  recvToken String
   sendAmount String
   recvAmount String
   startTime Int
