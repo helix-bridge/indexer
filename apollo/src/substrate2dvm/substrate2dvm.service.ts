@@ -105,6 +105,7 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
             feeToken: 'null',
             responseTxHash: node.id,
             reason: '',
+            sendTokenAddress: '',
           });
 
           this.latestNonce[index] += 1;
