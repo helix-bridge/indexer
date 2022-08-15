@@ -10,9 +10,6 @@ export interface PartnerT2 {
   chainId: number;
   chain: string;
   url: string; // record api endpoint
-  token: string;
-  feeToken: string;
-  feeDecimals: number;
 }
 
 export abstract class BaseTransferServiceT2 {

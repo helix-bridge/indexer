@@ -117,6 +117,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             feeToken: this.lockFeeToken,
             responseTxHash: '',
             reason: '',
+            sendTokenAddress: '',
           });
 
           if (!this.needSyncLock[index] && isLock) {

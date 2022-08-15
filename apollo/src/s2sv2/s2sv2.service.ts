@@ -136,6 +136,7 @@ export class S2sv2Service implements OnModuleInit {
             toChain: to.chain,
             sendToken: record.token,
             recvToken: to.token,
+            sendTokenAddress: record.token,
           });
           latestNonce += 1;
         }
