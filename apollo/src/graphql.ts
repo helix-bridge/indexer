@@ -7,6 +7,7 @@
 
 /* tslint:disable */
 /* eslint-disable */
+
 export class Accounts {
     total: number;
 }
@@ -42,6 +43,7 @@ export class HistoryRecord {
     fee: string;
     feeToken: string;
     messageNonce?: Nullable<string>;
+    sendTokenAddress?: Nullable<string>;
 }
 
 export class DailyStatistics {

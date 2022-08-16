@@ -28,7 +28,10 @@
     "deploy-avalanche-local": "cp subgraph.yaml.avalanche subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 cBridge/avalanche",
     "create-arbi-local": "cp subgraph.yaml.arbi subgraph.yaml; graph create --node http://graph-node:8020/ cBridge/arbi",
     "remove-arbi-local": "cp subgraph.yaml.arbi subgraph.yaml; graph remove --node http://graph-node:8020/ cBridge/arbi",
-    "deploy-arbi-local": "cp subgraph.yaml.arbi subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 cBridge/arbi"
+    "deploy-arbi-local": "cp subgraph.yaml.arbi subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 cBridge/arbi",
+    "create-astar-local": "cp subgraph.yaml.astar subgraph.yaml; graph create --node http://graph-node:8020/ cBridge/astar",
+    "remove-astar-local": "cp subgraph.yaml.astar subgraph.yaml; graph remove --node http://graph-node:8020/ cBridge/astar",
+    "deploy-astar-local": "cp subgraph.yaml.astar subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 cBridge/astar"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.21.1",

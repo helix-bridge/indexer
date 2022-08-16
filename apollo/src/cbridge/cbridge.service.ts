@@ -114,6 +114,9 @@ export class CbridgeService implements OnModuleInit {
             continue;
           }
 
+          const sendTokenInfo =
+            this.transferService.addressToTokenInfo[transfer.chain][record.token];
+
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, toChain.chainId.toString(), record.id),
             fromChain: transfer.chain,
@@ -124,17 +127,18 @@ export class CbridgeService implements OnModuleInit {
             requestTxHash: record.request_transaction,
             sender: record.sender,
             recipient: record.receiver,
-            sendToken: transfer.token,
-            recvToken: toChain.token,
+            sendToken: sendTokenInfo.token,
+            recvToken: '',
             sendAmount: record.amount,
             recvAmount: '0',
             startTime: Number(record.start_timestamp),
             endTime: 0,
             result: 0,
             fee: '',
-            feeToken: transfer.feeToken,
+            feeToken: sendTokenInfo.token,
             responseTxHash: '',
             reason: '',
+            sendTokenAddress: record.token,
           });
           this.latestNonce[index] += 1;
         }
@@ -151,7 +155,7 @@ export class CbridgeService implements OnModuleInit {
   }
 
   async queryRelay(transfer: PartnerT2, srcChainId: string, srcTransferId: string) {
-    const query = `query { relayRecords(first: 1, where: { src_chainid: "${srcChainId}", src_transferid:"${srcTransferId}"}) { id, amount, timestamp, transaction_hash }}`;
+    const query = `query { relayRecords(first: 1, where: { src_chainid: "${srcChainId}", src_transferid:"${srcTransferId}"}) { id, amount, timestamp, transaction_hash, token }}`;
     return await axios
       .post(transfer.url, {
         query: query,
@@ -244,19 +248,23 @@ export class CbridgeService implements OnModuleInit {
           updateData.responseTxHash = firstRelay.transaction_hash;
           updateData.endTime = Number(firstRelay.timestamp);
           updateData.recvAmount = firstRelay.amount;
-
+          const recvTokenInfo =
+            this.transferService.addressToTokenInfo[dstChain.chain][firstRelay.token];
+          updateData.recvToken = recvTokenInfo.token;
           const sendAmount = global.BigInt(record.sendAmount);
           const recvAmount = global.BigInt(firstRelay.amount);
+          const sendTokenInfo =
+            this.transferService.addressToTokenInfo[transfer.chain][record.sendTokenAddress];
 
-          if (transfer.feeDecimals > dstChain.feeDecimals) {
+          if (sendTokenInfo.decimals > recvTokenInfo.decimals) {
             updateData.fee = (
               sendAmount -
-              recvAmount * global.BigInt(transfer.feeDecimals / dstChain.feeDecimals)
+              recvAmount * global.BigInt(sendTokenInfo.decimals / recvTokenInfo.decimals)
             ).toString();
           } else {
             updateData.fee = (
               sendAmount -
-              recvAmount / global.BigInt(dstChain.feeDecimals / transfer.feeDecimals)
+              recvAmount / global.BigInt(recvTokenInfo.decimals / sendTokenInfo.decimals)
             ).toString();
           }
         } else if (response.status === CBridgeRecordStatus.refunded) {
