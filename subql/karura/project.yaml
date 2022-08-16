@@ -1,0 +1,33 @@
+specVersion: 0.2.0
+name: helix-karura
+version: 1.0.0
+description: ''
+repository: git@github.com:helix-bridge/indexer.git
+
+schema:
+  file: ./schema.graphql
+
+network:
+  genesisHash: '0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b'
+  endpoint: wss://karura-rpc-3.aca-api.network/ws
+  chaintypes:
+    file: ./types.yaml
+
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 2460710
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Success
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: XcmpMessageSent
+

@@ -43,3 +43,24 @@ type Account @entity {
   s2sLocked: [S2SEvent] @derivedFrom(field: "sender")
 }
 
+type XcmSentEvent @entity {
+  id: ID! # messageHash + index
+
+  txHash: String!
+  sender: String!
+  amount: String!
+  timestamp: Int
+
+  block: Block
+}
+
+type XcmReceivedEvent @entity {
+  id: ID!
+  txHash: String!
+  recipient: String!
+  amount: String!
+  timestamp: Int
+
+  block: Block
+}
+

@@ -1,8 +1,7 @@
 import { SubstrateEvent } from '@subql/types';
-import { Block, BridgeDispatchEvent, S2SEvent, XcmSentEvent, XcmReceivedEvent } from '../types';
-import { AccountHandler } from './account';
+import { Block, XcmSentEvent, XcmReceivedEvent } from '../types';
 
-const hostAccount = '5HMbbQxR81gQU2P7vKKVLyxZMkmwbSeMhjA4ZfNbXfPg1Seu';
+const hostAccount = 'qmmNufxeWaAVLMER2va1v4w2HbuU683c5gGtuxQG4fKTZSb';
 
 export class EventHandler {
   private event: SubstrateEvent;
@@ -54,22 +53,11 @@ export class EventHandler {
   }
 
   public async save() {
-    if (this.section === 'bridgeCrabDispatch') {
-      await this.handleBridgeDispatchEvent();
-    }
-
-    if (this.method === 'TokenBurnAndRemoteUnlocked') {
-      await this.handleBurnAndRemotedUnlocked();
-    }
-
-    if (this.method === 'TokenUnlockedConfirmed') {
-      await this.handleTokenUnlockedConfirmed();
-    }
-
     if (this.section === 'xcmpQueue') {
       if (this.method === 'XcmpMessageSent') {
         await this.handleXcmMessageSent();
       } else if (this.method === 'Success') {
+        // TODO Fail Event
         await this.handleXcmMessageReceived();
       }
     }
@@ -79,8 +67,9 @@ export class EventHandler {
     const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime()/1000);
     const balanceTransferEvent = this.event?.extrinsic?.events.find((item) => {
-      if (item.event.method === 'Transfer') {
-        const [sender, _2, amount] = JSON.parse(item.event.data.toString());
+      // tokens (Withdrawn)
+      if (item.event.method === 'Withdrawn') {
+        const [_1, sender, amount] = JSON.parse(item.event.data.toString());
         const nonce = amount % 1e18;
         // allow some error for the timestamp, ignore timezone
         return nonce > 1659888000 && nonce <= now + 3600 * 24;
@@ -90,7 +79,7 @@ export class EventHandler {
     if (!balanceTransferEvent) {
       return;
     }
-    const [sender, _2, amount] = JSON.parse(balanceTransferEvent.event.data.toString());
+    const [_1, sender, amount] = JSON.parse(balanceTransferEvent.event.data.toString());
 
     let index = 0;
     while (true) {
@@ -119,10 +108,10 @@ export class EventHandler {
     const now = Math.floor(this.timestamp.getTime()/1000);
     let totalAmount = 0;
     var recipient:string;
-
+    
     this.event?.extrinsic?.events.forEach((item, index) => {
-      if (item.event.method === 'Deposit') {
-        const [account, amount] = JSON.parse(item.event.data.toString());
+      if (item.event.method === 'Deposited') {
+        const [currencyId, account, amount] = JSON.parse(item.event.data.toString());
         totalAmount = totalAmount + amount;
         if (account !== hostAccount) {
           recipient = account;
@@ -130,12 +119,14 @@ export class EventHandler {
       }
     });
     const nonce = totalAmount % 1e18;
+    // allow some error for the timestamp, ignore timezone
     if (nonce < 1659888000 || nonce > now + 3600 * 24) {
       return;
     }
     if (!recipient) {
       return;
     }
+
     let index = 0;
     while (true) {
         const event = await XcmReceivedEvent.get(messageHash + '-' + index);
@@ -157,76 +148,6 @@ export class EventHandler {
     await event.save();
   }
 
-  public async handleBridgeDispatchEvent() {
-    const [_, [laneId, nonce]] = JSON.parse(this.data) as [string, [string, bigint]];
-    const event = new BridgeDispatchEvent(this.s2sEventId(laneId, nonce));
-
-    event.index = this.index;
-    event.method = this.method;
-    event.data = this.data;
-    event.block = this.simpleBlock();
-    event.timestamp = this.timestamp;
-
-    await event.save();
-  }
-
-  private async handleBurnAndRemotedUnlocked() {
-    // [lane_id, message_nonce, sender, recipient, amount]
-    const [laneId, nonce, from, to, value] = JSON.parse(this.data) as [
-      string,
-      bigint,
-      string,
-      string,
-      number
-    ];
-    const event = new S2SEvent(this.s2sEventId(laneId, nonce));
-    const sender = AccountHandler.formatAddress(from);
-    const recipient = AccountHandler.formatAddress(to);
-    const [_specVersion, _weight, _value, fee, _recipient] = this.args;
-
-    event.laneId = laneId;
-    event.nonce = nonce;
-    event.requestTxHash = this.extrinsicHash;
-    event.startTimestamp = this.timestamp;
-    event.senderId = sender;
-    event.recipient = recipient;
-    event.amount = value.toString();
-    event.result = 0;
-    event.endTimestamp = null;
-    event.responseTxHash = null;
-    event.block = this.simpleBlock();
-    event.fee = fee;
-
-    await AccountHandler.ensureAccount(sender);
-    await event.save();
-  }
-
-  private async handleTokenUnlockedConfirmed() {
-    // [lane_id, message_nonce, user, amount, result]
-    const [laneId, nonce, from, amount, confirmResult] = JSON.parse(this.data) as [
-      string,
-      bigint,
-      string,
-      bigint,
-      boolean
-    ];
-    const sender = AccountHandler.formatAddress(from);
-    const event = await S2SEvent.get(this.s2sEventId(laneId, nonce));
-
-    if (event) {
-      event.responseTxHash = this.extrinsicHash;
-      event.endTimestamp = this.timestamp;
-      event.result = confirmResult ? 1 : 2;
-      event.block = this.simpleBlock();
-
-      await event.save();
-
-      if (confirmResult) {
-        await AccountHandler.updateS2SLockedStatistic(sender, amount);
-      }
-    }
-  }
-
   private simpleBlock(): Block {
     return {
       blockHash: this.blockHash,
@@ -234,9 +155,5 @@ export class EventHandler {
       specVersion: this.event.block.specVersion,
       extrinsicHash: this.extrinsicHash,
     };
-  }
-
-  private s2sEventId(laneId: string, nonce: bigint): string {
-    return `${laneId}0x${nonce.toString(16)}`;
   }
 }
