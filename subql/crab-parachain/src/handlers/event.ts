@@ -3,6 +3,8 @@ import { Block, BridgeDispatchEvent, S2SEvent, XcmSentEvent, XcmReceivedEvent } 
 import { AccountHandler } from './account';
 
 const hostAccount = '5HMbbQxR81gQU2P7vKKVLyxZMkmwbSeMhjA4ZfNbXfPg1Seu';
+const xcmStartTimestamp = 1659888000;
+const secondPerDay = 3600 * 24;
 
 export class EventHandler {
   private event: SubstrateEvent;
@@ -84,7 +86,7 @@ export class EventHandler {
         const [_sender, _2, amount] = JSON.parse(item.event.data.toString());
         nonce = amount % 1e18;
         // allow some error for the timestamp, ignore timezone
-        return nonce > 1659888000 && nonce <= now + 3600 * 24;
+        return nonce > xcmStartTimestamp && nonce <= now + secondPerDay;
       }
       return false;
     });
@@ -141,7 +143,7 @@ export class EventHandler {
       }
     });
     const nonce = totalAmount % 1e18;
-    if (nonce < 1659888000 || nonce > now + 3600 * 24) {
+    if (nonce < xcmStartTimestamp || nonce > now + secondPerDay) {
       return;
     }
     if (!recipient) {

@@ -1,7 +1,11 @@
 import { SubstrateEvent } from '@subql/types';
 import { Block, XcmSentEvent, XcmReceivedEvent } from '../types';
+import { decodeAddress } from '@polkadot/util-crypto';
+import { u8aToHex } from '@polkadot/util';
 
 const hostAccount = 'qmmNufxeWaAVLMER2va1v4w2HbuU683c5gGtuxQG4fKTZSb';
+const xcmStartTimestamp = 1659888000;
+const secondPerDay = 3600 * 24;
 
 export class EventHandler {
   private event: SubstrateEvent;
@@ -73,7 +77,7 @@ export class EventHandler {
         const [_1, _sender, amount] = JSON.parse(item.event.data.toString());
         nonce = amount % 1e18;
         // allow some error for the timestamp, ignore timezone
-        return nonce > 1659888000 && nonce <= now + 3600 * 24;
+        return nonce > xcmStartTimestamp && nonce <= now + secondPerDay;
       }
       return false;
     });
@@ -98,7 +102,7 @@ export class EventHandler {
     }
         
     const event = new XcmSentEvent(messageHash + '-' + index);
-    event.sender = AccountHandler.formatAddress(sender);
+    event.sender = u8aToHex(decodeAddress(sender));
     event.recipient = dest.v1?.interior?.x2[1].accountId32?.id;
     event.amount = Number(amount).toString();
     event.txHash = this.extrinsicHash;
@@ -129,7 +133,7 @@ export class EventHandler {
     });
     const nonce = totalAmount % 1e18;
     // allow some error for the timestamp, ignore timezone
-    if (nonce < 1659888000 || nonce > now + 3600 * 24) {
+    if (nonce < xcmStartTimestamp || nonce > now + secondPerDay) {
       return;
     }
     if (!recipient) {
