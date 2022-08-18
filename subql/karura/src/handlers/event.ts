@@ -66,11 +66,12 @@ export class EventHandler {
   public async handleXcmMessageSent() {
     const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime()/1000);
+    var nonce: number;
     const balanceTransferEvent = this.event?.extrinsic?.events.find((item) => {
       // tokens (Withdrawn)
       if (item.event.method === 'Withdrawn') {
         const [_1, sender, amount] = JSON.parse(item.event.data.toString());
-        const nonce = amount % 1e18;
+        nonce = amount % 1e18;
         // allow some error for the timestamp, ignore timezone
         return nonce > 1659888000 && nonce <= now + 3600 * 24;
       }
@@ -97,11 +98,13 @@ export class EventHandler {
     }
         
     const event = new XcmSentEvent(messageHash + '-' + index);
-    event.sender = sender;
+    event.sender = AccountHandler.formatAddress(sender);
     event.recipient = dest.v1?.interior?.x2[1].accountId32?.id;
-    event.amount = amount.toString();
+    event.amount = Number(amount).toString();
     event.txHash = this.extrinsicHash;
     event.timestamp = now;
+    event.token = 'KAR';
+    event.nonce = nonce;
     event.destChainId = dest.v1?.interior?.x2[0].parachain;
     event.block = this.simpleBlock();
     await event.save();
@@ -111,6 +114,7 @@ export class EventHandler {
     const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime()/1000);
     let totalAmount: number = 0;
+    let recvAmount: number = 0;
     var recipient:string;
     
     this.event?.extrinsic?.events.forEach((item, index) => {
@@ -119,6 +123,7 @@ export class EventHandler {
         totalAmount = totalAmount + Number(amount);
         if (account !== hostAccount) {
           recipient = account;
+          recvAmount = Number(amount);
         }
       }
     });
@@ -145,7 +150,7 @@ export class EventHandler {
     }
     const event = new XcmReceivedEvent(messageHash + '-' + index);
     event.recipient = recipient;
-    event.amount = totalAmount.toString();
+    event.amount = recvAmount.toString();
     event.txHash = this.extrinsicHash;
     event.timestamp = now;
     event.block = this.simpleBlock();

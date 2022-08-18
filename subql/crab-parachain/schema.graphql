@@ -52,6 +52,8 @@ type XcmSentEvent @entity {
   amount: String!
   timestamp: Int
   destChainId: Int
+  token: String
+  nonce: Int
 
   block: Block
 }

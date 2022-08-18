@@ -16,6 +16,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { CbridgeModule } from './cbridge/cbridge.module';
 import { S2sv2Module } from './s2sv2/s2sv2.module';
 import { StatisticModule } from './statistic/statistic.module';
+import { XcmModule } from './xcm/xcm.module';
 
 const chainEnvFilePath = `.env.${process.env.NODE_ENV || 'prod'}`;
 
@@ -46,6 +47,7 @@ export class BigIntScalar extends BigInt {}
     CbridgeModule,
     S2sv2Module,
     StatisticModule,
+    XcmModule,
   ],
   controllers: [AppController],
   providers: [AppService, BigIntScalar],
