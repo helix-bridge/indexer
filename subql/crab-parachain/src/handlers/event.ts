@@ -81,7 +81,7 @@ export class EventHandler {
     var nonce: number;
     const balanceTransferEvent = this.event?.extrinsic?.events.find((item) => {
       if (item.event.method === 'Transfer') {
-        const [sender, _2, amount] = JSON.parse(item.event.data.toString());
+        const [_sender, _2, amount] = JSON.parse(item.event.data.toString());
         nonce = amount % 1e18;
         // allow some error for the timestamp, ignore timezone
         return nonce > 1659888000 && nonce <= now + 3600 * 24;
@@ -130,7 +130,7 @@ export class EventHandler {
     let recvAmount: number = 0;
     var recipient:string;
 
-    this.event?.extrinsic?.events.forEach((item, index) => {
+    this.event?.extrinsic?.events.forEach((item, _index) => {
       if (item.event.method === 'Deposit') {
         const [account, amount] = JSON.parse(item.event.data.toString());
         totalAmount = totalAmount + Number(amount);

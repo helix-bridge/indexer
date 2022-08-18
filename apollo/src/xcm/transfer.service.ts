@@ -4,11 +4,8 @@ import { BaseTransferServiceT2, PartnerT2 } from '../base/TransferServiceT2';
 
 @Injectable()
 export class TransferService extends BaseTransferServiceT2 {
-  //private readonly crabParachainEndpoint = this.configService.get<string>('SUBSTRATE_TO_PARACHAIN_ISSUING');
-  //private readonly karuraEndpoint = this.configService.get<string>('KARURA_ENDPOINT');
-
-  private readonly crabParachainEndpoint = 'http://localhost:3001';
-  private readonly karuraEndpoint = 'http://localhost:3002';
+  private readonly crabParachainEndpoint = this.configService.get<string>('SUBSTRATE_TO_PARACHAIN_ISSUING');
+  private readonly karuraEndpoint = this.configService.get<string>('KARURA_ENDPOINT');
 
   // this chainId is parachain id
   formalChainTransfers: PartnerT2[] = [
