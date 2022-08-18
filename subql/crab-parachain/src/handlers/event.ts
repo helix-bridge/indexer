@@ -92,6 +92,9 @@ export class EventHandler {
     }
     const [sender, _2, amount] = JSON.parse(balanceTransferEvent.event.data.toString());
 
+    const args = '[' + this.event.extrinsic.extrinsic.args.toString() + ']';
+    const [dest, beneficiary, _assets, _feeAssetItem] = JSON.parse(args);
+
     let index = 0;
     while (true) {
         const event = await XcmSentEvent.get(messageHash + '-' + index);
@@ -111,19 +114,21 @@ export class EventHandler {
     event.txHash = this.extrinsicHash;
     event.timestamp = now;
     event.block = this.simpleBlock();
+    event.recipient = beneficiary.v1?.interior?.x1?.accountId32?.id;
+    event.destChainId = dest.v1?.interior?.x1?.parachain;
     await event.save();
   }
 
   public async handleXcmMessageReceived() {
     const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime()/1000);
-    let totalAmount = 0;
+    let totalAmount: number = 0;
     var recipient:string;
 
     this.event?.extrinsic?.events.forEach((item, index) => {
       if (item.event.method === 'Deposit') {
         const [account, amount] = JSON.parse(item.event.data.toString());
-        totalAmount = totalAmount + amount;
+        totalAmount = totalAmount + Number(amount);
         if (account !== hostAccount) {
           recipient = account;
         }
