@@ -1,0 +1,32 @@
+type Block @jsonField {
+  number: Int!
+  specVersion: Int!
+  blockHash: String!
+  extrinsicHash: String!
+}
+
+type XcmSentEvent @entity {
+  id: ID! # messageHash + index
+
+  txHash: String!
+  sender: String!
+  recipient: String
+  amount: String!
+  timestamp: Int
+  destChainId: Int
+  token: String
+  nonce: Int
+
+  block: Block
+}
+
+type XcmReceivedEvent @entity {
+  id: ID!
+  txHash: String!
+  recipient: String!
+  amount: String!
+  timestamp: Int
+
+  block: Block
+}
+

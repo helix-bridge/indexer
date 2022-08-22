@@ -16,6 +16,7 @@ export class TransferService extends BaseTransferService {
     },
   ];
 
+  /*
   testChainTransfers: Transfer[] = [
     {
       backing: { chain: 'pangolin', url: this.backingUrl, token: 'PRING', feeToken: 'PRING' },
@@ -27,6 +28,8 @@ export class TransferService extends BaseTransferService {
       },
     },
   ];
+  */
+  testChainTransfers: Transfer[] = [];
 
   constructor(public configService: ConfigService) {
     super(configService);
