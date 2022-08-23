@@ -52,6 +52,10 @@ export class EventHandler {
     return i === 'null' ? undefined : i;
   }
 
+  get extrinsicIndex() {
+      return this.event?.extrinsic?.idx?.toString();
+  }
+
   get timestamp() {
     return this.event.block.timestamp;
   }
@@ -107,7 +111,7 @@ export class EventHandler {
     event.amount = Number(amount).toString();
     event.txHash = this.extrinsicHash;
     event.timestamp = now;
-    event.token = 'KAR';
+    event.token = 'CRAB';
     event.nonce = nonce;
     event.destChainId = dest.v1?.interior?.x2[0].parachain;
     event.block = this.simpleBlock();
@@ -140,6 +144,7 @@ export class EventHandler {
       return;
     }
 
+    const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex
     let index = 0;
     while (true) {
         const event = await XcmReceivedEvent.get(messageHash + '-' + index);
@@ -147,7 +152,7 @@ export class EventHandler {
             break;
         }
         // if the same tx hash, don't save again
-        if (event.txHash === this.extrinsicHash) {
+        if (event.txHash === extrinsicHash) {
             return;
         }
         index ++;
@@ -155,7 +160,7 @@ export class EventHandler {
     const event = new XcmReceivedEvent(messageHash + '-' + index);
     event.recipient = recipient;
     event.amount = recvAmount.toString();
-    event.txHash = this.extrinsicHash;
+    event.txHash = extrinsicHash;
     event.timestamp = now;
     event.block = this.simpleBlock();
     await event.save();
