@@ -11,7 +11,7 @@ export class TransferService extends BaseTransferServiceT2 {
   formalChainTransfers: PartnerT2[] = [
     {
       chainId: 2105,
-      chain: 'crabparachain',
+      chain: 'crab-parachain',
       url: this.crabParachainEndpoint,
     },
     {
