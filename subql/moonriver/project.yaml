@@ -1,0 +1,33 @@
+specVersion: 0.2.0
+name: helix-moonriver
+version: 1.0.0
+description: ''
+repository: git@github.com:helix-bridge/indexer.git
+
+schema:
+  file: ./schema.graphql
+
+network:
+  genesisHash: '0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b'
+  endpoint: wss://wss.api.moonriver.moonbeam.network
+  chaintypes:
+    file: ./types.yaml
+
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 2422710
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Success
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: XcmpMessageSent
+
