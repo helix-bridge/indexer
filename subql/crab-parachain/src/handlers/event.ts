@@ -6,7 +6,7 @@ const hostAccount = '5HMbbQxR81gQU2P7vKKVLyxZMkmwbSeMhjA4ZfNbXfPg1Seu';
 const xcmStartTimestamp = 1659888000;
 const secondPerDay = 3600 * 24;
 
-const kururaChainId = 2000;
+//const kururaChainId = 2000;
 const moonriverChainId = 2023;
 
 export class EventHandler {
