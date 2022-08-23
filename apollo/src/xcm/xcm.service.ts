@@ -5,6 +5,14 @@ import { PartnerT2 } from '../base/TransferServiceT2';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 
+export enum RecordStatus {
+  pending,
+  pendingToRefund,
+  pendingToClaim,
+  success,
+  refunded,
+}
+
 @Injectable()
 export class XcmService implements OnModuleInit {
   private readonly logger = new Logger('xcm');
@@ -93,7 +101,7 @@ export class XcmService implements OnModuleInit {
             recvAmount: '0',
             startTime: Number(record.timestamp),
             endTime: 0,
-            result: 0,
+            result: RecordStatus.pending,
             fee: '',
             feeToken: record.token,
             responseTxHash: '',
@@ -159,7 +167,7 @@ export class XcmService implements OnModuleInit {
             recvAmount: node.amount,
             endTime: Number(node.timestamp),
             fee: (global.BigInt(record.sendAmount) - global.BigInt(node.amount)).toString(),
-            result: 1,
+            result: RecordStatus.success,
           },
         });
       }

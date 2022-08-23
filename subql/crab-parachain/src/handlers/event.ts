@@ -6,6 +6,9 @@ const hostAccount = '5HMbbQxR81gQU2P7vKKVLyxZMkmwbSeMhjA4ZfNbXfPg1Seu';
 const xcmStartTimestamp = 1659888000;
 const secondPerDay = 3600 * 24;
 
+//const kururaChainId = 2000;
+const moonriverChainId = 2023;
+
 export class EventHandler {
   private event: SubstrateEvent;
 
@@ -49,6 +52,10 @@ export class EventHandler {
     const i = this.event?.extrinsic?.extrinsic?.hash?.toString();
 
     return i === 'null' ? undefined : i;
+  }
+
+  get extrinsicIndex() {
+      return this.event?.extrinsic?.idx?.toString();
   }
 
   get timestamp() {
@@ -118,8 +125,14 @@ export class EventHandler {
     event.txHash = this.extrinsicHash;
     event.timestamp = now;
     event.block = this.simpleBlock();
-    event.recipient = beneficiary.v1?.interior?.x1?.accountId32?.id;
-    event.token = 'crab';
+    const destChainId = dest.v1?.interior?.x1?.parachain;
+    if (destChainId == moonriverChainId) {
+        event.recipient = beneficiary.v1?.interior?.x1?.accountKey20?.key;
+    } else {
+        event.recipient = beneficiary.v1?.interior?.x1?.accountId32?.id;
+    }
+    // TODO current we only support CRAB
+    event.token = 'CRAB';
     event.nonce = nonce;
     event.destChainId = dest.v1?.interior?.x1?.parachain;
     await event.save();
@@ -150,13 +163,14 @@ export class EventHandler {
       return;
     }
     let index = 0;
+    const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex
     while (true) {
         const event = await XcmReceivedEvent.get(messageHash + '-' + index);
         if (!event) {
             break;
         }
         // if the same tx hash, don't save again
-        if (event.txHash === this.extrinsicHash) {
+        if (event.txHash === extrinsicHash) {
             return;
         }
         index ++;
@@ -164,7 +178,7 @@ export class EventHandler {
     const event = new XcmReceivedEvent(messageHash + '-' + index);
     event.recipient = recipient;
     event.amount = recvAmount.toString();
-    event.txHash = this.extrinsicHash;
+    event.txHash = extrinsicHash;
     event.timestamp = now;
     event.block = this.simpleBlock();
     await event.save();
