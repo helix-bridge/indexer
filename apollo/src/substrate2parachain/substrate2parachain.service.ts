@@ -191,10 +191,10 @@ export class Substrate2parachainService extends RecordsService implements OnModu
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
           let updateData = {
-              reason: node.method,
+            reason: node.method,
           };
           if ('MessageDispatched' === node.method) {
-              updateData['responseTxHash'] = node.block.extrinsicHash;
+            updateData['responseTxHash'] = node.block.extrinsicHash;
           }
           await this.aggregationService.updateHistoryRecord({
             where: { id: this.genID(transfer, action, node.id) },
@@ -261,13 +261,13 @@ export class Substrate2parachainService extends RecordsService implements OnModu
         for (const node of nodes) {
           const result = this.toRecordStatus(node.result);
           let updateData = {
-              endTime: this.toUnixTime(node.endTimestamp),
-              result,
-              recvToken: to.token,
+            endTime: this.toUnixTime(node.endTimestamp),
+            result,
+            recvToken: to.token,
           };
           if (result === RecordStatus.refunded) {
-              updateData.recvToken = from.token
-              updateData['responseTxHash'] = node.responseTxHash
+            updateData.recvToken = from.token;
+            updateData['responseTxHash'] = node.responseTxHash;
           }
 
           await this.aggregationService.updateHistoryRecord({
