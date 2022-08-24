@@ -82,7 +82,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
 
       const nodes = await axios
         .post(from.url, {
-          query: `query { s2sEvents (first: ${this.fetchHistoryDataFirst}, orderBy: NONCE_ASC, filter: {nonce: {greaterThan: "${latestNonce}"}}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, result, senderId, recipient, fee}}}`,
+          query: `query { s2sEvents (first: ${this.fetchHistoryDataFirst}, orderBy: NONCE_ASC, filter: {nonce: {greaterThan: "${latestNonce}"}}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, senderId, recipient, fee}}}`,
           variables: null,
         })
         .then((res) => res.data?.data?.s2sEvents?.nodes);
@@ -115,7 +115,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
             result: this.toRecordStatus(node.result),
             fee: node.fee,
             feeToken: this.lockFeeToken,
-            responseTxHash: '',
+            responseTxHash: node.responseTxHash === null ? '' : node.responseTxHash,
             reason: '',
             sendTokenAddress: '',
           });
@@ -165,7 +165,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
           fromChain: from.chain,
           toChain: to.chain,
           bridge: 'helix-s2p',
-          responseTxHash: '',
+          reason: '',
         },
       });
 
@@ -190,12 +190,15 @@ export class Substrate2parachainService extends RecordsService implements OnModu
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
+          let updateData = {
+              reason: node.method,
+          };
+          if ('MessageDispatched' === node.method) {
+              updateData['responseTxHash'] = node.block.extrinsicHash;
+          }
           await this.aggregationService.updateHistoryRecord({
             where: { id: this.genID(transfer, action, node.id) },
-            data: {
-              responseTxHash: node.block.extrinsicHash,
-              reason: node.method,
-            },
+            data: updateData,
           });
         }
 
@@ -249,7 +252,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
 
       const nodes = await axios
         .post<{ data: { s2sEvents: { nodes: SubqlRecord[] } } }>(from.url, {
-          query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) { nodes {id, endTimestamp, result }}}`,
+          query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) { nodes {id, endTimestamp, result, responseTxHash }}}`,
           variables: null,
         })
         .then((res) => res.data?.data?.s2sEvents?.nodes.filter((item) => item.result > 0));
@@ -257,14 +260,19 @@ export class Substrate2parachainService extends RecordsService implements OnModu
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
           const result = this.toRecordStatus(node.result);
+          let updateData = {
+              endTime: this.toUnixTime(node.endTimestamp),
+              result,
+              recvToken: to.token,
+          };
+          if (result === RecordStatus.refunded) {
+              updateData.recvToken = from.token
+              updateData['responseTxHash'] = node.responseTxHash
+          }
 
           await this.aggregationService.updateHistoryRecord({
             where: { id: this.genID(transfer, action, node.id) },
-            data: {
-              endTime: this.toUnixTime(node.endTimestamp),
-              result,
-              recvToken: result === RecordStatus.refunded ? from.token : to.token,
-            },
+            data: updateData,
           });
         }
 
