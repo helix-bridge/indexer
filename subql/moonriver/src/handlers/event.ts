@@ -96,6 +96,15 @@ export class EventHandler {
         return;
     }
     const [_sender, _2, _3, dest] = JSON.parse(xtokenEvent.event.data.toString());
+    // get evm transaction hash
+    const evmExecuteEvent = this.event?.extrinsic?.events.find((item) => {
+        return item.event.method === 'Executed';
+    });
+    // filter no evm transactions
+    if (!evmExecuteEvent) {
+        return;
+    }
+    const [_from, _to, transaction_hash, _exit_reason] = JSON.parse(evmExecuteEvent.event.data.toString());
 
     let index = 0;
     while (true) {
@@ -104,7 +113,7 @@ export class EventHandler {
             break;
         }
         // if the same tx hash, don't save again
-        if (event.txHash === this.extrinsicHash) {
+        if (event.txHash === transaction_hash) {
             return;
         }
         index ++;
@@ -114,7 +123,7 @@ export class EventHandler {
     event.sender = u8aToHex(decodeAddress(sender));
     event.recipient = dest.interior?.x2[1]?.accountId32?.id;
     event.amount = Number(amount).toString();
-    event.txHash = this.extrinsicHash;
+    event.txHash = transaction_hash;
     event.timestamp = now;
     event.token = 'CRAB';
     event.nonce = nonce;
