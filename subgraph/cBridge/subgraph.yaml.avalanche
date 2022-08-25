@@ -27,4 +27,4 @@ dataSources:
           handler: handleSend
         - event: WithdrawDone(bytes32,uint64,address,address,uint256,bytes32)
           handler: handleWithdrawDone
-      file: ./src/mapping.ts
+      file: ./src/Bridge.ts
