@@ -14,6 +14,9 @@ var HelixPrefix: BigInt = BigInt.fromI32(26744);
 // bsc: 56
 // Astar: 592
 
+// is_pegged
+// crab smart chain <> others USDT/USDC 
+
 const SupportedChains: number[] = [1, 44, 128, 137, 42161, 43114, 10, 56, 592];
 const SupportedTokens: string[] = [
   // ring on heco
@@ -123,3 +126,4 @@ export function handleWithdrawDone(event: WithdrawDone): void {
   entity.withdraw_timestamp = event.block.timestamp;
   entity.save();
 }
+
