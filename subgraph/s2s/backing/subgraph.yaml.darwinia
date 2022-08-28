@@ -1,0 +1,27 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Erc20Sub2SubBacking
+    network: darwinia
+    source:
+      address: "0x1d28f50ee65E5C830e218550D751F8bAA3ae0009"
+      abi: Erc20Sub2SubBacking
+      startBlock: 10013079
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - TokenLocked
+      abis:
+        - name: Erc20Sub2SubBacking
+          file: ./abis/Erc20Sub2SubBacking.json
+      eventHandlers:
+        - event: TokenLocked(uint256,bytes32,address,address,address,uint256,uint256)
+          handler: handleTokenLocked
+        - event: TokenUnlockedForFailed(uint256,address,address,uint256)
+          handler: handleTokenUnlockedForFailed
+      file: ./src/mapping.ts
+
