@@ -11,15 +11,16 @@ export class TransferService extends BaseTransferServiceT1 {
   private readonly issuingSubgraphUrl = this.configService.get<string>('S2S_ISSUING');
   private readonly backingSubgraphUrl = this.configService.get<string>('S2S_BACKING');
 
-  /* todo add crab <> darwinia
   formalChainTransfers: TransferT1[] = [
     {
-      source: { chain: 'darwinia-dvm', url: this.backingSubgraphUrl, feeToken: 'RING' },
-      target: { chain: 'crab-dvm', url: this.issuingSubgraphUrl, feeToken: 'CRAB' },
+      source: { chain: 'darwinia-dvm', url: this.backingSubgraphUrl, feeToken: 'RING', token: 'wRING' },
+      target: { chain: 'crab-dvm', url: this.issuingSubgraphUrl, feeToken: 'CRAB', token: 'xwRING' },
+    },
+    {
+      source: { chain: 'crab-dvm', url: this.issuingSubgraphUrl, feeToken: 'CRAB', token: 'xwRING' },
+      target: { chain: 'darwinia-dvm', url: this.backingSubgraphUrl, feeToken: 'RING', token: 'wRING' },
     },
   ];
-  */
-  formalChainTransfers: TransferT1[] = [];
 
   testChainTransfers: TransferT1[] = [
     {
