@@ -6,7 +6,7 @@ dataSources:
     name: Erc20Sub2SubMappingTokenFactory
     network: crab
     source:
-      address: "0x5E3aF26C8ca071302D00A0f8CcC05E401D22843f"
+      address: "0x8738A64392b71617aF4C685d0E827855c741fDF7"
       abi: Erc20Sub2SubMappingTokenFactory
       startBlock: 11982581
     mapping:
