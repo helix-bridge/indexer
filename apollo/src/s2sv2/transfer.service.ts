@@ -13,12 +13,32 @@ export class TransferService extends BaseTransferServiceT1 {
 
   formalChainTransfers: TransferT1[] = [
     {
-      source: { chain: 'darwinia-dvm', url: this.backingSubgraphUrl, feeToken: 'RING', token: 'wRING' },
-      target: { chain: 'crab-dvm', url: this.issuingSubgraphUrl, feeToken: 'CRAB', token: 'xwRING' },
+      source: {
+        chain: 'darwinia-dvm',
+        url: this.backingSubgraphUrl,
+        feeToken: 'RING',
+        token: 'wRING',
+      },
+      target: {
+        chain: 'crab-dvm',
+        url: this.issuingSubgraphUrl,
+        feeToken: 'CRAB',
+        token: 'xWRING',
+      },
     },
     {
-      source: { chain: 'crab-dvm', url: this.issuingSubgraphUrl, feeToken: 'CRAB', token: 'xwRING' },
-      target: { chain: 'darwinia-dvm', url: this.backingSubgraphUrl, feeToken: 'RING', token: 'wRING' },
+      source: {
+        chain: 'crab-dvm',
+        url: this.issuingSubgraphUrl,
+        feeToken: 'CRAB',
+        token: 'xWRING',
+      },
+      target: {
+        chain: 'darwinia-dvm',
+        url: this.backingSubgraphUrl,
+        feeToken: 'RING',
+        token: 'wRING',
+      },
     },
   ];
 
