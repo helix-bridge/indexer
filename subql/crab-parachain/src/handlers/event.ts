@@ -121,7 +121,7 @@ export class EventHandler {
     const event = new XcmSentEvent(messageHash + '-' + index);
     event.sender = AccountHandler.formatAddress(sender);
 ;
-    event.amount = Number(amount).toString();
+    event.amount = BigInt(amount).toString();
     event.txHash = this.extrinsicHash;
     event.timestamp = now;
     event.block = this.simpleBlock();
