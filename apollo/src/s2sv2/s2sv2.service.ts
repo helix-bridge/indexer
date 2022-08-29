@@ -134,7 +134,7 @@ export class S2sv2Service implements OnModuleInit {
             startTime: Number(record.start_timestamp),
             responseTxHash: '',
             toChain: to.chain,
-            sendToken: record.token,
+            sendToken: from.token,
             recvToken: to.token,
             sendTokenAddress: record.token,
           });
@@ -173,7 +173,7 @@ export class S2sv2Service implements OnModuleInit {
       }
       const ids = uncheckedRecords
         .filter((item) => item.reason === '')
-        .map((item) => `"${last(item.id.split('-'))}"`)
+        .map((item) => `"0x000000000${last(item.id.split('-'))}"`)
         .join(',');
 
       if (ids.length > 0) {
