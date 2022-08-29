@@ -2,7 +2,7 @@ import { SubstrateEvent } from '@subql/types';
 import { Block, BridgeDispatchEvent, S2SEvent, XcmSentEvent, XcmReceivedEvent } from '../types';
 import { AccountHandler } from './account';
 
-const hostAccount = '5HMbbQxR81gQU2P7vKKVLyxZMkmwbSeMhjA4ZfNbXfPg1Seu';
+const hostAccounts = ['5HMbbQxR81gQU2P7vKKVLyxZMkmwbSeMhjA4ZfNbXfPg1Seu', '5G9z8Ttoo7892VqBHiSWCbnd2aEdH8noJLqZ4HFMzMVNhvgP'];
 const xcmStartTimestamp = 1659888000;
 const secondPerDay = 3600 * 24;
 
@@ -141,21 +141,21 @@ export class EventHandler {
   public async handleXcmMessageReceived() {
     const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime()/1000);
-    let totalAmount: number = 0;
-    let recvAmount: number = 0;
+    let totalAmount: bigint = BigInt(0);
+    let recvAmount: bigint = BigInt(0);
     var recipient:string;
 
     this.event?.extrinsic?.events.forEach((item, _index) => {
       if (item.event.method === 'Deposit') {
         const [account, amount] = JSON.parse(item.event.data.toString());
-        totalAmount = totalAmount + Number(amount);
-        if (account !== hostAccount) {
+        totalAmount = totalAmount + BigInt(amount);
+        if (!hostAccounts.includes(account)) {
           recipient = account;
-          recvAmount = Number(amount);
+          recvAmount = BigInt(amount);
         }
       }
     });
-    const nonce = totalAmount % 1e18;
+    const nonce = totalAmount % BigInt(1e18);
     if (nonce < xcmStartTimestamp || nonce > now + secondPerDay) {
       return;
     }
