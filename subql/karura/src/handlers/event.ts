@@ -108,7 +108,7 @@ export class EventHandler {
     const event = new XcmSentEvent(messageHash + '-' + index);
     event.sender = u8aToHex(decodeAddress(sender));
     event.recipient = dest.v1?.interior?.x2[1].accountId32?.id;
-    event.amount = Number(amount).toString();
+    event.amount = BigInt(amount).toString();
     event.txHash = this.extrinsicHash;
     event.timestamp = now;
     event.token = 'CRAB';
@@ -121,21 +121,21 @@ export class EventHandler {
   public async handleXcmMessageReceived() {
     const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime()/1000);
-    let totalAmount: number = 0;
-    let recvAmount: number = 0;
+    let totalAmount: bigint = BigInt(0);
+    let recvAmount: bigint = BigInt(0);
     var recipient:string;
     
     this.event?.extrinsic?.events.forEach((item, _index) => {
       if (item.event.method === 'Deposited') {
         const [_currencyId, account, amount] = JSON.parse(item.event.data.toString());
-        totalAmount = totalAmount + Number(amount);
+        totalAmount = totalAmount + BigInt(amount);
         if (account !== hostAccount) {
           recipient = account;
-          recvAmount = Number(amount);
+          recvAmount = BigInt(amount);
         }
       }
     });
-    const nonce = totalAmount % 1e18;
+    const nonce = totalAmount % BigInt(1e18);
     // allow some error for the timestamp, ignore timezone
     if (nonce < xcmStartTimestamp || nonce > now + secondPerDay) {
       return;
