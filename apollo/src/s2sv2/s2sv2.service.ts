@@ -62,15 +62,12 @@ export class S2sv2Service implements OnModuleInit {
   }
 
   // 0x726f6c690000000000000099 -> 0x726f6c690x99
-  private trimId(id: string) {
-    return id.substring(0, 10) + id.substring(10, 27).replace(/^0+/g, '0x');
+  private idAppendLaneId(id: string) {
+    return '0x00000000' + id;
   }
 
-  private expendId(id: string) {
-    return (
-      id.substring(0, 10) +
-      id.substring(10, id.length + 1).replace('0x', '0'.repeat(28 - id.length))
-    );
+  private trimLaneId(id: string) {
+    return id.substring(10, id.length + 1);
   }
 
   private getMessageNonceFromId(id: string) {
@@ -114,9 +111,9 @@ export class S2sv2Service implements OnModuleInit {
 
       if (records && records.length > 0) {
         for (const record of records) {
-          const trimId = this.trimId(record.id);
+          const idWithLaneId = this.idAppendLaneId(record.id);
           await this.aggregationService.createHistoryRecord({
-            id: this.genID(transfer, trimId),
+            id: this.genID(transfer, idWithLaneId),
             sendAmount: record.amount,
             recvAmount: record.amount,
             bridge: 'helix-s2sv2',
@@ -125,7 +122,7 @@ export class S2sv2Service implements OnModuleInit {
             fee: record.fee,
             feeToken: from.feeToken,
             fromChain: from.chain,
-            messageNonce: this.getMessageNonceFromId(trimId),
+            messageNonce: this.getMessageNonceFromId(idWithLaneId),
             nonce: latestNonce + 1,
             recipient: record.receiver,
             requestTxHash: record.transaction_hash,
@@ -173,7 +170,7 @@ export class S2sv2Service implements OnModuleInit {
       }
       const ids = uncheckedRecords
         .filter((item) => item.reason === '')
-        .map((item) => `"0x000000000${last(item.id.split('-'))}"`)
+        .map((item) => `"${last(item.id.split('-'))}"`)
         .join(',');
 
       if (ids.length > 0) {
@@ -211,7 +208,7 @@ export class S2sv2Service implements OnModuleInit {
       for (const node of uncheckedRecords) {
         if (node.reason !== '') {
           const transferId = last(node.id.split('-'));
-          const withdrawInfo = await this.queryTransfer(transfer, this.expendId(transferId));
+          const withdrawInfo = await this.queryTransfer(transfer, this.trimLaneId(transferId));
           if (withdrawInfo && withdrawInfo.withdraw_transaction) {
             refunded += 1;
             await this.aggregationService.updateHistoryRecord({
