@@ -2,7 +2,10 @@ import { SubstrateEvent } from '@subql/types';
 import { Block, BridgeDispatchEvent, S2SEvent, XcmSentEvent, XcmReceivedEvent } from '../types';
 import { AccountHandler } from './account';
 
-const hostAccounts = ['5HMbbQxR81gQU2P7vKKVLyxZMkmwbSeMhjA4ZfNbXfPg1Seu', '5G9z8Ttoo7892VqBHiSWCbnd2aEdH8noJLqZ4HFMzMVNhvgP'];
+const hostAccounts = [
+  '5HMbbQxR81gQU2P7vKKVLyxZMkmwbSeMhjA4ZfNbXfPg1Seu',
+  '5G9z8Ttoo7892VqBHiSWCbnd2aEdH8noJLqZ4HFMzMVNhvgP',
+];
 const xcmStartTimestamp = 1659888000;
 const secondPerDay = 3600 * 24;
 
@@ -55,7 +58,7 @@ export class EventHandler {
   }
 
   get extrinsicIndex() {
-      return this.event?.extrinsic?.idx?.toString();
+    return this.event?.extrinsic?.idx?.toString();
   }
 
   get timestamp() {
@@ -86,8 +89,8 @@ export class EventHandler {
 
   public async handleXcmMessageSent() {
     const [messageHash] = JSON.parse(this.data) as [string];
-    const now = Math.floor(this.timestamp.getTime()/1000);
-    var nonce: number;
+    const now = Math.floor(this.timestamp.getTime() / 1000);
+    let nonce: number;
     const balanceTransferEvent = this.event?.extrinsic?.events.find((item) => {
       if (item.event.method === 'Transfer') {
         const [_sender, _2, amount] = JSON.parse(item.event.data.toString());
@@ -107,29 +110,28 @@ export class EventHandler {
 
     let index = 0;
     while (true) {
-        const event = await XcmSentEvent.get(messageHash + '-' + index);
-        if (!event) {
-            break;
-        }
-        // if the same tx hash, don't save again
-        if (event.txHash === this.extrinsicHash) {
-            return;
-        }
-        index ++;
+      const event = await XcmSentEvent.get(messageHash + '-' + index);
+      if (!event) {
+        break;
+      }
+      // if the same tx hash, don't save again
+      if (event.txHash === this.extrinsicHash) {
+        return;
+      }
+      index++;
     }
-        
+
     const event = new XcmSentEvent(messageHash + '-' + index);
     event.sender = AccountHandler.formatAddress(sender);
-;
     event.amount = BigInt(amount).toString();
     event.txHash = this.extrinsicHash;
     event.timestamp = now;
     event.block = this.simpleBlock();
     const destChainId = dest.v1?.interior?.x1?.parachain;
     if (destChainId == moonriverChainId) {
-        event.recipient = beneficiary.v1?.interior?.x1?.accountKey20?.key;
+      event.recipient = beneficiary.v1?.interior?.x1?.accountKey20?.key;
     } else {
-        event.recipient = beneficiary.v1?.interior?.x1?.accountId32?.id;
+      event.recipient = beneficiary.v1?.interior?.x1?.accountId32?.id;
     }
     // TODO current we only support CRAB
     event.token = 'CRAB';
@@ -140,10 +142,10 @@ export class EventHandler {
 
   public async handleXcmMessageReceived() {
     const [messageHash] = JSON.parse(this.data) as [string];
-    const now = Math.floor(this.timestamp.getTime()/1000);
-    let totalAmount: bigint = BigInt(0);
-    let recvAmount: bigint = BigInt(0);
-    var recipient:string;
+    const now = Math.floor(this.timestamp.getTime() / 1000);
+    let totalAmount = BigInt(0);
+    let recvAmount = BigInt(0);
+    let recipient: string;
 
     this.event?.extrinsic?.events.forEach((item, _index) => {
       if (item.event.method === 'Deposit') {
@@ -163,17 +165,17 @@ export class EventHandler {
       return;
     }
     let index = 0;
-    const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex
+    const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex;
     while (true) {
-        const event = await XcmReceivedEvent.get(messageHash + '-' + index);
-        if (!event) {
-            break;
-        }
-        // if the same tx hash, don't save again
-        if (event.txHash === extrinsicHash) {
-            return;
-        }
-        index ++;
+      const event = await XcmReceivedEvent.get(messageHash + '-' + index);
+      if (!event) {
+        break;
+      }
+      // if the same tx hash, don't save again
+      if (event.txHash === extrinsicHash) {
+        return;
+      }
+      index++;
     }
     const event = new XcmReceivedEvent(messageHash + '-' + index);
     event.recipient = recipient;

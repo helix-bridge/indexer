@@ -190,7 +190,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
-          let updateData = {
+          const updateData = {
             reason: node.method,
           };
           if ('MessageDispatched' === node.method) {
@@ -260,7 +260,7 @@ export class Substrate2parachainService extends RecordsService implements OnModu
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
           const result = this.toRecordStatus(node.result);
-          let updateData = {
+          const updateData = {
             endTime: this.toUnixTime(node.endTimestamp),
             result,
             recvToken: to.token,

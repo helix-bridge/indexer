@@ -53,7 +53,7 @@ export class EventHandler {
   }
 
   get extrinsicIndex() {
-      return this.event?.extrinsic?.idx?.toString();
+    return this.event?.extrinsic?.idx?.toString();
   }
 
   get timestamp() {
@@ -73,8 +73,8 @@ export class EventHandler {
 
   public async handleXcmMessageSent() {
     const [messageHash] = JSON.parse(this.data) as [string];
-    const now = Math.floor(this.timestamp.getTime()/1000);
-    var nonce: number;
+    const now = Math.floor(this.timestamp.getTime() / 1000);
+    let nonce: number;
     const balanceTransferEvent = this.event?.extrinsic?.events.find((item) => {
       // tokens (Withdrawn)
       if (item.event.method === 'Burned') {
@@ -90,35 +90,37 @@ export class EventHandler {
     }
     const [_1, sender, amount] = JSON.parse(balanceTransferEvent.event.data.toString());
     const xtokenEvent = this.event?.extrinsic?.events.find((item) => {
-        return item.event.method === 'TransferredMultiAssets';
+      return item.event.method === 'TransferredMultiAssets';
     });
     if (!xtokenEvent) {
-        return;
+      return;
     }
     const [_sender, _2, _3, dest] = JSON.parse(xtokenEvent.event.data.toString());
     // get evm transaction hash
     const evmExecuteEvent = this.event?.extrinsic?.events.find((item) => {
-        return item.event.method === 'Executed';
+      return item.event.method === 'Executed';
     });
     // filter no evm transactions
     if (!evmExecuteEvent) {
-        return;
+      return;
     }
-    const [_from, _to, transaction_hash, _exit_reason] = JSON.parse(evmExecuteEvent.event.data.toString());
+    const [_from, _to, transaction_hash, _exit_reason] = JSON.parse(
+      evmExecuteEvent.event.data.toString()
+    );
 
     let index = 0;
     while (true) {
-        const event = await XcmSentEvent.get(messageHash + '-' + index);
-        if (!event) {
-            break;
-        }
-        // if the same tx hash, don't save again
-        if (event.txHash === transaction_hash) {
-            return;
-        }
-        index ++;
+      const event = await XcmSentEvent.get(messageHash + '-' + index);
+      if (!event) {
+        break;
+      }
+      // if the same tx hash, don't save again
+      if (event.txHash === transaction_hash) {
+        return;
+      }
+      index++;
     }
-        
+
     const event = new XcmSentEvent(messageHash + '-' + index);
     event.sender = u8aToHex(decodeAddress(sender));
     event.recipient = dest.interior?.x2[1]?.accountId32?.id;
@@ -134,11 +136,11 @@ export class EventHandler {
 
   public async handleXcmMessageReceived() {
     const [messageHash] = JSON.parse(this.data) as [string];
-    const now = Math.floor(this.timestamp.getTime()/1000);
-    let totalAmount: bigint = BigInt(0);
-    let recvAmount: bigint = BigInt(0);
-    var recipient:string;
-    
+    const now = Math.floor(this.timestamp.getTime() / 1000);
+    let totalAmount = BigInt(0);
+    let recvAmount = BigInt(0);
+    let recipient: string;
+
     this.event?.extrinsic?.events.forEach((item, _index) => {
       if (item.event.method === 'Issued') {
         const [_currencyId, account, amount] = JSON.parse(item.event.data.toString());
@@ -158,18 +160,18 @@ export class EventHandler {
       return;
     }
 
-    const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex
+    const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex;
     let index = 0;
     while (true) {
-        const event = await XcmReceivedEvent.get(messageHash + '-' + index);
-        if (!event) {
-            break;
-        }
-        // if the same tx hash, don't save again
-        if (event.txHash === extrinsicHash) {
-            return;
-        }
-        index ++;
+      const event = await XcmReceivedEvent.get(messageHash + '-' + index);
+      if (!event) {
+        break;
+      }
+      // if the same tx hash, don't save again
+      if (event.txHash === extrinsicHash) {
+        return;
+      }
+      index++;
     }
     const event = new XcmReceivedEvent(messageHash + '-' + index);
     event.recipient = recipient;
