@@ -79,11 +79,11 @@ export class TransferService extends BaseTransferServiceT2 {
       },
       '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
         token: 'USDC',
-        decimals: 1e18,
+        decimals: 1e6,
       },
       '0xdac17f958d2ee523a2206206994597c13d831ec7': {
         token: 'USDT',
-        decimals: 1e18,
+        decimals: 1e6,
       },
       '0x4fabb145d64652a948d72533023f6e7a623c7c53': {
         token: 'BUSD',
@@ -107,11 +107,11 @@ export class TransferService extends BaseTransferServiceT2 {
     arbitrum: {
       '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': {
         token: 'USDC',
-        decimals: 1e18,
+        decimals: 1e6,
       },
       '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': {
         token: 'USDT',
-        decimals: 1e18,
+        decimals: 1e6,
       },
     },
     polygon: {
@@ -130,22 +130,22 @@ export class TransferService extends BaseTransferServiceT2 {
     },
     avalanche: {
       '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664': {
-        token: 'USDC',
-        decimals: 1e18,
+        token: 'USDC.e',
+        decimals: 1e6,
       },
       '0xc7198437980c041c805A1EDcbA50c1Ce5db95118': {
-        token: 'USDT',
-        decimals: 1e18,
+        token: 'USDT.e',
+        decimals: 1e6,
       },
     },
     optimism: {
       '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
         token: 'USDC',
-        decimals: 1e18,
+        decimals: 1e6,
       },
       '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58': {
         token: 'USDT',
-        decimals: 1e18,
+        decimals: 1e6,
       },
     },
     astar: {
