@@ -130,11 +130,11 @@ export class TransferService extends BaseTransferServiceT2 {
     },
     avalanche: {
       '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664': {
-        token: 'USDC',
+        token: 'USDC.e',
         decimals: 1e6,
       },
       '0xc7198437980c041c805A1EDcbA50c1Ce5db95118': {
-        token: 'USDT',
+        token: 'USDT.e',
         decimals: 1e6,
       },
     },
