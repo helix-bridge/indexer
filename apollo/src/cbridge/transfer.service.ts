@@ -151,11 +151,11 @@ export class TransferService extends BaseTransferServiceT2 {
     astar: {
       '0x6a2d262d56735dba19dd70682b39f6be9a931d98': {
         token: 'USDC',
-        decimals: 1e18,
+        decimals: 1e6,
       },
       '0x3795c36e7d12a8c252a20c5a7b455f7c57b60283': {
         token: 'USDT',
-        decimals: 1e18,
+        decimals: 1e6,
       },
       '0x4bf769b05e832fcdc9053fffbc78ca889acb5e1e': {
         token: 'BUSD',
@@ -169,11 +169,11 @@ export class TransferService extends BaseTransferServiceT2 {
       },
       '0x81ecac0d6be0550a00ff064a4f9dd2400585fe9c': {
         token: 'USDC',
-        decimals: 1e18,
+        decimals: 1e6,
       },
       '0x6a2d262d56735dba19dd70682b39f6be9a931d98': {
         token: 'USDT',
-        decimals: 1e18,
+        decimals: 1e6,
       },
     },
   };
