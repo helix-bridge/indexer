@@ -115,7 +115,7 @@ export class CbridgeService implements OnModuleInit {
           }
 
           const sendTokenInfo =
-            this.transferService.addressToTokenInfo[transfer.chain][record.token];
+            this.transferService.addressToTokenInfo[transfer.chain][record.token.toLowerCase()];
 
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, toChain.chainId.toString(), record.id),
@@ -249,7 +249,7 @@ export class CbridgeService implements OnModuleInit {
           updateData.endTime = Number(firstRelay.timestamp);
           updateData.recvAmount = firstRelay.amount;
           const recvTokenInfo =
-            this.transferService.addressToTokenInfo[dstChain.chain][firstRelay.token];
+            this.transferService.addressToTokenInfo[dstChain.chain][firstRelay.token.toLowerCase()];
           updateData.recvToken = recvTokenInfo.token;
           const sendAmount = global.BigInt(record.sendAmount);
           const recvAmount = global.BigInt(firstRelay.amount);
@@ -270,12 +270,14 @@ export class CbridgeService implements OnModuleInit {
         } else if (response.status === CBridgeRecordStatus.refunded) {
           const withdrawInfo = await this.queryTransfer(transfer, transferId);
 
-          if (withdrawInfo) {
+          if (withdrawInfo && withdrawInfo.withdraw_transaction) {
             updateData.responseTxHash = withdrawInfo.withdraw_transaction;
             updateData.endTime = Number(withdrawInfo.withdraw_timestamp);
             updateData.fee = '0';
             updateData.recvAmount = record.sendAmount;
             updateData.recvToken = record.sendToken;
+          } else {
+            continue;
           }
         }
 
