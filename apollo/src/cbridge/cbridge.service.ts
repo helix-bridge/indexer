@@ -276,6 +276,8 @@ export class CbridgeService implements OnModuleInit {
             updateData.fee = '0';
             updateData.recvAmount = record.sendAmount;
             updateData.recvToken = record.sendToken;
+          } else {
+            continue;
           }
         }
 
