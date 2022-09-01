@@ -133,13 +133,13 @@ export class TransferService extends BaseTransferServiceT2 {
         token: 'USDC.e',
         decimals: 1e6,
       },
-      '0xc7198437980c041c805A1EDcbA50c1Ce5db95118': {
+      '0xc7198437980c041c805a1edcba50c1ce5db95118': {
         token: 'USDT.e',
         decimals: 1e6,
       },
     },
     optimism: {
-      '0x7F5c764cBc14f9669B88837ca1490cCa17c31607': {
+      '0x7f5c764cbc14f9669b88837ca1490cca17c31607': {
         token: 'USDC',
         decimals: 1e6,
       },
