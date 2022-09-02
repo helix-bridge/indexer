@@ -32,7 +32,7 @@ dataSources:
     name: OriginalTokenVaultV2
     network: mainnet
     source:
-      address: "0x7510792A3B1969F9307F3845CE88e39578f2bAE1"
+      address: "0xB37D31b2A74029B5951a2778F959282E2D518595"
       abi: OriginalTokenVaultV2
       startBlock: 15254750
     mapping:
