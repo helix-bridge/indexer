@@ -33,6 +33,7 @@ model HistoryRecord {
   reason String
   messageNonce String
   sendTokenAddress String
+  guardSignatures String?
 }
 
 model DailyStatistics {

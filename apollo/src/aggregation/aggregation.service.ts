@@ -1,11 +1,18 @@
-import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
+import { INestApplication, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { DailyStatistics, HistoryRecord, Prisma, PrismaClient } from '@prisma/client';
 import { HistoryRecords } from '../graphql';
+import { GuardService } from '../guard/guard.service';
 
 @Injectable()
 export class AggregationService extends PrismaClient implements OnModuleInit {
+  private readonly logger = new Logger('cBridge');
+
   async onModuleInit() {
     await this.$connect();
+  }
+
+  constructor(private guardService: GuardService) {
+    super();
   }
 
   async enableShutdownHooks(app: INestApplication) {
@@ -28,6 +35,60 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     return this.historyRecord.update({
       data,
       where,
+    });
+  }
+
+  async addGuardSignature(params: {
+    where: Prisma.HistoryRecordWhereUniqueInput;
+    signature: string;
+  }) {
+    const { where, signature } = params;
+    try {
+      const record = await this.historyRecord.findUnique({
+        where,
+      });
+      // tx has been redeemed
+      if (record.responseTxHash !== '') {
+        return;
+      }
+      const guard = this.guardService.recoverPubkey(
+        record.fromChain,
+        record.toChain,
+        record.bridge,
+        record.messageNonce,
+        signature
+      );
+      if (!guard) {
+        return;
+      }
+      const value = guard + '-' + signature;
+      var signatures = record.guardSignatures.split(',');
+      const exist = signatures.find((sig) => sig === value);
+      if (exist) {
+        return;
+      }
+      signatures.push(value);
+
+      await this.historyRecord.update({
+        where,
+        data: {
+          guardSignatures: signatures.sort().join(','),
+        },
+      });
+    } catch (error) {
+      this.logger.warn(`add guard signature failed ${where}, ${signature}, ${error}`);
+    }
+  }
+
+  async queryGuardNeedSignature(params: {
+    take?: number;
+    where?: Prisma.HistoryRecordWhereInput;
+  }): Promise<HistoryRecord[]> {
+    const { take, where } = params;
+    return this.historyRecord.findMany({
+      take,
+      where,
+      orderBy: { startTime: 'desc' },
     });
   }
 
