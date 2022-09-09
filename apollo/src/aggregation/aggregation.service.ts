@@ -80,18 +80,6 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     }
   }
 
-  async queryGuardNeedSignature(params: {
-    take?: number;
-    where?: Prisma.HistoryRecordWhereInput;
-  }): Promise<HistoryRecord[]> {
-    const { take, where } = params;
-    return this.historyRecord.findMany({
-      take,
-      where,
-      orderBy: { startTime: 'desc' },
-    });
-  }
-
   async queryHistoryRecordById(
     historyRecordWhereUniqueInput: Prisma.HistoryRecordWhereUniqueInput
   ): Promise<HistoryRecord | null> {

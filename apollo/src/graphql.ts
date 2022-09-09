@@ -21,7 +21,7 @@ export abstract class IQuery {
 
     abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>, results?: Nullable<Nullable<number>[]>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
 
-    abstract queryGuardNeedSignature(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, guardAddress?: Nullable<string>, row?: Nullable<number>): Nullable<Nullable<HistoryRecord>[]> | Promise<Nullable<Nullable<HistoryRecord>[]>>;
+    abstract queryGuardNeedSignature(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, guardAddress?: Nullable<string>, row?: Nullable<number>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
 }
 
 export class HistoryRecord {

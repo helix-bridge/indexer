@@ -16,7 +16,7 @@ export class GuardService {
     {
       fromChain: 'Pangoro',
       toChain: 'Goerli',
-      bridge: 'sub2ethv2',
+      bridge: 'helix-sub2ethv2',
       chainId: 5,
       contract: '0x...',
     },
