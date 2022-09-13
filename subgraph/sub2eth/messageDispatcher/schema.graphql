@@ -1,0 +1,7 @@
+type MessageDispatchedResult @entity {
+  id: ID!
+  timestamp: BigInt!
+  transaction_hash: Bytes!
+  result: Boolean
+}
+

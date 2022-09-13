@@ -55,7 +55,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
         record.fromChain,
         record.toChain,
         record.bridge,
-        record.messageNonce,
+        BigInt(record.messageNonce).toString(),
         signature
       );
       if (!guard) {

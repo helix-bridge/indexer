@@ -1,5 +1,5 @@
 import Web3 from 'web3';
-import ethUtil from 'ethereumjs-util';
+import * as ethUtil from 'ethereumjs-util';
 
 class GuardInfo {
   fromChain: string;
@@ -14,11 +14,11 @@ export class GuardService {
 
   private readonly guardConfig: GuardInfo[] = [
     {
-      fromChain: 'Pangoro',
-      toChain: 'Goerli',
+      fromChain: 'pangoro-dvm',
+      toChain: 'goerli',
       bridge: 'helix-sub2ethv2',
       chainId: 5,
-      contract: '0x...',
+      contract: '0xB4098E5b3DD0896e8314EBf6C825128D59792dF2',
     },
   ];
 
@@ -66,6 +66,6 @@ export class GuardService {
       sigObj.r,
       sigObj.s
     );
-    return pubkey.toString().toLowerCase();
+    return ethUtil.bufferToHex(ethUtil.publicToAddress(pubkey)).toLowerCase();
   }
 }

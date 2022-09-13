@@ -95,13 +95,13 @@ export class AggregationResolver {
   ) {
     const take = row || 10;
     const baseFilters = { fromChain, toChain, bridge };
-    const guardNotSigned = { guardSignatures: {search: '!'+guardAddress, not: null} };
+    const guardNotSigned = { guardSignatures: { search: '!' + guardAddress, not: null } };
     const filterResponsed = { responseTxHash: '' };
 
     const where = {
-        ...baseFilters,
-        ...guardNotSigned,
-        ...filterResponsed,
+      ...baseFilters,
+      ...guardNotSigned,
+      ...filterResponsed,
     };
 
     return this.aggregationService.queryHistoryRecords({
