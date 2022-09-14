@@ -140,7 +140,7 @@ export class Sub2ethv2Service implements OnModuleInit {
             sendToken: from.token,
             recvToken: to.token,
             sendTokenAddress: record.token,
-            guardSignatures: '',
+            guardSignatures: null,
           });
           latestNonce += 1;
         }
@@ -189,10 +189,11 @@ export class Sub2ethv2Service implements OnModuleInit {
             variables: null,
           })
           .then((res) => res.data?.data?.messageDispatchedResults);
-        
-          if (nodes && nodes.length > 0) {
+
+        if (nodes && nodes.length > 0) {
           for (const node of nodes) {
-            const responseTxHash = node.result === Sub2EthStatus.success ? node.transaction_hash : '';
+            const responseTxHash =
+              node.result === Sub2EthStatus.success ? node.transaction_hash : '';
             const result = this.subStatus2RecordStatus(node.result);
             await this.aggregationService.updateHistoryRecord({
               where: { id: this.genID(transfer, node.id) },

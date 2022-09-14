@@ -18,7 +18,7 @@ export class GuardService {
       toChain: 'goerli',
       bridge: 'helix-sub2ethv2',
       chainId: 5,
-      contract: '0xc413070E3882F84791025Fee167401E19ADcfFb2',
+      contract: '0xb10666299137311A443C0e0964a34895D8fDc294',
     },
   ];
 
@@ -40,28 +40,33 @@ export class GuardService {
       return null;
     }
     const dataHash = this.generateDataHash(
-        transferId,
-        timestamp,
-        token,
-        recipient,
-        amount,
-        info.chainId,
-        info.contract);
+      transferId,
+      timestamp,
+      token,
+      recipient,
+      amount,
+      info.chainId,
+      info.contract
+    );
     return this.ecrecover(dataHash, sig);
   }
 
   private generateDataHash(
-      transferId: string,
-      timestamp: string,
-      token: string,
-      recipient: string,
-      amount: string,
-      chainId: number,
-      contractAddress: string): string {
-    const claimSign = this.web3.eth.abi.encodeFunctionSignature('claim(uint256,uint256,address,address,uint256,bytes[])');
+    transferId: string,
+    timestamp: string,
+    token: string,
+    recipient: string,
+    amount: string,
+    chainId: number,
+    contractAddress: string
+  ): string {
+    const claimSign = this.web3.eth.abi.encodeFunctionSignature(
+      'claim(uint256,uint256,address,address,uint256,bytes[])'
+    );
     const param = this.web3.eth.abi.encodeParameters(
-        ['uint256', 'uint256', 'address', 'address', 'uint256'],
-        [transferId, timestamp, token, recipient, amount]);
+      ['uint256', 'uint256', 'address', 'address', 'uint256'],
+      [transferId, timestamp, token, recipient, amount]
+    );
     const message = this.web3.eth.abi.encodeParameters(['bytes4', 'bytes'], [claimSign, param]);
     const structHash = this.web3.utils.keccak256(message);
     const DOMAIN_SEPARATOR_TYPEHASH = this.web3.utils.keccak256(

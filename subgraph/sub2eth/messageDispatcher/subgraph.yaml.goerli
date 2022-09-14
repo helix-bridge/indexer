@@ -8,7 +8,7 @@ dataSources:
     source:
       address: "0xFD89b82eCd642C2b171a6619A851B5f0500aab86"
       abi: InboundLane
-      startBlock: 7550921
+      startBlock: 7590000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -26,9 +26,9 @@ dataSources:
     name: Guard
     network: goerli
     source:
-      address: "0xc413070E3882F84791025Fee167401E19ADcfFb2"
+      address: "0xb10666299137311A443C0e0964a34895D8fDc294"
       abi: Guard
-      startBlock: 7550921
+      startBlock: 7590000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

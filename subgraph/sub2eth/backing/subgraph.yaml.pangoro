@@ -6,9 +6,9 @@ dataSources:
     name: Erc20Sub2EthBacking
     network: pangoro
     source:
-      address: "0x6040E2DB820E710F0869520B34D7E4e2A6d10d9D"
+      address: "0xC91279621a485Ad351C2968a88180CD0c7B2250D"
       abi: Erc20Sub2EthBacking
-      startBlock: 1
+      startBlock: 90000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

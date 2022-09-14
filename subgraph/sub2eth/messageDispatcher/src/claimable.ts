@@ -19,8 +19,8 @@ export function handleMessageDispatched(event: MessageDispatched): void {
       entity = new MessageDispatchedResult(message_id);
   }
   entity.timestamp = event.block.timestamp;
+  entity.transaction_hash = event.transaction.hash;
   if (!event.params.result) {
-      entity.transaction_hash = event.transaction.hash;
       entity.result = STATUS_FAILED;
   }
   entity.save();
@@ -32,6 +32,7 @@ export function handleTokenDeposit(event: TokenDeposit): void {
   if (entity == null) {
       entity = new MessageDispatchedResult(message_id);
   }
+  entity.transaction_hash = event.transaction.hash;
   entity.timestamp = event.block.timestamp;
   entity.token = event.params.token;
   entity.result = STATUS_PENDING;

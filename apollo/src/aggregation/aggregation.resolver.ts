@@ -94,9 +94,10 @@ export class AggregationResolver {
     @Args('row') row: number
   ) {
     const take = row || 10;
+    const statusPendingToClaim = 2;
     const baseFilters = { fromChain, toChain, bridge };
-    const guardNotSigned = { guardSignatures: { search: '!' + guardAddress, not: null } };
-    const filterResponsed = { responseTxHash: '' };
+    const guardNotSigned = { guardSignatures: { search: '!' + guardAddress } };
+    const filterResponsed = { responseTxHash: '', result: statusPendingToClaim };
 
     const where = {
       ...baseFilters,
