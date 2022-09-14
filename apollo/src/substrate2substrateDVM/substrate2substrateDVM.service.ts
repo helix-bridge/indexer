@@ -67,6 +67,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       sendToken: transfer.backing.token,
       recvToken: transfer.issuing.token,
       sendTokenAddress: '',
+      recvTokenAddress: '',
       guardSignatures: null,
     };
   }
@@ -94,6 +95,7 @@ export class Substrate2substrateDVMService extends RecordsService implements OnM
       sendToken: transfer.issuing.token,
       recvToken: transfer.backing.token,
       sendTokenAddress: '',
+      recvTokenAddress: '',
       guardSignatures: null,
     };
   }

@@ -34,6 +34,7 @@ model HistoryRecord {
   reason String
   messageNonce String
   sendTokenAddress String
+  recvTokenAddress String?
   guardSignatures String?
 }
 

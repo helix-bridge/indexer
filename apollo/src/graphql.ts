@@ -46,6 +46,7 @@ export class HistoryRecord {
     feeToken: string;
     messageNonce?: Nullable<string>;
     sendTokenAddress?: Nullable<string>;
+    recvTokenAddress?: Nullable<string>;
     guardSignatures?: Nullable<string>;
 }
 

@@ -43,7 +43,7 @@ export class TransferService extends BaseTransferServiceT1 {
 
   dispatchEndPoints = {
     pangoro: this.inboundLaneSubgraph + '/pangoro',
-    goerli: this.inboundLaneSubgraph + 'goerli',
+    goerli: this.inboundLaneSubgraph + '/goerli',
   };
 
   constructor(public configService: ConfigService) {

@@ -18,7 +18,7 @@ export class GuardService {
       toChain: 'goerli',
       bridge: 'helix-sub2ethv2',
       chainId: 5,
-      contract: '0xB4098E5b3DD0896e8314EBf6C825128D59792dF2',
+      contract: '0xc413070E3882F84791025Fee167401E19ADcfFb2',
     },
   ];
 
@@ -27,6 +27,10 @@ export class GuardService {
     toChain: string,
     bridge: string,
     transferId: string,
+    timestamp: string,
+    token: string,
+    recipient: string,
+    amount: string,
     sig: string
   ): string | null {
     const info = this.guardConfig.find((info) => {
@@ -35,14 +39,30 @@ export class GuardService {
     if (!info) {
       return null;
     }
-    const dataHash = this.generateDataHash(transferId, info.chainId, info.contract);
+    const dataHash = this.generateDataHash(
+        transferId,
+        timestamp,
+        token,
+        recipient,
+        amount,
+        info.chainId,
+        info.contract);
     return this.ecrecover(dataHash, sig);
   }
 
-  private generateDataHash(transferId: string, chainId: number, contractAddress: string): string {
-    const claimSign = this.web3.eth.abi.encodeFunctionSignature('claim(uint256,bytes[])');
-    const id = this.web3.eth.abi.encodeParameters(['uint256'], [transferId]);
-    const message = this.web3.eth.abi.encodeParameters(['bytes4', 'bytes'], [claimSign, id]);
+  private generateDataHash(
+      transferId: string,
+      timestamp: string,
+      token: string,
+      recipient: string,
+      amount: string,
+      chainId: number,
+      contractAddress: string): string {
+    const claimSign = this.web3.eth.abi.encodeFunctionSignature('claim(uint256,uint256,address,address,uint256,bytes[])');
+    const param = this.web3.eth.abi.encodeParameters(
+        ['uint256', 'uint256', 'address', 'address', 'uint256'],
+        [transferId, timestamp, token, recipient, amount]);
+    const message = this.web3.eth.abi.encodeParameters(['bytes4', 'bytes'], [claimSign, param]);
     const structHash = this.web3.utils.keccak256(message);
     const DOMAIN_SEPARATOR_TYPEHASH = this.web3.utils.keccak256(
       'EIP712Domain(uint256 chainId,address verifyingContract)'

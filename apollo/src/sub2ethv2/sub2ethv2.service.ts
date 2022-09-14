@@ -8,6 +8,12 @@ import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 import { TransferT1 } from '../base/TransferServiceT1';
 
+enum Sub2EthStatus {
+  pending = 1,
+  success = 2,
+  failed = 3,
+}
+
 enum RecordStatus {
   pending,
   pendingToRefund,
@@ -34,6 +40,16 @@ export class Sub2ethv2Service implements OnModuleInit {
     private taskService: TasksService,
     private transferService: TransferService
   ) {}
+
+  private subStatus2RecordStatus(s: Sub2EthStatus) {
+    if (s == Sub2EthStatus.pending) {
+      return RecordStatus.pendingToClaim;
+    } else if (s === Sub2EthStatus.success) {
+      return RecordStatus.success;
+    } else {
+      return RecordStatus.pendingToRefund;
+    }
+  }
 
   async onModuleInit() {
     this.transferService.transfers.forEach((item, index) => {
@@ -169,22 +185,22 @@ export class Sub2ethv2Service implements OnModuleInit {
       if (ids.length > 0) {
         const nodes = await axios
           .post(this.transferService.dispatchEndPoints[to.chain.split('-')[0]], {
-            query: `query { messageDispatchedResults (where: {id_in: [${ids}]}) { id, transaction_hash, result, timestamp }}`,
+            query: `query { messageDispatchedResults (where: {id_in: [${ids}]}) { id, token, transaction_hash, result, timestamp }}`,
             variables: null,
           })
-          .then((res) => res.data?.data?.transferRecord);
-
-        if (nodes && nodes.length > 0) {
+          .then((res) => res.data?.data?.messageDispatchedResults);
+        
+          if (nodes && nodes.length > 0) {
           for (const node of nodes) {
-            const responseTxHash = node.result ? node.transaction_hash : '';
-            const result = node.result ? RecordStatus.success : RecordStatus.pendingToRefund;
+            const responseTxHash = node.result === Sub2EthStatus.success ? node.transaction_hash : '';
+            const result = this.subStatus2RecordStatus(node.result);
             await this.aggregationService.updateHistoryRecord({
               where: { id: this.genID(transfer, node.id) },
               data: {
+                recvTokenAddress: node.token,
                 responseTxHash,
-                reason: 'unknown',
                 result,
-                endTime: this.toUnixTime(node.timestamp),
+                endTime: Number(node.timestamp),
               },
             });
           }
@@ -192,7 +208,7 @@ export class Sub2ethv2Service implements OnModuleInit {
       }
       let refunded = 0;
       for (const node of uncheckedRecords) {
-        if (node.reason !== '') {
+        if (node.result === RecordStatus.pendingToRefund) {
           const transferId = last(node.id.split('-'));
           const withdrawInfo = await this.queryTransfer(transfer, transferId);
           if (withdrawInfo && withdrawInfo.withdraw_transaction) {
