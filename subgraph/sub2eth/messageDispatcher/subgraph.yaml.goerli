@@ -6,7 +6,7 @@ dataSources:
     name: InboundLane
     network: goerli
     source:
-      address: "0x2b99f13A2a9dC1570Ab423BB8fA8577755AcD77B"
+      address: "0xFD89b82eCd642C2b171a6619A851B5f0500aab86"
       abi: InboundLane
       startBlock: 7550921
     mapping:
@@ -21,5 +21,28 @@ dataSources:
       eventHandlers:
         - event: MessageDispatched(uint64,bool)
           handler: handleMessageDispatched
-      file: ./src/mapping.ts
+      file: ./src/claimable.ts
+  - kind: ethereum/contract
+    name: Guard
+    network: goerli
+    source:
+      address: "0xc413070E3882F84791025Fee167401E19ADcfFb2"
+      abi: Guard
+      startBlock: 7550921
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - TokenDeposit
+        - TokenClaimed
+      abis:
+        - name: Guard
+          file: ./abis/Guard.json
+      eventHandlers:
+        - event: TokenDeposit(uint256,address,address,uint256)
+          handler: handleTokenDeposit
+        - event: TokenClaimed(uint256)
+          handler: handleTokenClaimed
+      file: ./src/claimable.ts
 
