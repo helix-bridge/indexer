@@ -6,7 +6,7 @@ dataSources:
     name: Erc20Sub2EthBacking
     network: pangoro
     source:
-      address: "0xC91279621a485Ad351C2968a88180CD0c7B2250D"
+      address: "0x448ee34f0F552eAd97a1B63aD6da9734f555919A"
       abi: Erc20Sub2EthBacking
       startBlock: 90000
     mapping:

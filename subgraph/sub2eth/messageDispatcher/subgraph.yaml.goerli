@@ -6,7 +6,7 @@ dataSources:
     name: InboundLane
     network: goerli
     source:
-      address: "0xFD89b82eCd642C2b171a6619A851B5f0500aab86"
+      address: "0xD9c96CaDC0710b8cD206d4F24DD8c547c6Ce23af"
       abi: InboundLane
       startBlock: 7590000
     mapping:
@@ -26,7 +26,7 @@ dataSources:
     name: Guard
     network: goerli
     source:
-      address: "0xb10666299137311A443C0e0964a34895D8fDc294"
+      address: "0xCaaE893257366c866a82BAbDe85320b9123B829f"
       abi: Guard
       startBlock: 7590000
     mapping:
