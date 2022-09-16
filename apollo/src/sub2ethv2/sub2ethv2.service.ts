@@ -42,7 +42,7 @@ export class Sub2ethv2Service implements OnModuleInit {
   ) {}
 
   private subStatus2RecordStatus(s: Sub2EthStatus) {
-    if (s == Sub2EthStatus.pending) {
+    if (s === Sub2EthStatus.pending) {
       return RecordStatus.pendingToClaim;
     } else if (s === Sub2EthStatus.success) {
       return RecordStatus.success;
