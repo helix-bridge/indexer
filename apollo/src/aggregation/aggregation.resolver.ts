@@ -1,4 +1,4 @@
-import { Args, Query, Resolver } from '@nestjs/graphql';
+import { Args, Query, Mutation, Resolver } from '@nestjs/graphql';
 import { isEmpty, isNull, isUndefined } from 'lodash';
 import { AggregationService } from './aggregation.service';
 
@@ -72,6 +72,41 @@ export class AggregationResolver {
     const timelimit = Math.floor(now - timepast);
     const where = { AND: { timestamp: { gt: timelimit }, AND: filter } };
     return this.aggregationService.queryDailyStatistics({
+      take,
+      where,
+    });
+  }
+
+  @Mutation()
+  async addGuardSignature(@Args('id') id: string, @Args('signature') signature: string) {
+    await this.aggregationService.addGuardSignature({
+      where: { id: id },
+      signature: signature,
+    });
+  }
+
+  @Query()
+  async queryGuardNeedSignature(
+    @Args('fromChain') fromChain: string,
+    @Args('toChain') toChain: string,
+    @Args('bridge') bridge: string,
+    @Args('guardAddress') guardAddress: string,
+    @Args('row') row: number
+  ) {
+    const take = row || 10;
+    const statusPendingToClaim = 2;
+    const baseFilters = { fromChain, toChain, bridge };
+    const guardNotSigned = { guardSignatures: { search: '!' + guardAddress } };
+    const filterResponsed = { responseTxHash: '', result: statusPendingToClaim };
+
+    const where = {
+      ...baseFilters,
+      ...guardNotSigned,
+      ...filterResponsed,
+    };
+
+    return this.aggregationService.queryHistoryRecords({
+      skip: 0,
       take,
       where,
     });

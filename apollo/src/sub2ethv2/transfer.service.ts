@@ -4,37 +4,36 @@ import { BaseTransferServiceT1, TransferT1 } from '../base/TransferServiceT1';
 
 @Injectable()
 export class TransferService extends BaseTransferServiceT1 {
-  private readonly subql = this.configService.get<string>('SUBQL');
-  private readonly subqlX = this.configService.get<string>('SUBQL_X');
-  private readonly subqlS = this.configService.get<string>('SUBQL_S');
+  private readonly backingSubgraphUrl = this.configService.get<string>('SUB2ETH_BACKING');
+  private readonly issuingSubgraphUrl = this.configService.get<string>('SUB2ETH_ISSUING');
+  private readonly inboundLaneSubgraph = this.configService.get<string>('SUB2ETH_INBOUND');
 
-  private readonly issuingSubgraphUrl = this.configService.get<string>('S2S_ISSUING');
-  private readonly backingSubgraphUrl = this.configService.get<string>('S2S_BACKING');
+  formalChainTransfers: TransferT1[] = [];
 
-  formalChainTransfers: TransferT1[] = [
+  testChainTransfers: TransferT1[] = [
     {
       source: {
-        chain: 'darwinia-dvm',
+        chain: 'pangoro-dvm',
         url: this.backingSubgraphUrl,
         feeToken: 'RING',
         token: 'wRING',
       },
       target: {
-        chain: 'crab-dvm',
+        chain: 'goerli',
         url: this.issuingSubgraphUrl,
-        feeToken: 'CRAB',
-        token: 'xWRING',
+        feeToken: 'ETH',
+        token: 'RING',
       },
     },
     {
       source: {
-        chain: 'crab-dvm',
+        chain: 'goerli',
         url: this.issuingSubgraphUrl,
-        feeToken: 'CRAB',
-        token: 'xWRING',
+        feeToken: 'ETH',
+        token: 'RING',
       },
       target: {
-        chain: 'darwinia-dvm',
+        chain: 'pangoro-dvm',
         url: this.backingSubgraphUrl,
         feeToken: 'RING',
         token: 'wRING',
@@ -42,13 +41,9 @@ export class TransferService extends BaseTransferServiceT1 {
     },
   ];
 
-  testChainTransfers: TransferT1[] = [];
-
   dispatchEndPoints = {
-    pangolin: this.subqlX + 'pchain',
-    pangoro: this.subqlS + 'pochain',
-    crab: this.subql + 'crab',
-    darwinia: this.subql + 'darwinia',
+    pangoro: this.inboundLaneSubgraph + '/pangoro',
+    goerli: this.inboundLaneSubgraph + '/goerli',
   };
 
   constructor(public configService: ConfigService) {

@@ -17,12 +17,7 @@ export class TransferService extends BaseTransferService {
     },
   ];
 
-  testChainTransfers: Transfer[] = [
-    {
-      backing: { chain: 'pangoro', url: this.backingUrl, token: 'ORING', feeToken: 'PRING' },
-      issuing: { chain: 'pangolin-dvm', url: this.issuingUrl, token: 'xORING', feeToken: 'PRING' },
-    },
-  ];
+  testChainTransfers: Transfer[] = [];
 
   dispatchEndPoints = {
     pangolin: this.subqlX + 'pchain',

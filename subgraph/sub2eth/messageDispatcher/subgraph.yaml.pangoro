@@ -1,0 +1,25 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: InboundLane
+    network: pangoro
+    source:
+      address: "0x3277B7BABbeadF5dC43D5350df25310f3c819965"
+      abi: InboundLane
+      startBlock: 90000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - MessageDispatched
+      abis:
+        - name: InboundLane
+          file: ./abis/InboundLane.json
+      eventHandlers:
+        - event: MessageDispatched(uint64,bool)
+          handler: handleMessageDispatched
+      file: ./src/unclaimable.ts
+

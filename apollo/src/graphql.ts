@@ -7,6 +7,7 @@
 
 /* tslint:disable */
 /* eslint-disable */
+
 export class Accounts {
     total: number;
 }
@@ -19,6 +20,8 @@ export abstract class IQuery {
     abstract queryDailyStatistics(timepast: number, first?: Nullable<number>, from?: Nullable<string>, to?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>): Nullable<Nullable<DailyStatistics>[]> | Promise<Nullable<Nullable<DailyStatistics>[]>>;
 
     abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>, results?: Nullable<Nullable<number>[]>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
+
+    abstract queryGuardNeedSignature(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, guardAddress?: Nullable<string>, row?: Nullable<number>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
 }
 
 export class HistoryRecord {
@@ -43,6 +46,8 @@ export class HistoryRecord {
     feeToken: string;
     messageNonce?: Nullable<string>;
     sendTokenAddress?: Nullable<string>;
+    recvTokenAddress?: Nullable<string>;
+    guardSignatures?: Nullable<string>;
 }
 
 export class DailyStatistics {
@@ -58,6 +63,10 @@ export class DailyStatistics {
 export class HistoryRecords {
     total: number;
     records?: Nullable<Nullable<HistoryRecord>[]>;
+}
+
+export abstract class IMutation {
+    abstract addGuardSignature(id?: Nullable<string>, dataHash?: Nullable<string>, signature?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 }
 
 export class S2sEvent {

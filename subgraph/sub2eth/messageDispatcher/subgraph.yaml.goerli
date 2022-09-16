@@ -1,0 +1,48 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: InboundLane
+    network: goerli
+    source:
+      address: "0xD9c96CaDC0710b8cD206d4F24DD8c547c6Ce23af"
+      abi: InboundLane
+      startBlock: 7590000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - MessageDispatched
+      abis:
+        - name: InboundLane
+          file: ./abis/InboundLane.json
+      eventHandlers:
+        - event: MessageDispatched(uint64,bool)
+          handler: handleMessageDispatched
+      file: ./src/claimable.ts
+  - kind: ethereum/contract
+    name: Guard
+    network: goerli
+    source:
+      address: "0xCaaE893257366c866a82BAbDe85320b9123B829f"
+      abi: Guard
+      startBlock: 7590000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - TokenDeposit
+        - TokenClaimed
+      abis:
+        - name: Guard
+          file: ./abis/Guard.json
+      eventHandlers:
+        - event: TokenDeposit(uint256,address,address,uint256)
+          handler: handleTokenDeposit
+        - event: TokenClaimed(uint256)
+          handler: handleTokenClaimed
+      file: ./src/claimable.ts
+
