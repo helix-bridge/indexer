@@ -50,36 +50,7 @@ export class TransferService extends BaseTransferService {
     },
   ];
 
-  testChainTransfers: Transfer[] = [
-    {
-      backing: {
-        chain: 'pangolin',
-        url: this.endpoint + 'pchain',
-        token: 'PRING',
-        feeToken: 'PRING',
-      },
-      issuing: {
-        chain: 'pangolin-dvm',
-        url: this.endpoint + 'pchain',
-        token: 'PRING',
-        feeToken: 'PRING',
-      },
-    },
-    {
-      backing: {
-        chain: 'pangolin',
-        url: this.endpoint + 'pchain',
-        token: 'PKTON',
-        feeToken: 'PRING',
-      },
-      issuing: {
-        chain: 'pangolin-dvm',
-        url: this.endpoint + 'pchain',
-        token: 'WPKTON',
-        feeToken: 'PRING',
-      },
-    },
-  ];
+  testChainTransfers: Transfer[] = [];
 
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
 
