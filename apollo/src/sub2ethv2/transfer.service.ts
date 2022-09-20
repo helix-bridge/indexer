@@ -15,14 +15,14 @@ export class TransferService extends BaseTransferServiceT1 {
       source: {
         chain: 'pangoro-dvm',
         url: this.backingSubgraphUrl,
-        feeToken: 'RING',
-        token: 'wRING',
+        feeToken: 'ORING',
+        token: 'wORING',
       },
       target: {
         chain: 'goerli',
         url: this.issuingSubgraphUrl,
         feeToken: 'ETH',
-        token: 'RING',
+        token: 'ORING',
       },
     },
     {
@@ -30,13 +30,13 @@ export class TransferService extends BaseTransferServiceT1 {
         chain: 'goerli',
         url: this.issuingSubgraphUrl,
         feeToken: 'ETH',
-        token: 'RING',
+        token: 'ORING',
       },
       target: {
         chain: 'pangoro-dvm',
         url: this.backingSubgraphUrl,
-        feeToken: 'RING',
-        token: 'wRING',
+        feeToken: 'ORING',
+        token: 'wORING',
       },
     },
   ];
@@ -51,6 +51,6 @@ export class TransferService extends BaseTransferServiceT1 {
   }
 
   getRecordQueryString(first: number, latestNonce: bigint | number) {
-    return `query { transferRecords (first: ${first}, orderBy: start_timestamp, orderDirection: asc, skip: ${latestNonce}) {id, sender, receiver, token, amount, fee, start_timestamp, transaction_hash}}`;
+    return `query { transferRecords (first: ${first}, orderBy: start_timestamp, orderDirection: asc, skip: ${latestNonce}) {id, sender, receiver, token, amount, fee, start_timestamp, transaction_hash, is_native}}`;
   }
 }

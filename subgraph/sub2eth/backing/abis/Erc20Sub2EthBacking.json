@@ -23,37 +23,6 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "uint256",
-          "name": "transferId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "recipient",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "NativeTokenUnlockedForFailed",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
           "internalType": "address",
           "name": "account",
           "type": "address"
@@ -185,6 +154,12 @@
         },
         {
           "indexed": false,
+          "internalType": "bool",
+          "name": "isNative",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
           "internalType": "address",
           "name": "token",
           "type": "address"
@@ -228,6 +203,12 @@
         },
         {
           "indexed": false,
+          "internalType": "bool",
+          "name": "isNative",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
           "internalType": "address",
           "name": "token",
           "type": "address"
@@ -256,6 +237,12 @@
           "internalType": "uint256",
           "name": "transferId",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "isNative",
+          "type": "bool"
         },
         {
           "indexed": false,
@@ -346,12 +333,38 @@
     },
     {
       "inputs": [],
+      "name": "LASTDAY_BIT_LENGTH",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "OPERATOR_ROLE",
       "outputs": [
         {
           "internalType": "bytes32",
           "name": "",
           "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "SPEND_BIT_LENGTH",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -886,11 +899,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_remoteMappingTokenFactory",
+          "name": "_wToken",
           "type": "address"
         }
       ],
-      "name": "setRemoteMappingTokenFactory",
+      "name": "setNativeWrappedToken",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -899,11 +912,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_wToken",
+          "name": "_remoteMappingTokenFactory",
           "type": "address"
         }
       ],
-      "name": "setwToken",
+      "name": "setRemoteMappingTokenFactory",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

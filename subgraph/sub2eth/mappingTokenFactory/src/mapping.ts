@@ -18,6 +18,7 @@ export function handleBurnAndRemoteUnlocked(event: BurnAndRemoteUnlocked): void 
   entity.transaction_hash = event.transaction.hash;
   entity.start_timestamp = event.block.timestamp;
   entity.fee = event.params.fee;
+  entity.is_native = event.params.isNative;
   entity.save();
 }
 

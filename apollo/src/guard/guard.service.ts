@@ -18,7 +18,7 @@ export class GuardService {
       toChain: 'goerli',
       bridge: 'helix-sub2ethv2',
       chainId: 5,
-      contract: '0xCaaE893257366c866a82BAbDe85320b9123B829f',
+      contract: '0xd9C81baff337387F9c6C83507e85CEA0635618FE',
     },
   ];
 
