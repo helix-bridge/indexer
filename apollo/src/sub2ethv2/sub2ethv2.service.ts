@@ -118,11 +118,11 @@ export class Sub2ethv2Service implements OnModuleInit {
 
       if (records && records.length > 0) {
         for (const record of records) {
-          fromToken =
+          const fromToken =
             record.is_native && from.token.indexOf('w') === 0
               ? from.token.substring(1)
               : from.token;
-          toToken =
+          const toToken =
             record.is_native && to.token.indexOf('w') === 0 ? to.token.substring(1) : to.token;
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, record.id),
