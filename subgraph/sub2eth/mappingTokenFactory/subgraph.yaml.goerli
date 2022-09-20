@@ -6,7 +6,7 @@ dataSources:
     name: Erc20Sub2EthMappingTokenFactory
     network: goerli
     source:
-      address: "0xe35b898A65c9868336bf34321373E1DA9401eB9d"
+      address: "0x1AECF62B14aC33929e74fc7939FA490b3B3E3563"
       abi: Erc20Sub2EthMappingTokenFactory
       startBlock: 7557000
     mapping:
