@@ -6,7 +6,7 @@ dataSources:
     name: Erc20Sub2EthMappingTokenFactory
     network: goerli
     source:
-      address: "0x99EEC38BF4967BeA209B5A5D366aFB287722Ec69"
+      address: "0xe35b898A65c9868336bf34321373E1DA9401eB9d"
       abi: Erc20Sub2EthMappingTokenFactory
       startBlock: 7557000
     mapping:
@@ -20,7 +20,7 @@ dataSources:
         - name: Erc20Sub2EthMappingTokenFactory
           file: ./abis/Erc20Sub2EthMappingTokenFactory.json
       eventHandlers:
-        - event: BurnAndRemoteUnlocked(uint256,address,address,address,uint256,uint256)
+        - event: BurnAndRemoteUnlocked(uint256,bool,address,address,address,uint256,uint256)
           handler: handleBurnAndRemoteUnlocked
         - event: TokenRemintForFailed(uint256,address,address,uint256)
           handler: handleTokenRemintForFailed

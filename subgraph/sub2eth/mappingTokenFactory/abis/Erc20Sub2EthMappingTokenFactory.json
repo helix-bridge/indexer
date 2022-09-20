@@ -10,6 +10,12 @@
         },
         {
           "indexed": false,
+          "internalType": "bool",
+          "name": "isNative",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
           "internalType": "address",
           "name": "sender",
           "type": "address"
@@ -303,12 +309,38 @@
     },
     {
       "inputs": [],
+      "name": "LASTDAY_BIT_LENGTH",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "OPERATOR_ROLE",
       "outputs": [
         {
           "internalType": "bytes32",
           "name": "",
           "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "SPEND_BIT_LENGTH",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -941,6 +973,19 @@
       "inputs": [
         {
           "internalType": "address",
+          "name": "_xwToken",
+          "type": "address"
+        }
+      ],
+      "name": "setMappingNativeWrappedToken",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "originalToken",
           "type": "address"
         },
@@ -982,19 +1027,6 @@
         }
       ],
       "name": "setRemoteBacking",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_xwToken",
-          "type": "address"
-        }
-      ],
-      "name": "setxwToken",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

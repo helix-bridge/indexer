@@ -2,7 +2,6 @@ import { BigInt } from "@graphprotocol/graph-ts"
 import {
   TokenLocked,
   TokenUnlockedForFailed,
-  NativeTokenUnlockedForFailed,
 } from "../generated/Erc20Sub2EthBacking/Erc20Sub2EthBacking"
 import { TransferRecord } from "../generated/schema"
 
@@ -19,22 +18,11 @@ export function handleTokenLocked(event: TokenLocked): void {
   entity.transaction_hash = event.transaction.hash;
   entity.start_timestamp = event.block.timestamp;
   entity.fee = event.params.fee;
+  entity.is_native = event.params.isNative;
   entity.save();
 }
 
 export function handleTokenUnlockedForFailed(event: TokenUnlockedForFailed): void {
-  let id = event.params.transferId.toHexString();
-  let entity = TransferRecord.load(id);
-  if (entity == null) {
-      return;
-  }
-  entity.withdraw_amount = event.params.amount;
-  entity.withdraw_transaction = event.transaction.hash;
-  entity.withdraw_timestamp = event.block.timestamp;
-  entity.save();
-}
-
-export function handleNativeTokenUnlockedForFailed(event: NativeTokenUnlockedForFailed): void {
   let id = event.params.transferId.toHexString();
   let entity = TransferRecord.load(id);
   if (entity == null) {
