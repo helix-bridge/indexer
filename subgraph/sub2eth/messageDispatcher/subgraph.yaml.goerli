@@ -26,7 +26,7 @@ dataSources:
     name: Guard
     network: goerli
     source:
-      address: "0xd9C81baff337387F9c6C83507e85CEA0635618FE"
+      address: "0x6aa0e15E88A8EF584304Bb52c3E9C6fA16d3EAc5"
       abi: Guard
       startBlock: 7590000
     mapping:
