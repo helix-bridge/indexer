@@ -14,3 +14,10 @@ type TransferRecord @entity {
   withdraw_transaction: Bytes
 }
 
+type RefundTransferRecord @entity {
+  id: ID! # refund id
+  source_id: BigInt # original transfer id
+  timestamp: BigInt
+  transaction_hash: Bytes
+}
+
