@@ -6,9 +6,9 @@ dataSources:
     name: Erc20Sub2EthMappingTokenFactory
     network: goerli
     source:
-      address: "0x1AECF62B14aC33929e74fc7939FA490b3B3E3563"
+      address: "0xfcAcf3d08275031e5Bd453Cf2509301290858984"
       abi: Erc20Sub2EthMappingTokenFactory
-      startBlock: 7557000
+      startBlock: 7644176
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -16,6 +16,7 @@ dataSources:
       entities:
         - BurnAndRemoteUnlocked
         - TokenRemintForFailed
+        - RemoteUnlockFailure
       abis:
         - name: Erc20Sub2EthMappingTokenFactory
           file: ./abis/Erc20Sub2EthMappingTokenFactory.json
@@ -24,5 +25,7 @@ dataSources:
           handler: handleBurnAndRemoteUnlocked
         - event: TokenRemintForFailed(uint256,address,address,uint256)
           handler: handleTokenRemintForFailed
+        - event: RemoteUnlockFailure(uint256,uint256,address,address,uint256,uint256)
+          handler: handleRemoteUnlockFailure
       file: ./src/mapping.ts
 

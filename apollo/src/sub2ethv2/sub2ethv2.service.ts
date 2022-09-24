@@ -20,6 +20,7 @@ enum RecordStatus {
   pendingToClaim,
   success,
   refunded,
+  pendingToConfirmRefund,
 }
 
 @Injectable()
@@ -184,7 +185,7 @@ export class Sub2ethv2Service implements OnModuleInit {
         this.skip[index] += this.takeEachTime;
       }
       const ids = uncheckedRecords
-        .filter((item) => item.reason === '')
+        .filter((item) => item.reason === '' && item.result !== RecordStatus.pendingToConfirmRefund)
         .map((item) => `"${last(item.id.split('-'))}"`)
         .join(',');
 
@@ -201,6 +202,11 @@ export class Sub2ethv2Service implements OnModuleInit {
             const responseTxHash =
               node.result === Sub2EthStatus.success ? node.transaction_hash : '';
             const result = this.subStatus2RecordStatus(node.result);
+            const record = uncheckedRecords.find((r) => last(r.id.split('-')) === node.id) ?? null;
+            if (!record || record.result === result) {
+                continue;
+            }
+            this.logger.log(`sub2eth v2 new status id: ${node.id} updated old: ${record.result} new: ${result}`);
             await this.aggregationService.updateHistoryRecord({
               where: { id: this.genID(transfer, node.id) },
               data: {
@@ -214,8 +220,9 @@ export class Sub2ethv2Service implements OnModuleInit {
         }
       }
       let refunded = 0;
+      let unrefunded = [];
       for (const node of uncheckedRecords) {
-        if (node.result === RecordStatus.pendingToRefund) {
+        if (node.result === RecordStatus.pendingToRefund || node.result === RecordStatus.pendingToConfirmRefund) {
           const transferId = last(node.id.split('-'));
           const withdrawInfo = await this.queryTransfer(transfer, transferId);
           if (withdrawInfo && withdrawInfo.withdraw_transaction) {
@@ -229,10 +236,81 @@ export class Sub2ethv2Service implements OnModuleInit {
                 recvToken: node.sendToken,
               },
             });
+          } else {
+            unrefunded.push(node);
           }
         }
       }
-      if (refunded > 0 || ids.length > 0) {
+
+      // query if all the refund tx confirmed or one of them confirmed successed
+      if (unrefunded.length > 0) {
+          // 1. query refund start tx on target chain
+          // 2. query refund result tx on source chain
+          const unrefundNodes = unrefunded.map((item) => {
+              const transferId: string = last(item.id.split('-'));
+              if (transferId.length % 2 === 0) {
+                  return {id: `"${transferId}"`, node: item};
+              } else {
+                  return {id: `"0x0${transferId.substring(2)}"`, node: item};
+              }
+          });
+
+          for (const unrefundNode of unrefundNodes) {
+              const nodes = await axios
+              .post(to.url, {
+                  query: `query { refundTransferRecords (where: {source_id: ${unrefundNode.id}}) { id, source_id, transaction_hash, timestamp }}`,
+                  variables: null,
+              })
+              .then((res) => res.data?.data?.refundTransferRecords);
+
+              const refundIds = nodes
+              .map((item) => `"${item.id}"`)
+              .join(',');
+
+              const refundResults = await axios
+              .post(this.transferService.dispatchEndPoints[from.chain.split('-')[0]], {
+                  query: `query { messageDispatchedResults (where: {id_in: [${refundIds}]}) { id, token, transaction_hash, result, timestamp }}`,
+                  variables: null,
+              })
+              .then((res) => res.data?.data?.messageDispatchedResults);
+              const successedResult = refundResults.find((r) => r.result === Sub2EthStatus.success) ?? null;
+              if (!successedResult) {
+                  if (refundResults.length === refundIds.length) {
+                      // all refunds tx failed -> RecordStatus.pendingToRefund
+                      if (unrefundNode.node.result != RecordStatus.pendingToRefund) {
+                          const oldStatus = unrefundNode.node.result;
+                          unrefundNode.node.result = RecordStatus.pendingToRefund;
+                          this.logger.log(
+                              `sub2eth v2 no refund successed, status from ${oldStatus} to ${RecordStatus.pendingToRefund}`
+                          );
+                          // update db
+                          await this.aggregationService.updateHistoryRecord({
+                              where: { id: unrefundNode.node.id },
+                              data: {
+                                  result: RecordStatus.pendingToRefund,
+                              },
+                          });
+                      }
+                  } else {
+                      // some tx not confirmed -> RecordStatus.pendingToConfirmRefund
+                      if (unrefundNode.node.result != RecordStatus.pendingToConfirmRefund) {
+                          this.logger.log(
+                              `sub2eth v2 waiting for refund confirmed, id: ${unrefundNode.node.id} old status ${unrefundNode.node.result}`
+                          );
+                          unrefundNode.node.result = RecordStatus.pendingToConfirmRefund;
+                          // update db
+                          await this.aggregationService.updateHistoryRecord({
+                              where: { id: unrefundNode.node.id },
+                              data: {
+                                  result: RecordStatus.pendingToConfirmRefund,
+                              },
+                          });
+                      }
+                  }
+              }
+          }
+      }
+      if (refunded > 0) {
         this.logger.log(
           `sub2eth v2 update records, from ${from.chain}, to ${to.chain}, ids ${ids}, refunded ${refunded}`
         );

@@ -6,9 +6,9 @@ dataSources:
     name: Erc20Sub2EthBacking
     network: pangoro
     source:
-      address: "0x41073C282621590b731B69D7DEA9dE5557C22823"
+      address: "0xaafFbF487e9dA8429E2E9502d0907e5fD6b0C320"
       abi: Erc20Sub2EthBacking
-      startBlock: 90000
+      startBlock: 219965
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -16,6 +16,7 @@ dataSources:
       entities:
         - TokenLocked
         - TokenUnlockedForFailed
+        - RemoteIssuingFailure
       abis:
         - name: Erc20Sub2EthBacking
           file: ./abis/Erc20Sub2EthBacking.json
@@ -24,5 +25,7 @@ dataSources:
           handler: handleTokenLocked
         - event: TokenUnlockedForFailed(uint256,bool,address,address,uint256)
           handler: handleTokenUnlockedForFailed
+        - event: RemoteIssuingFailure(uint256,uint256,address,address,uint256,uint256)
+          handler: handleRemoteIssuingFailure
       file: ./src/mapping.ts
 
