@@ -66,7 +66,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
         return;
       }
       const value = guard + '-' + signature;
-      var signatures = record.guardSignatures === null ? [] : record.guardSignatures.split(',');
+      const signatures = record.guardSignatures === null ? [] : record.guardSignatures.split(',');
       const exist = signatures.find((sig) => sig === value);
       if (exist) {
         return;
