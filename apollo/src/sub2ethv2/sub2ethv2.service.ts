@@ -6,7 +6,7 @@ import { getUnixTime } from 'date-fns';
 import { AggregationService } from '../aggregation/aggregation.service';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
-import { TransferT1 } from '../base/TransferServiceT1';
+import { TransferT3 } from '../base/TransferServiceT3';
 
 enum Sub2EthStatus {
   pending = 1,
@@ -26,7 +26,7 @@ enum RecordStatus {
 @Injectable()
 export class Sub2ethv2Service implements OnModuleInit {
   private readonly logger = new Logger('sub2ethv2');
-  protected fetchSendDataInterval = 30000;
+  protected fetchSendDataInterval = 10000;
   protected fetchHistoryDataFirst = 10;
   private readonly takeEachTime = 3;
   private skip = new Array(this.transferService.transfers.length).fill(0);
@@ -74,7 +74,7 @@ export class Sub2ethv2Service implements OnModuleInit {
   }
 
   // two directions must use the same laneId
-  protected genID(transfer: TransferT1, id: string) {
+  protected genID(transfer: TransferT3, id: string) {
     return `${transfer.source.chain}2${transfer.target.chain}-sub2ethv2-${id}`;
   }
 
@@ -87,7 +87,7 @@ export class Sub2ethv2Service implements OnModuleInit {
     return getUnixTime(new Date(time)) - timezone;
   }
 
-  async queryTransfer(transfer: TransferT1, srcTransferId: string) {
+  async queryTransfer(transfer: TransferT3, srcTransferId: string) {
     const query = `query { transferRecord(id: "${srcTransferId}") {withdraw_timestamp, withdraw_transaction}}`;
     return await axios
       .post(transfer.source.url, {
@@ -97,9 +97,9 @@ export class Sub2ethv2Service implements OnModuleInit {
       .then((res) => res.data?.data?.transferRecord);
   }
 
-  async fetchRecords(transfer: TransferT1, index: number) {
+  async fetchRecords(transfer: TransferT3, index: number) {
     let latestNonce = this.fetchCache[index].latestNonce;
-    const { source: from, target: to } = transfer;
+    const { source: from, target: to, symbols } = transfer;
     try {
       if (latestNonce === -1) {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
@@ -110,21 +110,31 @@ export class Sub2ethv2Service implements OnModuleInit {
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
+      const addressIn = symbols.map((item) => `"${item.address}"`).join(',');
+
       const records = await axios
         .post(from.url, {
-          query: this.transferService.getRecordQueryString(this.fetchHistoryDataFirst, latestNonce),
+          query: this.transferService.getRecordQueryString(
+            this.fetchHistoryDataFirst,
+            latestNonce,
+            addressIn
+          ),
           variables: null,
         })
         .then((res) => res.data?.data?.transferRecords);
 
       if (records && records.length > 0) {
         for (const record of records) {
+          const symbol = symbols.find((item) => item.address === record.token) ?? null;
+          if (!symbol) {
+            continue;
+          }
           const fromToken =
-            record.is_native && from.token.indexOf('w') === 0
-              ? from.token.substring(1)
-              : from.token;
+            record.is_native && symbol.from.indexOf('W') === 0
+              ? symbol.from.substring(1)
+              : symbol.from;
           const toToken =
-            record.is_native && to.token.indexOf('w') === 0 ? to.token.substring(1) : to.token;
+            record.is_native && symbol.to.indexOf('W') === 0 ? symbol.to.substring(1) : symbol.to;
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, record.id),
             sendAmount: record.amount,
@@ -163,7 +173,7 @@ export class Sub2ethv2Service implements OnModuleInit {
     }
   }
 
-  async fetchStatus(transfer: TransferT1, index: number) {
+  async fetchStatus(transfer: TransferT3, index: number) {
     const { source: from, target: to } = transfer;
 
     try {
