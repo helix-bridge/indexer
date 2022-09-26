@@ -17,7 +17,7 @@ export class TransferService extends BaseTransferServiceT1 {
         chain: 'darwinia-dvm',
         url: this.backingSubgraphUrl,
         feeToken: 'RING',
-        token: 'wRING',
+        token: 'WRING',
       },
       target: {
         chain: 'crab-dvm',
@@ -37,7 +37,7 @@ export class TransferService extends BaseTransferServiceT1 {
         chain: 'darwinia-dvm',
         url: this.backingSubgraphUrl,
         feeToken: 'RING',
-        token: 'wRING',
+        token: 'WRING',
       },
     },
   ];
