@@ -8,7 +8,56 @@ export class TransferService extends BaseTransferServiceT3 {
   private readonly issuingSubgraphUrl = this.configService.get<string>('SUB2ETH_ISSUING');
   private readonly inboundLaneSubgraph = this.configService.get<string>('SUB2ETH_INBOUND');
 
-  formalChainTransfers: TransferT3[] = [];
+  formalChainTransfers: TransferT3[] = [
+    {
+      source: {
+        chain: 'darwinia-dvm',
+        url: this.backingSubgraphUrl,
+        feeToken: 'RING',
+      },
+      target: {
+        chain: 'ethereum',
+        url: this.issuingSubgraphUrl,
+        feeToken: 'ETH',
+      },
+      symbols: [
+        {
+          from: 'WRING',
+          to: 'RING',
+          address: '0xE7578598Aac020abFB918f33A20faD5B71d670b4',
+        },
+        {
+          from: 'KTON',
+          to: 'KTON',
+          address: '0x0000000000000000000000000000000000000402',
+        },
+      ],
+    },
+    {
+      source: {
+        chain: 'ethereum',
+        url: this.issuingSubgraphUrl,
+        feeToken: 'ETH',
+      },
+      target: {
+        chain: 'darwinia-dvm',
+        url: this.backingSubgraphUrl,
+        feeToken: 'RING',
+      },
+      symbols: [
+        {
+          from: 'RING',
+          to: 'WRING',
+          address: '0x9469D013805bFfB7D3DEBe5E7839237e535ec483',
+        },
+        {
+          from: 'KTON',
+          to: 'KTON',
+          address: '0x9F284E1337A815fe77D2Ff4aE46544645B20c5ff',
+        },
+      ],
+    },
+  ];
 
   testChainTransfers: TransferT3[] = [
     {
