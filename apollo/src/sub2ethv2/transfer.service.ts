@@ -20,7 +20,7 @@ export class TransferService extends BaseTransferServiceT3 {
       target: {
         chain: 'goerli',
         url: this.issuingSubgraphUrl,
-        feeToken: 'ETH',
+        feeToken: 'GoerliETH',
       },
       symbols: [
         {
@@ -39,7 +39,7 @@ export class TransferService extends BaseTransferServiceT3 {
       source: {
         chain: 'goerli',
         url: this.issuingSubgraphUrl,
-        feeToken: 'ETH',
+        feeToken: 'GoerliETH',
       },
       target: {
         chain: 'pangoro-dvm',
