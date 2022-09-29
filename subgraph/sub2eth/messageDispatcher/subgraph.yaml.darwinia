@@ -1,0 +1,25 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: InboundLane
+    network: darwinia
+    source:
+      address: "0xf1B8a9F8436800499DB8186f2da2fb3e78Ff7c2B"
+      abi: InboundLane
+      startBlock: 10441053
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - MessageDispatched
+      abis:
+        - name: InboundLane
+          file: ./abis/InboundLane.json
+      eventHandlers:
+        - event: MessageDispatched(uint64,bool)
+          handler: handleMessageDispatched
+      file: ./src/unclaimable.ts
+  

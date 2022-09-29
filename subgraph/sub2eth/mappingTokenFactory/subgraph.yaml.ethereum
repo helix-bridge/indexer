@@ -1,0 +1,31 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Erc20Sub2EthMappingTokenFactory
+    network: ethereum
+    source:
+      address: "0xFBAD806Bdf9cEC2943be281FB355Da05068DE925"
+      abi: Erc20Sub2EthMappingTokenFactory
+      startBlock: 15622153
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - BurnAndRemoteUnlocked
+        - TokenRemintForFailed
+        - RemoteUnlockFailure
+      abis:
+        - name: Erc20Sub2EthMappingTokenFactory
+          file: ./abis/Erc20Sub2EthMappingTokenFactory.json
+      eventHandlers:
+        - event: BurnAndRemoteUnlocked(uint256,bool,address,address,address,uint256,uint256)
+          handler: handleBurnAndRemoteUnlocked
+        - event: TokenRemintForFailed(uint256,address,address,uint256)
+          handler: handleTokenRemintForFailed
+        - event: RemoteUnlockFailure(uint256,uint256,address,address,uint256,uint256)
+          handler: handleRemoteUnlockFailure
+      file: ./src/mapping.ts
+
