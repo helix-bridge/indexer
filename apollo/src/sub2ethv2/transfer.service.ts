@@ -113,8 +113,8 @@ export class TransferService extends BaseTransferServiceT3 {
   dispatchEndPoints = {
     pangoro: this.inboundLaneSubgraph + '/pangoro',
     goerli: this.inboundLaneSubgraph + '/goerli',
-    darwinia: this.inboundLaneSubgraph + 'darwinia',
-    ethereum: this.inboundLaneSubgraph + 'ethereum',
+    darwinia: this.inboundLaneSubgraph + '/darwinia',
+    ethereum: this.inboundLaneSubgraph + '/ethereum',
   };
 
   constructor(public configService: ConfigService) {
