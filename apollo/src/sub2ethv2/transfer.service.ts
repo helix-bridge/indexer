@@ -24,7 +24,7 @@ export class TransferService extends BaseTransferServiceT3 {
         {
           from: 'WRING',
           to: 'RING',
-          address: '0xE7578598Aac020abFB918f33A20faD5B71d670b4',
+          address: '0xe7578598aac020abfb918f33a20fad5b71d670b4',
         },
         {
           from: 'KTON',
@@ -48,12 +48,12 @@ export class TransferService extends BaseTransferServiceT3 {
         {
           from: 'RING',
           to: 'WRING',
-          address: '0x9469D013805bFfB7D3DEBe5E7839237e535ec483',
+          address: '0x9469d013805bffb7d3debe5e7839237e535ec483',
         },
         {
           from: 'KTON',
           to: 'KTON',
-          address: '0x9F284E1337A815fe77D2Ff4aE46544645B20c5ff',
+          address: '0x9f284e1337a815fe77d2ff4ae46544645b20c5ff',
         },
       ],
     },
