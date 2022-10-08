@@ -29,7 +29,7 @@ export class WtokenService implements OnModuleInit {
     this.transferService.transfers.forEach((item, index) => {
       const prefix = `${item.source.chain}`;
       this.taskService.addInterval(
-        `${prefix}-xcm-fetch_history_data`,
+        `${prefix}-wtoken-fetch_history_data`,
         this.fetchDataInterval,
         async () => {
           await this.fetchRecords(item, index);
@@ -43,58 +43,60 @@ export class WtokenService implements OnModuleInit {
   }
 
   async fetchRecords(transfer: TransferT1, index: number) {
-      try {
-          if (this.latestNonce[index] === -1) {
-              const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
-                  fromChain: transfer.source.chain,
-                  bridge: 'wtoken-' + transfer.source.chain,
-              });
-              this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
-          }
-
-          const query = this.transferService.getRecordQueryString(10, this.latestNonce[index]);
-          const records = await axios
-          .post(transfer.source.url, {
-              query: query,
-              variables: null,
-          })
-          .then((res) => res.data?.data?.transferRecords?.nodes);
-
-          if (records && records.length > 0) {
-              for (const record of records) {
-                  const sendToken = record.direction === 0 ? transfer.source.token : transfer.target.token;
-                  const recvToken = record.direction === 0 ? transfer.target.token : transfer.source.token;
-                  await this.aggregationService.createHistoryRecord({
-                      id: this.genID(transfer, record.id),
-                      fromChain: transfer.source.chain,
-                      toChain: transfer.target.chain,
-                      bridge: 'wtoken-' + transfer.source.chain,
-                      messageNonce: '',
-                      nonce: this.latestNonce[index] + 1,
-                      requestTxHash: record.id,
-                      sender: record.account,
-                      recipient: record.account,
-                      sendToken: sendToken,
-                      recvToken: recvToken,
-                      sendAmount: record.amount,
-                      recvAmount: record.amount,
-                      startTime: Number(record.timestamp),
-                      endTime: Number(record.timestamp),
-                      result: RecordStatus.success,
-                      fee: '',
-                      feeToken: transfer.source.feeToken,
-                      responseTxHash: record.id,
-                      reason: '',
-                      sendTokenAddress: '',
-                  });
-                  this.latestNonce[index] += 1;
-              }
-          }
-      } catch (error) {
-          this.logger.warn(
-              `save new wtoken record failed ${transfer.source.chain}, ${this.latestNonce}, ${error}`
-          );
+    try {
+      if (this.latestNonce[index] === -1) {
+        const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
+          fromChain: transfer.source.chain,
+          bridge: 'helix-wtoken-' + transfer.source.chain,
+        });
+        this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
       }
+
+      const query = this.transferService.getRecordQueryString(10, this.latestNonce[index]);
+      const records = await axios
+        .post(transfer.source.url, {
+          query: query,
+          variables: null,
+        })
+        .then((res) => res.data?.data?.transferRecords);
+
+      if (records && records.length > 0) {
+        for (const record of records) {
+          const sendToken = record.direction === 0 ? transfer.source.token : transfer.target.token;
+          const recvToken = record.direction === 0 ? transfer.target.token : transfer.source.token;
+          await this.aggregationService.createHistoryRecord({
+            id: this.genID(transfer, record.id),
+            fromChain: transfer.source.chain,
+            toChain: transfer.target.chain,
+            bridge: 'helix-wtoken-' + transfer.source.chain,
+            messageNonce: '',
+            nonce: this.latestNonce[index] + 1,
+            requestTxHash: record.id,
+            sender: record.account,
+            recipient: record.account,
+            sendToken: sendToken,
+            recvToken: recvToken,
+            sendAmount: record.amount,
+            recvAmount: record.amount,
+            startTime: Number(record.timestamp),
+            endTime: Number(record.timestamp),
+            result: RecordStatus.success,
+            fee: '0',
+            feeToken: transfer.source.feeToken,
+            responseTxHash: record.id,
+            reason: '',
+            sendTokenAddress: '',
+          });
+          this.latestNonce[index] += 1;
+        }
+        this.logger.log(
+          `wtoken new records, chain ${transfer.source.chain}, latest nonce ${this.latestNonce[index]}, added ${records.length}`
+        );
+      }
+    } catch (error) {
+      this.logger.warn(
+        `save new wtoken record failed ${transfer.source.chain}, ${this.latestNonce}, ${error}`
+      );
+    }
   }
 }
-
