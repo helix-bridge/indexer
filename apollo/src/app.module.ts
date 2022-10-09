@@ -11,7 +11,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Substrate2dvmModule } from './substrate2dvm/substrate2dvm.module';
 import { Substrate2parachainModule } from './substrate2parachain/substrate2parachain.module';
-import { Substrate2substrateDVMModule } from './substrate2substrateDVM/substrate2substrateDVM.module';
 import { TasksModule } from './tasks/tasks.module';
 import { CbridgeModule } from './cbridge/cbridge.module';
 import { S2sv2Module } from './s2sv2/s2sv2.module';
@@ -43,7 +42,6 @@ export class BigIntScalar extends BigInt {}
     ScheduleModule.forRoot(),
     TasksModule,
     AggregationModule,
-    Substrate2substrateDVMModule,
     Substrate2dvmModule,
     Substrate2parachainModule,
     CbridgeModule,

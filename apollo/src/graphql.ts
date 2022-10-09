@@ -69,22 +69,6 @@ export abstract class IMutation {
     abstract addGuardSignature(id?: Nullable<string>, dataHash?: Nullable<string>, signature?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 }
 
-export class S2sEvent {
-    id: string;
-    laneId: string;
-    nonce: string;
-    requestTxHash: string;
-    responseTxHash?: Nullable<string>;
-    senderId: string;
-    result: number;
-    recipient: string;
-    token: string;
-    amount: string;
-    startTimestamp: string;
-    endTimestamp?: Nullable<string>;
-    fee: string;
-}
-
 export class DailyStatistic {
     id: string;
     dailyVolume?: Nullable<BigInt>;
