@@ -18,6 +18,7 @@ import { S2sv2Module } from './s2sv2/s2sv2.module';
 import { StatisticModule } from './statistic/statistic.module';
 import { XcmModule } from './xcm/xcm.module';
 import { Sub2ethv2Module } from './sub2ethv2/sub2ethv2.module';
+import { WtokenModule } from './wtoken/wtoken.module';
 
 const chainEnvFilePath = `.env.${process.env.NODE_ENV || 'prod'}`;
 
@@ -50,6 +51,7 @@ export class BigIntScalar extends BigInt {}
     StatisticModule,
     XcmModule,
     Sub2ethv2Module,
+    WtokenModule,
   ],
   controllers: [AppController],
   providers: [AppService, BigIntScalar],

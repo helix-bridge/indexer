@@ -1,0 +1,28 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: wtoken
+    network: darwinia
+    source:
+      address: "0xE7578598Aac020abFB918f33A20faD5B71d670b4"
+      abi: wtoken
+      startBlock: 10027687
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Deposit
+        - Withdrawal
+      abis:
+        - name: wtoken
+          file: ./abis/wtoken.json
+      eventHandlers:
+        - event: Deposit(indexed address,uint256)
+          handler: handleDeposit
+        - event: Withdrawal(indexed address,uint256)
+          handler: handleWithdrawal
+      file: ./src/mapping.ts
+
