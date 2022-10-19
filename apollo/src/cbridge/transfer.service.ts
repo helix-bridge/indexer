@@ -2,6 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BaseTransferServiceT2, PartnerT2 } from '../base/TransferServiceT2';
 
+export interface Token {
+  token: string;
+  decimals: number;
+}
+
+interface AddressTokenMap {
+  [key: string]: Token;
+}
+
 @Injectable()
 export class TransferService extends BaseTransferServiceT2 {
   private readonly hecoEndpoint = this.configService.get<string>('HECO_ENDPOINT');
@@ -64,7 +73,7 @@ export class TransferService extends BaseTransferServiceT2 {
 
   testChainTransfers: PartnerT2[] = [];
 
-  readonly addressToTokenInfo = {
+  readonly addressToTokenInfo: { [key: string]: AddressTokenMap } = {
     heco: {
       // ring on heco
       '0x15e65456310ecb216b51efbd8a1dbf753353dcf9': {
