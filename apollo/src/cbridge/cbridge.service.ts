@@ -7,7 +7,7 @@ import { PartnerT2 } from '../base/TransferServiceT2';
 import { RecordStatus } from '../base/RecordsService';
 import { HistoryRecord } from '../graphql';
 import { TasksService } from '../tasks/tasks.service';
-import { TransferService } from './transfer.service';
+import { Token, TransferService } from './transfer.service';
 
 export enum CBridgeRecordStatus {
   unknown, // 0
@@ -116,6 +116,9 @@ export class CbridgeService implements OnModuleInit {
 
           const sendTokenInfo =
             this.transferService.addressToTokenInfo[transfer.chain][record.token.toLowerCase()];
+          const recvTokenInfo: Token | undefined = Object.values(
+            this.transferService.addressToTokenInfo[toChain.chain]
+          ).find((item: Token) => item.token.startsWith(sendTokenInfo.token));
 
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, toChain.chainId.toString(), record.id),
@@ -128,7 +131,7 @@ export class CbridgeService implements OnModuleInit {
             sender: record.sender,
             recipient: record.receiver,
             sendToken: sendTokenInfo.token,
-            recvToken: '',
+            recvToken: recvTokenInfo?.token ?? '',
             sendAmount: record.amount,
             recvAmount: '0',
             startTime: Number(record.start_timestamp),
