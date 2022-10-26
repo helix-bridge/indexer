@@ -1,0 +1,28 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Erc20Sub2SubMappingTokenFactory
+    network: darwinia
+    source:
+      address: "0xc9454EAc2815cd7677Ca7f237e8aDB226676DDbA"
+      abi: Erc20Sub2SubMappingTokenFactory
+      startBlock: 10852282
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - BurnAndRemoteUnlocked
+        - TokenRemintForFailed
+      abis:
+        - name: Erc20Sub2SubMappingTokenFactory
+          file: ./abis/Erc20Sub2SubMappingTokenFactory.json
+      eventHandlers:
+        - event: BurnAndRemoteUnlocked(uint256,bool,bytes32,address,address,address,uint256,uint256)
+          handler: handleBurnAndRemoteUnlocked
+        - event: TokenRemintForFailed(uint256,address,address,uint256)
+          handler: handleTokenRemintForFailed
+      file: ./src/mapping.ts
+

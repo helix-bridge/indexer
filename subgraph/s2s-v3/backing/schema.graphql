@@ -1,0 +1,16 @@
+type TransferRecord @entity {
+  id: ID!
+  sender: Bytes!
+  receiver: Bytes!
+  token: Bytes!
+  amount: BigInt!
+  start_timestamp: BigInt!
+  transaction_hash: Bytes!
+  fee: BigInt
+  is_native: Boolean!
+
+  withdraw_timestamp: BigInt
+  withdraw_amount: BigInt
+  withdraw_transaction: Bytes
+}
+
