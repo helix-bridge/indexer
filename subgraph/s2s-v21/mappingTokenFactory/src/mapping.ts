@@ -1,9 +1,10 @@
-import { BigInt } from "@graphprotocol/graph-ts"
+import { BigInt, Bytes } from "@graphprotocol/graph-ts"
 import {
   BurnAndRemoteUnlocked,
   TokenRemintForFailed,
+  RemoteUnlockFailure,
 } from "../generated/Erc20Sub2SubMappingTokenFactory/Erc20Sub2SubMappingTokenFactory"
-import { TransferRecord } from "../generated/schema"
+import { TransferRecord, RefundTransferRecord } from "../generated/schema"
 
 export function handleBurnAndRemoteUnlocked(event: BurnAndRemoteUnlocked): void {
   let message_id = event.params.transferId.toHexString();
@@ -32,6 +33,19 @@ export function handleTokenRemintForFailed(event: TokenRemintForFailed): void {
   entity.withdraw_amount = event.params.amount;
   entity.withdraw_transaction = event.transaction.hash;
   entity.withdraw_timestamp = event.block.timestamp;
+  entity.save();
+}
+
+// refund txs
+export function handleRemoteUnlockFailure(event: RemoteUnlockFailure): void {
+  let id = event.params.refundId.toHexString();
+  let entity = RefundTransferRecord.load(id);
+  if (entity == null) {
+      entity = new RefundTransferRecord(id);
+  }
+  entity.source_id = event.params.transferId as Bytes;
+  entity.timestamp = event.block.timestamp;
+  entity.transaction_hash = event.transaction.hash;
   entity.save();
 }
 

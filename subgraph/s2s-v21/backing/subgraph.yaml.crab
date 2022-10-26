@@ -16,6 +16,7 @@ dataSources:
       entities:
         - TokenLocked
         - TokenUnlockedForFailed
+        - RemoteIssuingFailure
       abis:
         - name: Erc20Sub2SubBacking
           file: ./abis/Erc20Sub2SubBacking.json
@@ -24,5 +25,7 @@ dataSources:
           handler: handleTokenLocked
         - event: TokenUnlockedForFailed(uint256,bool,address,address,uint256)
           handler: handleTokenUnlockedForFailed
+        - event: RemoteIssuingFailure(uint256,uint256,address,address,uint256,uint256)
+          handler: handleRemoteIssuingFailure
       file: ./src/mapping.ts
 

@@ -16,6 +16,7 @@ dataSources:
       entities:
         - BurnAndRemoteUnlocked
         - TokenRemintForFailed
+        - RemoteUnlockFailure
       abis:
         - name: Erc20Sub2SubMappingTokenFactory
           file: ./abis/Erc20Sub2SubMappingTokenFactory.json
@@ -24,5 +25,7 @@ dataSources:
           handler: handleBurnAndRemoteUnlocked
         - event: TokenRemintForFailed(uint256,address,address,uint256)
           handler: handleTokenRemintForFailed
+        - event: RemoteUnlockFailure(uint256,uint256,uint256)
+          handler: handleRemoteUnlockFailure
       file: ./src/mapping.ts
 
