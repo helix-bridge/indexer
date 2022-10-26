@@ -1,4 +1,4 @@
-import { BigInt, Bytes } from "@graphprotocol/graph-ts"
+import { BigInt } from "@graphprotocol/graph-ts"
 import {
   BurnAndRemoteUnlocked,
   TokenRemintForFailed,
@@ -43,7 +43,7 @@ export function handleRemoteUnlockFailure(event: RemoteUnlockFailure): void {
   if (entity == null) {
       entity = new RefundTransferRecord(id);
   }
-  entity.source_id = event.params.transferId as Bytes;
+  entity.source_id = event.params.transferId.toHexString();
   entity.timestamp = event.block.timestamp;
   entity.transaction_hash = event.transaction.hash;
   entity.save();

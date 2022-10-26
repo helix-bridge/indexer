@@ -15,13 +15,13 @@ export class TransferService extends BaseTransferServiceT1 {
     {
       source: {
         chain: 'darwinia-dvm',
-        url: this.backingSubgraphUrl,
+        url: this.backingSubgraphUrl + '/darwinia',
         feeToken: 'RING',
         token: 'WRING',
       },
       target: {
         chain: 'crab-dvm',
-        url: this.issuingSubgraphUrl,
+        url: this.issuingSubgraphUrl + '/crab',
         feeToken: 'CRAB',
         token: 'xWRING',
       },
@@ -29,13 +29,13 @@ export class TransferService extends BaseTransferServiceT1 {
     {
       source: {
         chain: 'crab-dvm',
-        url: this.issuingSubgraphUrl,
+        url: this.issuingSubgraphUrl + '/crab',
         feeToken: 'CRAB',
         token: 'xWRING',
       },
       target: {
         chain: 'darwinia-dvm',
-        url: this.backingSubgraphUrl,
+        url: this.backingSubgraphUrl + '/darwinia',
         feeToken: 'RING',
         token: 'WRING',
       },
