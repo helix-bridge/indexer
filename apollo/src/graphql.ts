@@ -7,7 +7,6 @@
 
 /* tslint:disable */
 /* eslint-disable */
-
 export class Accounts {
     total: number;
 }
@@ -69,12 +68,5 @@ export abstract class IMutation {
     abstract addGuardSignature(id?: Nullable<string>, dataHash?: Nullable<string>, signature?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 }
 
-export class DailyStatistic {
-    id: string;
-    dailyVolume?: Nullable<BigInt>;
-    dailyCount?: Nullable<number>;
-}
-
 export type BigInt = any;
-export type JSON = any;
 type Nullable<T> = T | null;
