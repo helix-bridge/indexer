@@ -43,7 +43,7 @@ export class TransferService extends BaseTransferServiceT3 {
         {
           from: 'xWCRAB',
           to: 'WCRAB',
-          address: '0x656567Eb75b765FC320783cc6EDd86bD854b2305',
+          address: '0x656567eb75b765fc320783cc6edd86bd854b2305',
         },
       ],
     },
