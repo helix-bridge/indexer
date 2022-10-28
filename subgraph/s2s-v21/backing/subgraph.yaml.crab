@@ -6,7 +6,7 @@ dataSources:
     name: Erc20Sub2SubBacking
     network: crab
     source:
-      address: "0xE0E888cA28738Fa2667b095d66bBAD15Fec5245E"
+      address: "0xCF8923ebF4244cedC647936a0281dd10bDFCBF18"
       abi: Erc20Sub2SubBacking
       startBlock: 12819139
     mapping:

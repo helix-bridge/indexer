@@ -6,7 +6,7 @@ dataSources:
     name: Erc20Sub2SubMappingTokenFactory
     network: darwinia
     source:
-      address: "0xc9454EAc2815cd7677Ca7f237e8aDB226676DDbA"
+      address: "0x8c585F9791EE5b4B23fe82888cE576DBB69607eB"
       abi: Erc20Sub2SubMappingTokenFactory
       startBlock: 10852282
     mapping:
