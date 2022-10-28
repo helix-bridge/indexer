@@ -1,0 +1,16 @@
+{
+  "name": "s2sMappingTokenFactory",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ s2sMappingTokenFactory/darwinia",
+    "create-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph create --node http://graph-node:8020/ s2sMappingTokenFactory/darwinia",
+    "remove-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph remove --node http://graph-node:8020/ s2sMappingTokenFactory/darwinia",
+    "deploy-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 s2sMappingTokenFactory/darwinia"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.21.1",
+    "@graphprotocol/graph-ts": "0.20.0"
+  }
+}
