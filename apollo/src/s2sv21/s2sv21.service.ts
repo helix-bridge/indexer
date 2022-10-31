@@ -235,7 +235,6 @@ export class S2sv21Service implements OnModuleInit {
                 responseTxHash: withdrawInfo.withdraw_transaction,
                 endTime: Number(withdrawInfo.withdraw_timestamp),
                 result: RecordStatus.refunded,
-                recvToken: node.sendToken,
               },
             });
           } else {
