@@ -9,7 +9,7 @@ runner:
     name: '@subql/query'
     version: "*"
 description: ''
-repository: git@github.com:darwinia-network/subql-wormhole.git
+repository: git@github.com:helix-bridge/indexer.git
 schema:
   file: ./schema.graphql
 network:
@@ -20,7 +20,7 @@ network:
     file: ./types.yaml
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 10440380
+    startBlock: 10020000
     mapping:
       file: ./dist/index.js
       handlers:
