@@ -187,7 +187,7 @@ export class EventHandler {
   }
 
   public async handleBridgeDispatchEvent() {
-    const [_, [laneId, nonce]] = JSON.parse(this.data) as [string, [string, bigint]];
+    const [_, [laneId, nonce], result] = JSON.parse(this.data);
     const event = new BridgeDispatchEvent(this.s2sEventId(laneId, nonce));
 
     event.index = this.index;
@@ -195,6 +195,9 @@ export class EventHandler {
     event.data = this.data;
     event.block = this.simpleBlock();
     event.timestamp = this.timestamp;
+    if (this.method === 'MessageDispatched' && result.ok === undefined) {
+        event.method = 'MessageDispatched(Err)'
+    }
 
     await event.save();
   }
