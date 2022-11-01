@@ -1,22 +1,26 @@
-specVersion: 0.2.0
-name: wormhole-darwinia
-version: 1.0.0
-description: ""
+specVersion: 1.0.0
+name: darwinia
+version: 0.0.1
+runner:
+  node:
+    name: '@subql/node'
+    version: "*"
+  query:
+    name: '@subql/query'
+    version: "*"
+description: ''
 repository: git@github.com:darwinia-network/subql-wormhole.git
-
 schema:
   file: ./schema.graphql
-
 network:
-  genesisHash: "0x729cb8f2cf428adcf81fe69610edda32c5711b2ff17de747e8604a3587021db8"
+  chainId: '0x729cb8f2cf428adcf81fe69610edda32c5711b2ff17de747e8604a3587021db8'
   endpoint: wss://rpc.darwinia.network/
-  dictionary: https://api.subquery.network/sq/darwinia-network/darwinia-dictionary 
+  dictionary: https://api.subquery.network/sq/darwinia-network/darwinia-dictionary
   chaintypes:
     file: ./types.yaml
-
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 6358000
+    startBlock: 10440380
     mapping:
       file: ./dist/index.js
       handlers:
@@ -25,45 +29,38 @@ dataSources:
           filter:
             module: toCrabBacking
             method: TokenLocked
-
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
             module: toCrabBacking
             method: TokenLockedConfirmed
-
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
             module: toCrabBacking
             method: TokenUnlocked
-            
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
             module: bridgeCrabDispatch
-            method: MessageVersionSpecMismatch 
-
+            method: MessageVersionSpecMismatch
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
             module: bridgeCrabDispatch
-            method: MessageDispatched 
-
+            method: MessageDispatched
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
             module: balances
-            method: Transfer # ring: mainnet -> dvm
-
+            method: Transfer
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
             module: kton
-            method: Transfer # kton: mainnet -> dvm
-
+            method: Transfer
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
             module: balances
-            method: Endowed # ring: dvm -> mainnet
+            method: Endowed
