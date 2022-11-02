@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BaseTransferServiceT2, PartnerT2 } from '../base/TransferServiceT2';
-import { AddressTokenMap, AddressToken } from '../base/AddressToken';
+import { AddressTokenMap } from '../base/AddressToken';
 
 @Injectable()
 export class TransferService extends BaseTransferServiceT2 {
