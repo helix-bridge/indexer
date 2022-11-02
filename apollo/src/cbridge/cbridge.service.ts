@@ -7,7 +7,8 @@ import { PartnerT2 } from '../base/TransferServiceT2';
 import { RecordStatus } from '../base/RecordsService';
 import { HistoryRecord } from '../graphql';
 import { TasksService } from '../tasks/tasks.service';
-import { Token, TransferService } from './transfer.service';
+import { TransferService } from './transfer.service';
+import { Token } from '../base/AddressToken';
 
 export enum CBridgeRecordStatus {
   unknown, // 0
@@ -114,11 +115,11 @@ export class CbridgeService implements OnModuleInit {
             continue;
           }
 
-          const sendTokenInfo =
-            this.transferService.addressToTokenInfo[transfer.chain][record.token.toLowerCase()];
-          const recvTokenInfo: Token | undefined = Object.values(
-            this.transferService.addressToTokenInfo[toChain.chain]
-          ).find((item: Token) => item.token.startsWith(sendTokenInfo.token));
+          const sendTokenInfo = this.transferService.getInfoByKey(transfer.chain, record.token);
+          const recvTokenInfo: Token | undefined = this.transferService.findInfoByOrigin(
+            toChain.chain,
+            sendTokenInfo.origin
+          );
 
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, toChain.chainId.toString(), record.id),
@@ -226,7 +227,6 @@ export class CbridgeService implements OnModuleInit {
 
         if (response.status === CBridgeRecordStatus.toBeRefunded) {
           updateData.reason = XferStatus[refundReason];
-          updateData.recvToken = record.sendToken;
         }
 
         if (response.status === CBridgeRecordStatus.completed) {
@@ -253,7 +253,6 @@ export class CbridgeService implements OnModuleInit {
           updateData.recvAmount = firstRelay.amount;
           const recvTokenInfo =
             this.transferService.addressToTokenInfo[dstChain.chain][firstRelay.token.toLowerCase()];
-          updateData.recvToken = recvTokenInfo.token;
           const sendAmount = global.BigInt(record.sendAmount);
           const recvAmount = global.BigInt(firstRelay.amount);
           const sendTokenInfo =
@@ -278,7 +277,6 @@ export class CbridgeService implements OnModuleInit {
             updateData.endTime = Number(withdrawInfo.withdraw_timestamp);
             updateData.fee = '0';
             updateData.recvAmount = record.sendAmount;
-            updateData.recvToken = record.sendToken;
           } else {
             continue;
           }

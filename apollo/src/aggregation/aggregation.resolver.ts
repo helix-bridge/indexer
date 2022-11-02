@@ -17,6 +17,8 @@ export class AggregationResolver {
   async historyRecords(
     @Args('sender') sender: string,
     @Args('recipient') recipient: string,
+    @Args('fromChain') fromChain: string,
+    @Args('toChain') toChain: string,
     @Args('row') row: number,
     @Args('page') page: number,
     @Args('results') results: number[]
@@ -29,10 +31,13 @@ export class AggregationResolver {
     const accFilters = [{ sender }, { recipient }].filter(isValid);
     const accountCondition = accFilters.length ? { OR: accFilters } : {};
     const resultCondition = results && results.length ? { AND: { result: { in: results } } } : {};
+    const chainFilters = [{ fromChain }, { toChain }].filter(isValid);
+    const chainCondition = chainFilters.length ? { AND: chainFilters } : {};
 
     const conditions = {
       ...accountCondition,
       ...resultCondition,
+      ...chainCondition,
     };
 
     const where = isEmpty(conditions) ? undefined : conditions;

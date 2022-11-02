@@ -1,4 +1,5 @@
 import { ConfigService } from '@nestjs/config';
+import { AddressToken } from './AddressToken';
 
 /*
 This model is suitable for multi-chain interconnection scenarios,
@@ -12,13 +13,14 @@ export interface PartnerT2 {
   url: string; // record api endpoint
 }
 
-export abstract class BaseTransferServiceT2 {
+export abstract class BaseTransferServiceT2 extends AddressToken {
   abstract formalChainTransfers: PartnerT2[];
   abstract testChainTransfers: PartnerT2[];
 
   isTest: boolean;
 
   constructor(configService: ConfigService) {
+    super();
     this.isTest = configService.get<string>('CHAIN_TYPE') === 'test';
   }
 

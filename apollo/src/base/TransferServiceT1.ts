@@ -1,4 +1,5 @@
 import { ConfigService } from '@nestjs/config';
+import { AddressToken } from './AddressToken';
 
 /*
 This model is suitable for scenarios where each bridge is deployed independently, and one source chain corresponds to one target chain.
@@ -8,7 +9,6 @@ export interface PartnerT1 {
   chain: string;
   url: string; // record api endpoint
   feeToken: string;
-  token: string;
 }
 
 export interface TransferT1 {
@@ -16,13 +16,14 @@ export interface TransferT1 {
   target: PartnerT1;
 }
 
-export abstract class BaseTransferServiceT1 {
+export abstract class BaseTransferServiceT1 extends AddressToken {
   abstract formalChainTransfers: TransferT1[];
   abstract testChainTransfers: TransferT1[];
 
   isTest: boolean;
 
   constructor(configService: ConfigService) {
+    super();
     this.isTest = configService.get<string>('CHAIN_TYPE') === 'test';
   }
 
