@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BaseTransferServiceT2, PartnerT2 } from '../base/TransferServiceT2';
+import { AddressTokenMap } from '../base/AddressToken';
 
 @Injectable()
 export class TransferService extends BaseTransferServiceT2 {
@@ -30,6 +31,7 @@ export class TransferService extends BaseTransferServiceT2 {
   ];
 
   testChainTransfers: PartnerT2[] = [];
+  addressToTokenInfo: { [key: string]: AddressTokenMap } = {};
 
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
 

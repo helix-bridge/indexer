@@ -7,6 +7,7 @@ import { AggregationService } from '../aggregation/aggregation.service';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 import { TransferT1 } from '../base/TransferServiceT1';
+import { Token } from '../base/AddressToken';
 
 enum RecordStatus {
   pending,
@@ -111,6 +112,12 @@ export class S2sv2Service implements OnModuleInit {
 
       if (records && records.length > 0) {
         for (const record of records) {
+          const sendTokenInfo = this.transferService.getInfoByKey(from.chain, record.token);
+          const recvTokenInfo: Token | undefined = this.transferService.findInfoByOrigin(
+            to.chain,
+            sendTokenInfo.origin
+          );
+
           const idWithLaneId = this.idAppendLaneId(record.id);
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, idWithLaneId),
@@ -131,8 +138,8 @@ export class S2sv2Service implements OnModuleInit {
             startTime: Number(record.start_timestamp),
             responseTxHash: '',
             toChain: to.chain,
-            sendToken: from.token,
-            recvToken: to.token,
+            sendToken: sendTokenInfo.token,
+            recvToken: recvTokenInfo?.token ?? '',
             sendTokenAddress: record.token,
           });
           latestNonce += 1;
@@ -217,7 +224,6 @@ export class S2sv2Service implements OnModuleInit {
                 responseTxHash: withdrawInfo.withdraw_transaction,
                 endTime: Number(withdrawInfo.withdraw_timestamp),
                 result: RecordStatus.refunded,
-                recvToken: node.sendToken,
               },
             });
           }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BaseTransferServiceT1, TransferT1 } from '../base/TransferServiceT1';
+import { AddressTokenMap } from '../base/AddressToken';
 
 @Injectable()
 export class TransferService extends BaseTransferServiceT1 {
@@ -17,13 +18,11 @@ export class TransferService extends BaseTransferServiceT1 {
         chain: 'darwinia-dvm',
         url: this.backingSubgraphUrl + '/darwinia',
         feeToken: 'RING',
-        token: 'WRING',
       },
       target: {
         chain: 'crab-dvm',
         url: this.issuingSubgraphUrl + '/crab',
         feeToken: 'CRAB',
-        token: 'xWRING',
       },
     },
     {
@@ -31,16 +30,31 @@ export class TransferService extends BaseTransferServiceT1 {
         chain: 'crab-dvm',
         url: this.issuingSubgraphUrl + '/crab',
         feeToken: 'CRAB',
-        token: 'xWRING',
       },
       target: {
         chain: 'darwinia-dvm',
         url: this.backingSubgraphUrl + '/darwinia',
         feeToken: 'RING',
-        token: 'WRING',
       },
     },
   ];
+
+  readonly addressToTokenInfo: { [key: string]: AddressTokenMap } = {
+    'crab-dvm': {
+      '0x273131f7cb50ac002bdd08ca721988731f7e1092': {
+        token: 'xWRING',
+        decimals: 1e18,
+        origin: 'RING',
+      },
+    },
+    'darwinia-dvm': {
+      '0xe7578598aac020abfb918f33a20fad5b71d670b4': {
+        token: 'WRING',
+        decimals: 1e18,
+        origin: 'RING',
+      },
+    },
+  };
 
   testChainTransfers: TransferT1[] = [];
 

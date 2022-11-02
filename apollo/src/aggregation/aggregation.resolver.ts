@@ -31,7 +31,7 @@ export class AggregationResolver {
     const accFilters = [{ sender }, { recipient }].filter(isValid);
     const accountCondition = accFilters.length ? { OR: accFilters } : {};
     const resultCondition = results && results.length ? { AND: { result: { in: results } } } : {};
-    const chainFilters = [ { fromChain }, { toChain }].filter(isValid);
+    const chainFilters = [{ fromChain }, { toChain }].filter(isValid);
     const chainCondition = chainFilters.length ? { AND: chainFilters } : {};
 
     const conditions = {
