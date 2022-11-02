@@ -4,7 +4,9 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc -b",
+    "migrate": "subql migrate",
+    "build": "subql build",
+    "push": "subql publish",
     "prepack": "rm -rf dist && npm build",
     "test": "jest",
     "start": "docker-compose pull && docker-compose up --remove-orphans",
