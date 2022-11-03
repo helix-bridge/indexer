@@ -23,7 +23,7 @@ export class TransferService extends BaseTransferServiceT1 {
   ];
   readonly addressToTokenInfo: { [key: string]: AddressTokenMap } = {
     'darwinia-dvm': {
-      'all': {
+      all: {
         token: 'WRING',
         decimals: 1e18,
         origin: 'RING',
