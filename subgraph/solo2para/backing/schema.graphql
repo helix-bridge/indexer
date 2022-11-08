@@ -3,19 +3,19 @@ type TransferRecord @entity {
   sender: Bytes!
   receiver: Bytes!
   amount: BigInt!
-  start_timestamp: BigInt!
-  transaction_hash: Bytes!
+  timestamp: BigInt!
+  transaction: Bytes!
   fee: BigInt
 
-  withdraw_timestamp: BigInt
-  withdraw_amount: BigInt
-  withdraw_transaction: Bytes
+  withdrawtimestamp: BigInt
+  withdrawamount: BigInt
+  withdrawtransaction: Bytes
 }
 
 type RefundTransferRecord @entity {
   id: ID! # refund id
-  source_id: String
+  sourceid: String
   timestamp: BigInt
-  transaction_hash: Bytes
+  transaction: Bytes
 }
 

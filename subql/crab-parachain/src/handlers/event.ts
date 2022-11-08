@@ -220,8 +220,8 @@ export class EventHandler {
     const receiver = AccountHandler.formatAddress(to);
     const [_specVersion, _weight, _value, fee, _recipient] = this.args;
 
-    event.transaction_hash = this.extrinsicHash;
-    event.start_timestamp = this.timestamp;
+    event.transaction = this.extrinsicHash;
+    event.timestamp = this.timestamp;
     event.sender = sender;
     event.receiver = receiver;
     event.amount = value.toString();
@@ -236,9 +236,9 @@ export class EventHandler {
           bigint,
       ];
       const event = new RefundTransferRecord(this.s2sEventId(refundNonce));
-      event.source_id = this.s2sEventId(failureNonce);
+      event.sourceid = this.s2sEventId(failureNonce);
       event.timestamp = this.timestamp;
-      event.transaction_hash = this.extrinsicHash;
+      event.transaction = this.extrinsicHash;
       await event.save();
   }
 
@@ -251,9 +251,9 @@ export class EventHandler {
       ];
       const event = await TransferRecord.get(this.s2sEventId(failure_nonce));
       if (event) {
-          event.withdraw_timestamp = this.timestamp;
-          event.withdraw_amount = amount;
-          event.withdraw_transaction = this.extrinsicHash;
+          event.withdrawtimestamp = this.timestamp;
+          event.withdrawamount = amount;
+          event.withdrawtransaction = this.extrinsicHash;
       }
   }
 

@@ -4,11 +4,10 @@ import { BaseTransferServiceT3, TransferT3 } from '../base/TransferServiceT3';
 
 @Injectable()
 export class TransferService extends BaseTransferServiceT3 {
-  private readonly issuingUrl = this.configService.get<string>('SUBSTRATE_TO_PARACHAIN_ISSUING');
-  private readonly backingUrl = this.configService.get<string>('SUBSTRATE_TO_PARACHAIN_BACKING');
-  private readonly subql = this.configService.get<string>('SUBQL');
-
-  private readonly chain = this.configService.get<string>('PARACHAIN');
+  private readonly backingUrl = this.configService.get<string>('SUB_TO_PARA_BACKING');
+  private readonly issuingUrl = this.configService.get<string>('SUB_TO_PARA_ISSUING');
+  private readonly backingEndpointUrl = this.configService.get<string>('SUB_TO_PARA_END_BACKING');
+  private readonly issuingEndpointUrl = this.configService.get<string>('SUB_TO_PARA_END_ISSUING');
 
   formalChainTransfers: TransferT3[] = [
     {
@@ -19,7 +18,7 @@ export class TransferService extends BaseTransferServiceT3 {
       },
       target: {
         chain: 'crab-parachain',
-        url: this.issuingUrl + 'crab-parachain',
+        url: this.issuingUrl + '/crab-parachain',
         feeToken: 'CRAB',
       },
       isLock: true,
@@ -41,11 +40,42 @@ export class TransferService extends BaseTransferServiceT3 {
     },
   ];
 
-  testChainTransfers: TransferT3[] = [];
+  testChainTransfers: TransferT3[] = [
+    {
+      source: {
+        chain: 'pangolin-dvm',
+        url: this.backingUrl + '/pangolin',
+        feeToken: 'PRING',
+      },
+      target: {
+        chain: 'pangolin-parachain',
+        url: this.issuingUrl,
+        feeToken: 'PRING',
+      },
+      isLock: true,
+      symbols: [],
+    },
+    {
+      source: {
+        chain: 'pangolin-parachain',
+        url: this.issuingUrl,
+        feeToken: 'PRING',
+      },
+      target: {
+        chain: 'pangolin-dvm',
+        url: this.backingUrl + '/pangolin',
+        feeToken: 'PRING',
+      },
+      isLock: false,
+      symbols: [],
+    },
+  ];
 
   dispatchEndPoints = {
-    crab: this.subql + 'crab',
-    darwinia: this.subql + 'crab-parachain',
+    'crab-dvm': this.backingEndpointUrl + '/crab',
+    'crab-parachain': this.issuingEndpointUrl + '/crab-parachain',
+    'pangolin-dvm': this.backingEndpointUrl,
+    'pangolin-parachain': this.issuingEndpointUrl,
   };
 
   constructor(public configService: ConfigService) {
@@ -53,10 +83,10 @@ export class TransferService extends BaseTransferServiceT3 {
   }
 
   getRecordFromThegraph(first: number, latestNonce: bigint | number) {
-    return `query { transferRecords (first: ${first}, orderBy: start_timestamp, orderDirection: asc, skip: ${latestNonce}) {id, sender, receiver, token, amount, fee, start_timestamp, transaction_hash}}`;
+    return `query { transferRecords (first: ${first}, orderBy: timestamp, orderDirection: asc, skip: ${latestNonce}) {id, sender, receiver, amount, fee, timestamp, transaction}}`;
   }
 
   getRecordFromSubql(first: number, latestNonce: bigint | number) {
-    return `query { transferRecords (first: ${first}, orderBy: NONCE_ASC, filter: {id: {greaterThan: "${latestNonce}"}}) {totalCount nodes{id, amount, start_timestamp, transaction_hash, sender, receiver, fee}}}`;
+    return `query { transferRecords (first: ${first}, orderBy: TIMESTAMP_ASC, filter: {id: {greaterThan: "${latestNonce}"}}) {totalCount nodes{id, amount, timestamp, transaction, sender, receiver, fee}}}`;
   }
 }

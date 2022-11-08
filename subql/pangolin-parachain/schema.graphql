@@ -5,22 +5,25 @@ type Block @jsonField {
   extrinsicHash: String!
 }
 
-type S2SEvent @entity {
-  id: ID! # laneId + 0x + nonce
-
-  laneId: String!
-  nonce: BigInt!
-  requestTxHash: String! # TokenLocked tx hash
-  responseTxHash: String # TokenLockedConfirmed tx hash
-  sender: Account!
-  result: Int! # 0 TokenLocked 1 TokenLockedConfirmed success 2 TokenLockedConfirmed fail
-  recipient: String!
+type TransferRecord @entity {
+  id: ID!
+  sender: String!
+  receiver: String!
   amount: String!
-  startTimestamp: Date!
-  endTimestamp: Date
-  fee: String!
+  timestamp: Date!
+  transaction: String!
+  fee: String
 
-  block: Block
+  withdrawtimestamp: Date
+  withdrawamount: BigInt
+  withdrawtransaction: String
+}
+
+type RefundTransferRecord @entity {
+  id: ID! # refund id
+  sourceid: String
+  timestamp: Date
+  transaction: String
 }
 
 type BridgeDispatchEvent @entity {
@@ -32,14 +35,5 @@ type BridgeDispatchEvent @entity {
   timestamp: Date
 
   block: Block
-}
-
-type Account @entity {
-  id: ID!
-
-  # s2s
-  s2sLockedTotalCount: Int
-  s2sLockedTotalAmount: BigInt
-  s2sLocked: [S2SEvent] @derivedFrom(field: "sender")
 }
 

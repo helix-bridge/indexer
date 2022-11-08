@@ -72,25 +72,30 @@ export class Substrate2parachainService implements OnModuleInit {
   }
 
   async fetchSubqlRecords(url: string, latestNonce: number) {
+    const query = this.transferService.getRecordFromSubql(this.fetchHistoryDataFirst, latestNonce);
     return await axios
       .post(url, {
-        query: this.transferService.getRecordFromSubql(this.fetchHistoryDataFirst, latestNonce),
+        query: query,
         variables: null,
       })
       .then((res) => res.data?.data?.transferRecords?.nodes);
   }
 
   async fetchThegraphRecords(url: string, latestNonce: number) {
+    const query = this.transferService.getRecordFromThegraph(
+      this.fetchHistoryDataFirst,
+      latestNonce
+    );
     return await axios
       .post(url, {
-        query: this.transferService.getRecordFromThegraph(this.fetchHistoryDataFirst, latestNonce),
+        query: query,
         variables: null,
       })
       .then((res) => res.data?.data?.transferRecords);
   }
 
   async fetchRemoteRecords(url: string, latestNonce: number, isSubql: boolean) {
-    if (isSubql) {
+    if (!isSubql) {
       return this.fetchThegraphRecords(url, latestNonce);
     } else {
       return this.fetchSubqlRecords(url, latestNonce);
@@ -98,7 +103,7 @@ export class Substrate2parachainService implements OnModuleInit {
   }
 
   async querySubqlTransfer(url: string, srcTransferId: string) {
-    const query = `query { transferRecord(id: "${srcTransferId}") {nodes{withdraw_timestamp, withdraw_transaction}}}`;
+    const query = `query { transferRecord(id: "${srcTransferId}") {nodes{withdrawtimestamp, withdrawtransaction}}}`;
     return await axios
       .post(url, {
         query: query,
@@ -108,7 +113,7 @@ export class Substrate2parachainService implements OnModuleInit {
   }
 
   async queryThegraphTransfer(url: string, srcTransferId: string) {
-    const query = `query { transferRecord(id: "${srcTransferId}") {withdraw_timestamp, withdraw_transaction}}`;
+    const query = `query { transferRecord(id: "${srcTransferId}") {withdrawtimestamp, withdrawtransaction}}`;
     return await axios
       .post(url, {
         query: query,
@@ -128,7 +133,7 @@ export class Substrate2parachainService implements OnModuleInit {
   async querySubqlRefund(url: string, id: string) {
     return await axios
       .post(url, {
-        query: `query { refundTransferRecords (where: {source_id: ${id}}) { id, source_id, transaction_hash, timestamp }}`,
+        query: `query { refundTransferRecords (filter: {sourceid: { in: [${id}]}}) { nodes{ id, sourceid, transaction, timestamp }}}`,
         variables: null,
       })
       .then((res) => res.data?.data?.refundTransferRecords.nodes);
@@ -137,7 +142,7 @@ export class Substrate2parachainService implements OnModuleInit {
   async queryThegraphRefund(url: string, id: string) {
     return await axios
       .post(url, {
-        query: `query { refundTransferRecords (where: {source_id: ${id}}) {nodes { id, source_id, transaction_hash, timestamp }}}`,
+        query: `query { refundTransferRecords (where: {sourceid: ${id}}) {id, sourceid, transaction, timestamp }}`,
         variables: null,
       })
       .then((res) => res.data?.data?.refundTransferRecords);
@@ -164,11 +169,12 @@ export class Substrate2parachainService implements OnModuleInit {
         });
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
-      const nodes = await this.fetchRemoteRecords(from.url, latestNonce, isLock);
+      const nodes = await this.fetchRemoteRecords(from.url, latestNonce, !isLock);
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
           const amount = BigInt(node.amount);
+          const startTime = isLock ? Number(node.timestamp) : this.toUnixTime(node.timestamp);
 
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, node.id),
@@ -177,14 +183,14 @@ export class Substrate2parachainService implements OnModuleInit {
             bridge: 'helix-sub2para',
             messageNonce: node.id,
             nonce: global.BigInt(node.id),
-            requestTxHash: node.transaction_hash,
+            requestTxHash: node.transaction,
             sender: node.sender,
             recipient: node.receiver,
             sendToken: from.feeToken,
             recvToken: to.feeToken,
             sendAmount: amount.toString(),
             recvAmount: amount.toString(),
-            startTime: this.toUnixTime(node.start_timestamp),
+            startTime: startTime,
             endTime: 0,
             result: 0,
             fee: node.fee,
@@ -235,11 +241,11 @@ export class Substrate2parachainService implements OnModuleInit {
 
       if (ids.length > 0) {
         const nodes = await axios
-          .post(this.transferService.dispatchEndPoints[to.chain.split('-')[0]], {
-            query: `query { messageDispatchedResults (where: {id_in: [${ids}]}) { id, token, transaction_hash, result, timestamp }}`,
+          .post(this.transferService.dispatchEndPoints[to.chain], {
+            query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block, timestamp }}}`,
             variables: null,
           })
-          .then((res) => res.data?.data?.messageDispatchedResults);
+          .then((res) => res.data?.data?.bridgeDispatchEvents.nodes);
 
         if (nodes && nodes.length > 0) {
           for (const node of nodes) {
@@ -262,7 +268,7 @@ export class Substrate2parachainService implements OnModuleInit {
               data: {
                 responseTxHash,
                 result,
-                endTime: Number(node.timestamp),
+                endTime: this.toUnixTime(node.timestamp),
               },
             });
           }
@@ -276,14 +282,14 @@ export class Substrate2parachainService implements OnModuleInit {
           node.result === RecordStatus.pendingToConfirmRefund
         ) {
           const transferId = last(node.id.split('-'));
-          const withdrawInfo = await this.queryTransfer(from.url, transferId, isLock);
-          if (withdrawInfo && withdrawInfo.withdraw_transaction) {
+          const withdrawInfo = await this.queryTransfer(from.url, transferId, !isLock);
+          if (withdrawInfo && withdrawInfo.withdrawtransaction) {
             refunded += 1;
             await this.aggregationService.updateHistoryRecord({
               where: { id: node.id },
               data: {
-                responseTxHash: withdrawInfo.withdraw_transaction,
-                endTime: Number(withdrawInfo.withdraw_timestamp),
+                responseTxHash: withdrawInfo.withdrawtransaction,
+                endTime: Number(withdrawInfo.withdrawtimestamp),
                 result: RecordStatus.refunded,
               },
             });
@@ -307,16 +313,16 @@ export class Substrate2parachainService implements OnModuleInit {
         });
 
         for (const unrefundNode of unrefundNodes) {
-          const nodes = await this.queryRefund(to.url, unrefundNode.id, !isLock);
+          const nodes = await this.queryRefund(to.url, unrefundNode.id, isLock);
 
           const refundIds = nodes.map((item) => `"${item.id}"`).join(',');
 
           const refundResults = await axios
-            .post(this.transferService.dispatchEndPoints[from.chain.split('-')[0]], {
-              query: `query { messageDispatchedResults (where: {id_in: [${refundIds}]}) { id, token, transaction_hash, result, timestamp }}`,
+            .post(this.transferService.dispatchEndPoints[from.chain], {
+              query: `query { bridgeDispatchEvents (filter: {id: {in: [${refundIds}]}}) { nodes {id, method, block, timestamp }}}`,
               variables: null,
             })
-            .then((res) => res.data?.data?.messageDispatchedResults);
+            .then((res) => res.data?.data?.bridgeDispatchEvents.nodes);
           const successedResult =
             refundResults.find((r) => r.method === 'MessageDispatched') ?? null;
           if (!successedResult) {
