@@ -144,13 +144,13 @@ export class S2sv21Service implements OnModuleInit {
           latestNonce += 1;
         }
         this.logger.log(
-          `sub2eth v21 new records, from ${from.chain}, to ${to.chain}, latest nonce ${latestNonce}, added ${records.length}`
+          `sub2sub v21 new records, from ${from.chain}, to ${to.chain}, latest nonce ${latestNonce}, added ${records.length}`
         );
       }
       this.fetchCache[index].latestNonce = latestNonce;
     } catch (error) {
       this.logger.warn(
-        `sub2eth v21 fetch record failed, from ${from.chain}, to ${to.chain}, ${error}`
+        `sub2sub v21 fetch record failed, from ${from.chain}, to ${to.chain}, ${error}`
       );
     }
   }

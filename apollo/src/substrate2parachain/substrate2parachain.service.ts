@@ -1,290 +1,369 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { last } from 'lodash';
+import { getUnixTime } from 'date-fns';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { RecordsService, RecordStatus } from '../base/RecordsService';
 import { Transfer, TransferAction } from '../base/TransferService';
 import { SubqlRecord } from '../interface/record';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
+import { TransferT3 } from '../base/TransferServiceT3';
+
+enum RecordStatus {
+  pending,
+  pendingToRefund,
+  pendingToClaim,
+  success,
+  refunded,
+  pendingToConfirmRefund,
+}
 
 // pangolin -> pangolin parachain
 // crab -> crab parachain
 // darwinia -> darwinia parachain
 @Injectable()
-export class Substrate2parachainService extends RecordsService implements OnModuleInit {
+export class Substrate2parachainService implements OnModuleInit {
   private readonly logger = new Logger('Substrate<>Parachain');
+  protected fetchSendDataInterval = 20000;
+  protected fetchHistoryDataFirst = 10;
+  private readonly takeEachTime = 3;
+  private skip = new Array(this.transferService.transfers.length).fill(0);
 
-  private readonly transfersCount = this.transferService.transfers.length;
-
-  protected readonly needSyncLockConfirmed = new Array(this.transfersCount).fill(true);
-
-  protected readonly needSyncLock = new Array(this.transfersCount).fill(true);
-
-  protected readonly needSyncBurnConfirmed = new Array(this.transfersCount).fill(true);
-
-  protected readonly needSyncBurn = new Array(this.transfersCount).fill(true);
-
-  protected readonly isSyncingHistory = new Array(this.transfersCount).fill(false);
-
-  private readonly lockFeeToken = this.configService.get<string>('PARACHAIN_LOCK_FEE_TOKEN');
+  private fetchCache = new Array(this.transferService.transfers.length)
+    .fill('')
+    .map((_) => ({ latestNonce: -1, isSyncingHistory: false }));
 
   constructor(
     public configService: ConfigService,
     private aggregationService: AggregationService,
     private taskService: TasksService,
     private transferService: TransferService
-  ) {
-    super();
-  }
-
-  protected genID(transfer: Transfer, action: TransferAction, identifier: string): string {
-    return `${transfer.backing.chain.split('-')[0]}-parachain-${action}-${identifier}`;
-  }
+  ) {}
 
   async onModuleInit() {
     this.transferService.transfers.forEach((item, index) => {
       this.taskService.addInterval(
-        `${item.backing.chain}-parachain-fetch_history_data`,
-        this.fetchHistoryDataInterval,
+        `${item.source.chain}-sub2para-fetch_history_data`,
+        this.fetchSendDataInterval,
         async () => {
-          if (this.isSyncingHistory[index]) {
+          if (this.fetchCache[index].isSyncingHistory) {
             return;
           }
-          this.isSyncingHistory[index] = true;
-          await this.fetchRecords(item, 'lock', index);
-          await this.fetchRecords(item, 'burn', index);
-          await this.checkDispatched(item, 'lock', index);
-          await this.checkDispatched(item, 'burn', index);
-          await this.checkConfirmed(item, 'lock', index);
-          await this.checkConfirmed(item, 'burn', index);
-          this.isSyncingHistory[index] = false;
+          this.fetchCache[index].isSyncingHistory = true;
+          // from source chain
+          await this.fetchRecords(item, index);
+          // from target chain
+          await this.fetchStatus(item, index);
+          this.fetchCache[index].isSyncingHistory = false;
         }
       );
     });
   }
 
-  async fetchRecords(transfer: Transfer, action: TransferAction, index: number) {
-    let { backing: from, issuing: to } = transfer;
+  // two directions must use the same laneId
+  protected genID(transfer: TransferT3, id: string) {
+    return `${transfer.source.chain}2${transfer.target.chain}-sub2para-${id}`;
+  }
 
-    if (action === 'burn') {
-      [to, from] = [from, to];
+  private toUnixTime(time: string) {
+    const timezone = new Date().getTimezoneOffset() * 60;
+    return getUnixTime(new Date(time)) - timezone;
+  }
+
+  async fetchSubqlRecords(url: string, latestNonce: number) {
+    return await axios
+      .post(url, {
+        query: this.transferService.getRecordFromSubql(this.fetchHistoryDataFirst, latestNonce),
+        variables: null,
+      })
+      .then((res) => res.data?.data?.transferRecords?.nodes);
+  }
+
+  async fetchThegraphRecords(url: string, latestNonce: number) {
+    return await axios
+      .post(url, {
+        query: this.transferService.getRecordFromThegraph(this.fetchHistoryDataFirst, latestNonce),
+        variables: null,
+      })
+      .then((res) => res.data?.data?.transferRecords);
+  }
+
+  async fetchRemoteRecords(url: string, latestNonce: number, isSubql: boolean) {
+    if (isSubql) {
+      return this.fetchThegraphRecords(url, latestNonce);
+    } else {
+      return this.fetchSubqlRecords(url, latestNonce);
     }
+  }
+
+  async querySubqlTransfer(url: string, srcTransferId: string) {
+    const query = `query { transferRecord(id: "${srcTransferId}") {nodes{withdraw_timestamp, withdraw_transaction}}}`;
+    return await axios
+      .post(url, {
+        query: query,
+        variables: null,
+      })
+      .then((res) => res.data?.data?.transferRecord.nodes);
+  }
+
+  async queryThegraphTransfer(url: string, srcTransferId: string) {
+    const query = `query { transferRecord(id: "${srcTransferId}") {withdraw_timestamp, withdraw_transaction}}`;
+    return await axios
+      .post(url, {
+        query: query,
+        variables: null,
+      })
+      .then((res) => res.data?.data?.transferRecord);
+  }
+
+  async queryTransfer(url: string, srcTransferId: string, isSubql: boolean) {
+    if (isSubql) {
+      return await this.querySubqlTransfer(url, srcTransferId);
+    } else {
+      return await this.queryThegraphTransfer(url, srcTransferId);
+    }
+  }
+
+  async querySubqlRefund(url: string, id: string) {
+    return await axios
+      .post(url, {
+        query: `query { refundTransferRecords (where: {source_id: ${id}}) { id, source_id, transaction_hash, timestamp }}`,
+        variables: null,
+      })
+      .then((res) => res.data?.data?.refundTransferRecords.nodes);
+  }
+
+  async queryThegraphRefund(url: string, id: string) {
+    return await axios
+      .post(url, {
+        query: `query { refundTransferRecords (where: {source_id: ${id}}) {nodes { id, source_id, transaction_hash, timestamp }}}`,
+        variables: null,
+      })
+      .then((res) => res.data?.data?.refundTransferRecords);
+  }
+
+  async queryRefund(url: string, id: string, isSubql: boolean) {
+    if (isSubql) {
+      return this.querySubqlRefund(url, id);
+    } else {
+      return this.queryThegraphRefund(url, id);
+    }
+  }
+
+  async fetchRecords(transfer: TransferT3, index: number) {
+    let latestNonce = this.fetchCache[index].latestNonce;
+    let { source: from, target: to, isLock } = transfer;
 
     try {
-      const latestNonce = await this.aggregationService
-        .queryHistoryRecordFirst({
+      if (latestNonce === -1) {
+        const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
           fromChain: from.chain,
           toChain: to.chain,
-          bridge: 'helix-s2p',
-        })
-        .then((firstRecord) => (firstRecord ? firstRecord.nonce : -1));
-
-      const nodes = await axios
-        .post(from.url, {
-          query: `query { s2sEvents (first: ${this.fetchHistoryDataFirst}, orderBy: NONCE_ASC, filter: {nonce: {greaterThan: "${latestNonce}"}}) {totalCount nodes{id, laneId, nonce, amount, startTimestamp, endTimestamp, requestTxHash, responseTxHash, result, senderId, recipient, fee}}}`,
-          variables: null,
-        })
-        .then((res) => res.data?.data?.s2sEvents?.nodes);
-
-      const isLock = action === 'lock';
+          bridge: 'helix-sub2para',
+        });
+        latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
+      }
+      const nodes = await this.fetchRemoteRecords(from.url, latestNonce, isLock);
 
       if (nodes && nodes.length > 0) {
         for (const node of nodes) {
           const amount = BigInt(node.amount);
-          const recvAmount = from.chain.includes('parachain')
-            ? (amount / BigInt(1e9)).toString()
-            : (amount * BigInt(1e9)).toString();
 
           await this.aggregationService.createHistoryRecord({
-            id: this.genID(transfer, action, node.id),
+            id: this.genID(transfer, node.id),
             fromChain: from.chain,
             toChain: to.chain,
-            bridge: 'helix-s2p',
-            messageNonce: node.nonce,
-            nonce: global.BigInt(node.nonce),
-            requestTxHash: node.requestTxHash,
-            sender: node.senderId,
-            recipient: node.recipient,
-            sendToken: from.token,
-            recvToken: to.token,
+            bridge: 'helix-sub2para',
+            messageNonce: node.id,
+            nonce: global.BigInt(node.id),
+            requestTxHash: node.transaction_hash,
+            sender: node.sender,
+            recipient: node.receiver,
+            sendToken: from.feeToken,
+            recvToken: to.feeToken,
             sendAmount: amount.toString(),
-            recvAmount: recvAmount,
-            startTime: this.toUnixTime(node.startTimestamp),
-            endTime: this.toUnixTime(node.endTimestamp),
-            result: this.toRecordStatus(node.result),
+            recvAmount: amount.toString(),
+            startTime: this.toUnixTime(node.start_timestamp),
+            endTime: 0,
+            result: 0,
             fee: node.fee,
-            feeToken: this.lockFeeToken,
-            responseTxHash: node.responseTxHash === null ? '' : node.responseTxHash,
+            feeToken: from.feeToken,
+            responseTxHash: '',
             reason: '',
             sendTokenAddress: '',
           });
+          latestNonce += 1;
+        }
 
-          if (!this.needSyncLock[index] && isLock) {
-            this.needSyncLock[index] = true;
-          } else if (!this.needSyncBurn[index] && !isLock) {
-            this.needSyncBurn[index] = true;
+        this.logger.log(
+          `sub2para v2 new records, from ${from.chain} to ${to.chain} latest nonce ${latestNonce}, added ${nodes.length}`
+        );
+      }
+      this.fetchCache[index].latestNonce = latestNonce;
+    } catch (error) {
+      this.logger.warn(
+        `sub2para v2 fetch records failed, from ${from.chain} to ${to.chain} ${error}`
+      );
+    }
+  }
+
+  async fetchStatus(transfer: TransferT3, index: number) {
+    let { source: from, target: to, isLock } = transfer;
+    try {
+      const uncheckedRecords = await this.aggregationService
+        .queryHistoryRecords({
+          skip: this.skip[index],
+          take: this.takeEachTime,
+          where: {
+            fromChain: from.chain,
+            toChain: to.chain,
+            bridge: 'helix-sub2para',
+            responseTxHash: '',
+          },
+        })
+        .then((result) => result.records);
+      if (uncheckedRecords.length < this.takeEachTime) {
+        this.skip[index] = 0;
+      } else {
+        this.skip[index] += this.takeEachTime;
+      }
+      const ids = uncheckedRecords
+        .filter((item) => item.reason === '' && item.result !== RecordStatus.pendingToConfirmRefund)
+        .map((item) => `"${last(item.id.split('-'))}"`)
+        .join(',');
+
+      if (ids.length > 0) {
+        const nodes = await axios
+          .post(this.transferService.dispatchEndPoints[to.chain.split('-')[0]], {
+            query: `query { messageDispatchedResults (where: {id_in: [${ids}]}) { id, token, transaction_hash, result, timestamp }}`,
+            variables: null,
+          })
+          .then((res) => res.data?.data?.messageDispatchedResults);
+
+        if (nodes && nodes.length > 0) {
+          for (const node of nodes) {
+            const responseTxHash =
+              node.method === 'MessageDispatched' ? node.block.extrinsicHash : '';
+            const result =
+              node.method === 'MessageDispatched'
+                ? RecordStatus.success
+                : RecordStatus.pendingToRefund;
+
+            const record = uncheckedRecords.find((r) => last(r.id.split('-')) === node.id) ?? null;
+            if (!record || record.result === result) {
+              continue;
+            }
+            this.logger.log(
+              `sub2para v2 new status id: ${node.id} updated old: ${record.result} new: ${result}`
+            );
+            await this.aggregationService.updateHistoryRecord({
+              where: { id: this.genID(transfer, node.id) },
+              data: {
+                responseTxHash,
+                result,
+                endTime: Number(node.timestamp),
+              },
+            });
           }
+        }
+      }
+      let refunded = 0;
+      const unrefunded = [];
+      for (const node of uncheckedRecords) {
+        if (
+          node.result === RecordStatus.pendingToRefund ||
+          node.result === RecordStatus.pendingToConfirmRefund
+        ) {
+          const transferId = last(node.id.split('-'));
+          const withdrawInfo = await this.queryTransfer(from.url, transferId, isLock);
+          if (withdrawInfo && withdrawInfo.withdraw_transaction) {
+            refunded += 1;
+            await this.aggregationService.updateHistoryRecord({
+              where: { id: node.id },
+              data: {
+                responseTxHash: withdrawInfo.withdraw_transaction,
+                endTime: Number(withdrawInfo.withdraw_timestamp),
+                result: RecordStatus.refunded,
+              },
+            });
+          } else {
+            unrefunded.push(node);
+          }
+        }
+      }
 
-          if (this.toRecordStatus(node.result) === RecordStatus.pending) {
-            if (!this.needSyncLockConfirmed[index] && isLock) {
-              this.needSyncLockConfirmed[index] = true;
-            } else if (!this.needSyncBurnConfirmed[index] && !isLock) {
-              this.needSyncBurnConfirmed[index] = true;
+      // query if all the refund tx confirmed or one of them confirmed successed
+      if (unrefunded.length > 0) {
+        // 1. query refund start tx on target chain
+        // 2. query refund result tx on source chain
+        const unrefundNodes = unrefunded.map((item) => {
+          const transferId: string = last(item.id.split('-'));
+          if (transferId.length % 2 === 0) {
+            return { id: `"${transferId}"`, node: item };
+          } else {
+            return { id: `"0x0${transferId.substring(2)}"`, node: item };
+          }
+        });
+
+        for (const unrefundNode of unrefundNodes) {
+          const nodes = await this.queryRefund(to.url, unrefundNode.id, !isLock);
+
+          const refundIds = nodes.map((item) => `"${item.id}"`).join(',');
+
+          const refundResults = await axios
+            .post(this.transferService.dispatchEndPoints[from.chain.split('-')[0]], {
+              query: `query { messageDispatchedResults (where: {id_in: [${refundIds}]}) { id, token, transaction_hash, result, timestamp }}`,
+              variables: null,
+            })
+            .then((res) => res.data?.data?.messageDispatchedResults);
+          const successedResult =
+            refundResults.find((r) => r.method === 'MessageDispatched') ?? null;
+          if (!successedResult) {
+            if (refundResults.length === refundIds.length) {
+              // all refunds tx failed -> RecordStatus.pendingToRefund
+              if (unrefundNode.node.result != RecordStatus.pendingToRefund) {
+                const oldStatus = unrefundNode.node.result;
+                unrefundNode.node.result = RecordStatus.pendingToRefund;
+                this.logger.log(
+                  `sub2para v2 no refund successed, status from ${oldStatus} to ${RecordStatus.pendingToRefund}`
+                );
+                // update db
+                await this.aggregationService.updateHistoryRecord({
+                  where: { id: unrefundNode.node.id },
+                  data: {
+                    result: RecordStatus.pendingToRefund,
+                  },
+                });
+              }
+            } else {
+              // some tx not confirmed -> RecordStatus.pendingToConfirmRefund
+              if (unrefundNode.node.result != RecordStatus.pendingToConfirmRefund) {
+                this.logger.log(
+                  `sub2para v2 waiting for refund confirmed, id: ${unrefundNode.node.id} old status ${unrefundNode.node.result}`
+                );
+                unrefundNode.node.result = RecordStatus.pendingToConfirmRefund;
+                // update db
+                await this.aggregationService.updateHistoryRecord({
+                  where: { id: unrefundNode.node.id },
+                  data: {
+                    result: RecordStatus.pendingToConfirmRefund,
+                  },
+                });
+              }
             }
           }
         }
-
+      }
+      if (refunded > 0) {
         this.logger.log(
-          this.fetchRecordsLog(action, from.chain, to.chain, { latestNonce, added: nodes.length })
+          `sub2para v2 update records, from ${from.chain}, to ${to.chain}, ids ${ids}, refunded ${refunded}`
         );
       }
     } catch (error) {
-      this.logger.warn(this.fetchRecordsLog(action, from.chain, to.chain, { error }));
-    }
-  }
-
-  async checkDispatched(transfer: Transfer, action: TransferAction, index: number) {
-    if (
-      (action === 'lock' && !this.needSyncLock[index]) ||
-      (action === 'burn' && !this.needSyncBurn[index])
-    ) {
-      return;
-    }
-
-    let { backing: from, issuing: to } = transfer;
-
-    if (action === 'burn') {
-      [to, from] = [from, to];
-    }
-
-    try {
-      const { records: uncheckedRecords } = await this.aggregationService.queryHistoryRecords({
-        take: this.fetchHistoryDataFirst,
-        where: {
-          fromChain: from.chain,
-          toChain: to.chain,
-          bridge: 'helix-s2p',
-          reason: '',
-        },
-      });
-
-      if (uncheckedRecords.length === 0) {
-        if (action === 'lock') {
-          this.needSyncLock[index] = false;
-        } else {
-          this.needSyncBurn[index] = false;
-        }
-
-        return;
-      }
-
-      const ids = uncheckedRecords.map((item) => `"${item.id.split('-')[3]}"`).join(',');
-
-      const nodes = await axios
-        .post(to.url, {
-          query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block }}}`,
-          variables: null,
-        })
-        .then((res) => res.data?.data?.bridgeDispatchEvents?.nodes);
-
-      if (nodes && nodes.length > 0) {
-        for (const node of nodes) {
-          const updateData = {
-            reason: node.method,
-          };
-          if ('MessageDispatched' === node.method) {
-            updateData['responseTxHash'] = node.block.extrinsicHash;
-          }
-          await this.aggregationService.updateHistoryRecord({
-            where: { id: this.genID(transfer, action, node.id) },
-            data: updateData,
-          });
-        }
-
-        this.logger.log(
-          this.checkRecordsLog(action, from.chain, to.chain, {
-            ids: nodes.map((item) => item.id),
-            updated: nodes.length,
-          })
-        );
-      }
-    } catch (error) {
-      this.logger.warn(this.checkRecordsLog(action, from.chain, to.chain, { error }));
-    }
-  }
-
-  async checkConfirmed(transfer: Transfer, action: TransferAction, index: number) {
-    if (!this.needSyncLockConfirmed[index] && action === 'lock') {
-      return;
-    } else if (!this.needSyncBurnConfirmed[index] && action === 'burn') {
-      return;
-    }
-
-    let { backing: from, issuing: to } = transfer;
-
-    if (action === 'burn') {
-      [to, from] = [from, to];
-    }
-
-    try {
-      const { records: unconfirmedRecords } = await this.aggregationService.queryHistoryRecords({
-        take: this.fetchHistoryDataFirst,
-        where: {
-          fromChain: from.chain,
-          toChain: to.chain,
-          bridge: 'helix-s2p',
-          result: RecordStatus.pending,
-        },
-      });
-
-      if (unconfirmedRecords.length == 0) {
-        if (action === 'lock') {
-          this.needSyncLockConfirmed[index] = false;
-        } else {
-          this.needSyncBurnConfirmed[index] = false;
-        }
-
-        return;
-      }
-
-      const nonces = unconfirmedRecords.map((record) => `"${record.nonce}"`).join(',');
-
-      const nodes = await axios
-        .post<{ data: { s2sEvents: { nodes: SubqlRecord[] } } }>(from.url, {
-          query: `query { s2sEvents (filter: {nonce: {in: [${nonces}]}}) { nodes {id, endTimestamp, result, responseTxHash }}}`,
-          variables: null,
-        })
-        .then((res) => res.data?.data?.s2sEvents?.nodes.filter((item) => item.result > 0));
-
-      if (nodes && nodes.length > 0) {
-        for (const node of nodes) {
-          const result = this.toRecordStatus(node.result);
-          const updateData = {
-            endTime: this.toUnixTime(node.endTimestamp),
-            result,
-            recvToken: to.token,
-          };
-          if (result === RecordStatus.refunded) {
-            updateData.recvToken = from.token;
-            updateData['responseTxHash'] = node.responseTxHash;
-          }
-
-          await this.aggregationService.updateHistoryRecord({
-            where: { id: this.genID(transfer, action, node.id) },
-            data: updateData,
-          });
-        }
-
-        this.logger.log(
-          this.checkConfirmRecordsLog(action, from.chain, to.chain, {
-            nonces,
-            updated: nodes.length,
-          })
-        );
-      }
-    } catch (error) {
-      this.logger.warn(this.checkConfirmRecordsLog(action, from.chain, to.chain, { error }));
+      this.logger.warn(
+        `sub2para v2 update record failed, from ${from.chain}, to ${to.chain}, ${error}`
+      );
     }
   }
 }

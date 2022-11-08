@@ -1,5 +1,5 @@
 import { SubstrateEvent } from '@subql/types';
-import { Block, BridgeDispatchEvent, S2SEvent, XcmSentEvent, XcmReceivedEvent } from '../types';
+import { Block, BridgeDispatchEvent, TransferRecord, RefundTransferRecord, XcmSentEvent, XcmReceivedEvent } from '../types';
 import { AccountHandler } from './account';
 
 const hostAccounts = [
@@ -74,8 +74,12 @@ export class EventHandler {
       await this.handleBurnAndRemotedUnlocked();
     }
 
-    if (this.method === 'TokenUnlockedConfirmed') {
-      await this.handleTokenUnlockedConfirmed();
+    if (this.method === 'RemoteUnlockForFailure') {
+      await this.handleRemoteUnlockForFailure();
+    }
+
+    if (this.method === 'TokenIssuedForFailure') {
+      await this.handleTokenIssuedForFailure();
     }
 
     if (this.section === 'xcmpQueue') {
@@ -188,7 +192,7 @@ export class EventHandler {
 
   public async handleBridgeDispatchEvent() {
     const [_, [laneId, nonce], result] = JSON.parse(this.data);
-    const event = new BridgeDispatchEvent(this.s2sEventId(laneId, nonce));
+    const event = new BridgeDispatchEvent(this.s2sEventId(nonce));
 
     event.index = this.index;
     event.method = this.method;
@@ -204,59 +208,53 @@ export class EventHandler {
 
   private async handleBurnAndRemotedUnlocked() {
     // [lane_id, message_nonce, sender, recipient, amount]
-    const [laneId, nonce, from, to, value] = JSON.parse(this.data) as [
+    const [_, nonce, from, to, value] = JSON.parse(this.data) as [
       string,
       bigint,
       string,
       string,
       number
     ];
-    const event = new S2SEvent(this.s2sEventId(laneId, nonce));
+    const event = new TransferRecord(this.s2sEventId(nonce));
     const sender = AccountHandler.formatAddress(from);
-    const recipient = AccountHandler.formatAddress(to);
+    const receiver = AccountHandler.formatAddress(to);
     const [_specVersion, _weight, _value, fee, _recipient] = this.args;
 
-    event.laneId = laneId;
-    event.nonce = nonce;
-    event.requestTxHash = this.extrinsicHash;
-    event.startTimestamp = this.timestamp;
-    event.senderId = sender;
-    event.recipient = recipient;
+    event.transaction_hash = this.extrinsicHash;
+    event.start_timestamp = this.timestamp;
+    event.sender = sender;
+    event.receiver = receiver;
     event.amount = value.toString();
-    event.result = 0;
-    event.endTimestamp = null;
-    event.responseTxHash = null;
-    event.block = this.simpleBlock();
     event.fee = fee;
 
-    await AccountHandler.ensureAccount(sender);
     await event.save();
   }
 
-  private async handleTokenUnlockedConfirmed() {
-    // [lane_id, message_nonce, user, amount, result]
-    const [laneId, nonce, from, amount, confirmResult] = JSON.parse(this.data) as [
-      string,
-      bigint,
-      string,
-      bigint,
-      boolean
-    ];
-    const sender = AccountHandler.formatAddress(from);
-    const event = await S2SEvent.get(this.s2sEventId(laneId, nonce));
-
-    if (event) {
-      event.responseTxHash = this.extrinsicHash;
-      event.endTimestamp = this.timestamp;
-      event.result = confirmResult ? 1 : 2;
-      event.block = this.simpleBlock();
-
+  private async handleRemoteUnlockForFailure() {
+      const [refundNonce, failureNonce] = JSON.parse(this.data) as [
+          bigint,
+          bigint,
+      ];
+      const event = new RefundTransferRecord(this.s2sEventId(refundNonce));
+      event.source_id = this.s2sEventId(failureNonce);
+      event.timestamp = this.timestamp;
+      event.transaction_hash = this.extrinsicHash;
       await event.save();
+  }
 
-      if (confirmResult) {
-        await AccountHandler.updateS2SLockedStatistic(sender, amount);
+  private async handleTokenIssuedForFailure() {
+      const [lane_id, failure_nonce, recipient, amount] = JSON.parse(this.data) as [
+          string,
+          bigint,
+          string,
+          bigint
+      ];
+      const event = await TransferRecord.get(this.s2sEventId(failure_nonce));
+      if (event) {
+          event.withdraw_timestamp = this.timestamp;
+          event.withdraw_amount = amount;
+          event.withdraw_transaction = this.extrinsicHash;
       }
-    }
   }
 
   private simpleBlock(): Block {
@@ -268,7 +266,7 @@ export class EventHandler {
     };
   }
 
-  private s2sEventId(laneId: string, nonce: bigint): string {
-    return `${laneId}0x${nonce.toString(16)}`;
+  private s2sEventId(nonce: bigint): string {
+    return `0x${nonce.toString(16)}`;
   }
 }

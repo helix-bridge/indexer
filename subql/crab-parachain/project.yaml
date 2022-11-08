@@ -52,7 +52,12 @@ dataSources:
           kind: substrate/EventHandler
           filter:
             module: fromCrabIssuing
-            method: TokenUnlockedConfirmed
+            method: RemoteUnlockForFailure
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: fromCrabIssuing
+            method: TokenIssuedForFailure
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:

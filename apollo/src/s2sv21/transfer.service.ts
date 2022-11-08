@@ -20,6 +20,7 @@ export class TransferService extends BaseTransferServiceT3 {
         url: this.issuingSubgraphUrl + '/darwinia',
         feeToken: 'RING',
       },
+      isLock: true,
       symbols: [
         {
           from: 'WCRAB',
@@ -39,6 +40,7 @@ export class TransferService extends BaseTransferServiceT3 {
         url: this.backingSubgraphUrl + '/crab',
         feeToken: 'CRAB',
       },
+      isLock: false,
       symbols: [
         {
           from: 'xWCRAB',
