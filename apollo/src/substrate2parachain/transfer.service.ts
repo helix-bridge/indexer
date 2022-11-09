@@ -72,10 +72,22 @@ export class TransferService extends BaseTransferServiceT3 {
   ];
 
   dispatchEndPoints = {
-    'crab-dvm': this.backingEndpointUrl + '/crab',
-    'crab-parachain': this.issuingEndpointUrl + '/crab-parachain',
-    'pangolin-dvm': this.backingEndpointUrl,
-    'pangolin-parachain': this.issuingEndpointUrl,
+    'crab-dvm': {
+      url: this.backingEndpointUrl + '/crab',
+      laneId: '',
+    },
+    'crab-parachain': {
+      url: this.issuingEndpointUrl + '/crab-parachain',
+      laneId: '',
+    },
+    'pangolin-dvm': {
+      url: this.backingEndpointUrl,
+      laneId: '0x70616c69',
+    },
+    'pangolin-parachain': {
+      url: this.issuingEndpointUrl,
+      laneId: '0x70616c69',
+    },
   };
 
   constructor(public configService: ConfigService) {

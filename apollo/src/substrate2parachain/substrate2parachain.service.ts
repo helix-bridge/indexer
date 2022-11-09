@@ -61,6 +61,10 @@ export class Substrate2parachainService implements OnModuleInit {
     });
   }
 
+  private getMessageNonceFromId(id: string) {
+    return id.substring(10, id.length + 1);
+  }
+
   // two directions must use the same laneId
   protected genID(transfer: TransferT3, id: string) {
     return `${transfer.source.chain}2${transfer.target.chain}-sub2para-${id}`;
@@ -103,13 +107,13 @@ export class Substrate2parachainService implements OnModuleInit {
   }
 
   async querySubqlTransfer(url: string, srcTransferId: string) {
-    const query = `query { transferRecord(id: "${srcTransferId}") {nodes{withdrawtimestamp, withdrawtransaction}}}`;
+    const query = `query { transferRecord(id: "${srcTransferId}") {withdrawtimestamp, withdrawtransaction}}`;
     return await axios
       .post(url, {
         query: query,
         variables: null,
       })
-      .then((res) => res.data?.data?.transferRecord.nodes);
+      .then((res) => res.data?.data?.transferRecord);
   }
 
   async queryThegraphTransfer(url: string, srcTransferId: string) {
@@ -234,14 +238,15 @@ export class Substrate2parachainService implements OnModuleInit {
       } else {
         this.skip[index] += this.takeEachTime;
       }
+      const endpoint = this.transferService.dispatchEndPoints[to.chain];
       const ids = uncheckedRecords
         .filter((item) => item.reason === '' && item.result !== RecordStatus.pendingToConfirmRefund)
-        .map((item) => `"${last(item.id.split('-'))}"`)
+        .map((item) => `"${endpoint.laneId}${last(item.id.split('-'))}"`)
         .join(',');
 
       if (ids.length > 0) {
         const nodes = await axios
-          .post(this.transferService.dispatchEndPoints[to.chain], {
+          .post(endpoint.url, {
             query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block, timestamp }}}`,
             variables: null,
           })
@@ -256,7 +261,10 @@ export class Substrate2parachainService implements OnModuleInit {
                 ? RecordStatus.success
                 : RecordStatus.pendingToRefund;
 
-            const record = uncheckedRecords.find((r) => last(r.id.split('-')) === node.id) ?? null;
+            const record =
+              uncheckedRecords.find(
+                (r) => `${endpoint.laneId}${last(r.id.split('-'))}` === node.id
+              ) ?? null;
             if (!record || record.result === result) {
               continue;
             }
@@ -264,7 +272,7 @@ export class Substrate2parachainService implements OnModuleInit {
               `sub2para v2 new status id: ${node.id} updated old: ${record.result} new: ${result}`
             );
             await this.aggregationService.updateHistoryRecord({
-              where: { id: this.genID(transfer, node.id) },
+              where: { id: this.genID(transfer, this.getMessageNonceFromId(node.id)) },
               data: {
                 responseTxHash,
                 result,
@@ -312,13 +320,14 @@ export class Substrate2parachainService implements OnModuleInit {
           }
         });
 
+        const endpoint = this.transferService.dispatchEndPoints[from.chain];
         for (const unrefundNode of unrefundNodes) {
           const nodes = await this.queryRefund(to.url, unrefundNode.id, isLock);
 
-          const refundIds = nodes.map((item) => `"${item.id}"`).join(',');
+          const refundIds = nodes.map((item) => `"${endpoint.laneId}${item.id}"`).join(',');
 
           const refundResults = await axios
-            .post(this.transferService.dispatchEndPoints[from.chain], {
+            .post(endpoint.url, {
               query: `query { bridgeDispatchEvents (filter: {id: {in: [${refundIds}]}}) { nodes {id, method, block, timestamp }}}`,
               variables: null,
             })
