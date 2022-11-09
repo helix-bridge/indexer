@@ -20,6 +20,18 @@ export class TransferService extends BaseTransferServiceT1 {
         feeToken: 'RING',
       },
     },
+    {
+      source: {
+        chain: 'crab-dvm',
+        url: this.endpoint + '/crab',
+        feeToken: 'CRAB',
+      },
+      target: {
+        chain: 'crab-dvm',
+        url: this.endpoint + '/crab',
+        feeToken: 'CRAB',
+      },
+    },
   ];
   readonly addressToTokenInfo: { [key: string]: AddressTokenMap } = {
     'darwinia-dvm': {
@@ -27,6 +39,13 @@ export class TransferService extends BaseTransferServiceT1 {
         token: 'WRING',
         decimals: 1e18,
         origin: 'RING',
+      },
+    },
+    'crab-dvm': {
+      all: {
+        token: 'WCRAB',
+        decimals: 1e18,
+        origin: 'CRAB',
       },
     },
   };
