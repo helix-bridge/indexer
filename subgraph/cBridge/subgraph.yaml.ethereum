@@ -4,7 +4,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: Bridge
-    network: mainnet
+    network: ethereum
     source:
       address: "0x5427FEFA711Eff984124bFBB1AB6fbf5E3DA1820"
       abi: Bridge
