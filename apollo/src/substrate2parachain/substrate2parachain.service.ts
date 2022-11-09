@@ -293,11 +293,12 @@ export class Substrate2parachainService implements OnModuleInit {
           const withdrawInfo = await this.queryTransfer(from.url, transferId, !isLock);
           if (withdrawInfo && withdrawInfo.withdrawtransaction) {
             refunded += 1;
+            const endTime = isLock ? Number(withdrawInfo.withdrawtimestamp) : this.toUnixTime(withdrawInfo.withdrawtimestamp);
             await this.aggregationService.updateHistoryRecord({
               where: { id: node.id },
               data: {
                 responseTxHash: withdrawInfo.withdrawtransaction,
-                endTime: Number(withdrawInfo.withdrawtimestamp),
+                endTime: endTime,
                 result: RecordStatus.refunded,
               },
             });

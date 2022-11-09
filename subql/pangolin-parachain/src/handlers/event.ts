@@ -124,13 +124,14 @@ export class EventHandler {
           string,
           bigint,
           string,
-          bigint
+          string
       ];
       const event = await TransferRecord.get(this.s2sEventId(failure_nonce));
       if (event) {
           event.withdrawtimestamp = this.timestamp;
           event.withdrawamount = amount;
           event.withdrawtransaction = this.extrinsicHash;
+          await event.save();
       }
   }
 

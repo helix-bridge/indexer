@@ -15,7 +15,7 @@ type TransferRecord @entity {
   fee: String
 
   withdrawtimestamp: Date
-  withdrawamount: BigInt
+  withdrawamount: String
   withdrawtransaction: String
 }
 
