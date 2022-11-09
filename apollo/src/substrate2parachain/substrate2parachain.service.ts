@@ -320,6 +320,9 @@ export class Substrate2parachainService implements OnModuleInit {
         const endpoint = this.transferService.dispatchEndPoints[from.chain];
         for (const unrefundNode of unrefundNodes) {
           const nodes = await this.queryRefund(to.url, unrefundNode.id, isLock);
+          if (nodes.length == 0) {
+              continue;
+          }
 
           const refundIds = nodes.map((item) => `"${endpoint.laneId}${item.id}"`).join(',');
 
@@ -332,7 +335,7 @@ export class Substrate2parachainService implements OnModuleInit {
           const successedResult =
             refundResults.find((r) => r.method === 'MessageDispatched') ?? null;
           if (!successedResult) {
-            if (refundResults.length === refundIds.length) {
+            if (refundResults.length === nodes.length) {
               // all refunds tx failed -> RecordStatus.pendingToRefund
               if (unrefundNode.node.result != RecordStatus.pendingToRefund) {
                 const oldStatus = unrefundNode.node.result;

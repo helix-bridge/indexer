@@ -278,6 +278,10 @@ export class Sub2ethv2Service implements OnModuleInit {
             })
             .then((res) => res.data?.data?.refundTransferRecords);
 
+          if (nodes.length == 0) {
+              continue;
+          }
+
           const refundIds = nodes.map((item) => `"${item.id}"`).join(',');
 
           const refundResults = await axios
@@ -289,7 +293,7 @@ export class Sub2ethv2Service implements OnModuleInit {
           const successedResult =
             refundResults.find((r) => r.result === Sub2EthStatus.success) ?? null;
           if (!successedResult) {
-            if (refundResults.length === refundIds.length) {
+            if (refundResults.length === nodes.length) {
               // all refunds tx failed -> RecordStatus.pendingToRefund
               if (unrefundNode.node.result != RecordStatus.pendingToRefund) {
                 const oldStatus = unrefundNode.node.result;
