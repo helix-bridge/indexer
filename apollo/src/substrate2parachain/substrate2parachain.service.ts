@@ -186,7 +186,7 @@ export class Substrate2parachainService implements OnModuleInit {
             toChain: to.chain,
             bridge: 'helix-sub2para',
             messageNonce: node.id,
-            nonce: global.BigInt(node.id),
+            nonce: latestNonce + 1,
             requestTxHash: node.transaction,
             sender: node.sender,
             recipient: node.receiver,
@@ -313,11 +313,7 @@ export class Substrate2parachainService implements OnModuleInit {
         // 2. query refund result tx on source chain
         const unrefundNodes = unrefunded.map((item) => {
           const transferId: string = last(item.id.split('-'));
-          if (transferId.length % 2 === 0) {
-            return { id: `"${transferId}"`, node: item };
-          } else {
-            return { id: `"0x0${transferId.substring(2)}"`, node: item };
-          }
+          return { id: `"${transferId}"`, node: item };
         });
 
         const endpoint = this.transferService.dispatchEndPoints[from.chain];
