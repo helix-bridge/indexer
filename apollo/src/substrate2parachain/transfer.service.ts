@@ -99,6 +99,6 @@ export class TransferService extends BaseTransferServiceT3 {
   }
 
   getRecordFromSubql(first: number, latestNonce: bigint | number) {
-    return `query { transferRecords (first: ${first}, orderBy: TIMESTAMP_ASC, filter: {id: {greaterThan: "${latestNonce}"}}) {totalCount nodes{id, amount, timestamp, transaction, sender, receiver, fee}}}`;
+    return `query { transferRecords (first: ${first}, orderBy: TIMESTAMP_ASC, offset: ${latestNonce}) {totalCount nodes{id, amount, timestamp, transaction, sender, receiver, fee}}}`;
   }
 }

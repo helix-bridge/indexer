@@ -309,7 +309,7 @@ export class Substrate2parachainService implements OnModuleInit {
       }
 
       // query if all the refund tx confirmed or one of them confirmed successed
-      if (unrefunded.length > 0) {
+      if (unrefunded && unrefunded.length > 0) {
         // 1. query refund start tx on target chain
         // 2. query refund result tx on source chain
         const unrefundNodes = unrefunded.map((item) => {
@@ -320,7 +320,7 @@ export class Substrate2parachainService implements OnModuleInit {
         const endpoint = this.transferService.dispatchEndPoints[from.chain];
         for (const unrefundNode of unrefundNodes) {
           const nodes = await this.queryRefund(to.url, unrefundNode.id, isLock);
-          if (nodes.length == 0) {
+          if (!nodes || nodes.length == 0) {
               continue;
           }
 
