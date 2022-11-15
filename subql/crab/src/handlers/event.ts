@@ -89,8 +89,23 @@ export class EventHandler {
     event.data = this.data;
     event.block = this.simpleBlock();
     event.timestamp = this.timestamp;
+    // the dispatch call result is err
     if (this.method === 'MessageDispatched' && result.ok === undefined) {
         event.method = 'MessageDispatched(Err)'
+    }
+    // the call is message_call, and reverted
+    if (this.method === 'MessageDispatched') {
+        if (this.index > 1) {
+            const maybeEthereumExecuteEvent = this.event?.extrinsic?.events[this.index-2];
+            if (maybeEthereumExecuteEvent &&
+                maybeEthereumExecuteEvent.event.method === 'Executed' &&
+                maybeEthereumExecuteEvent.event.section === 'ethereum') {
+              const [_from, _to, _transactionHash, exitReason] = JSON.parse(maybeEthereumExecuteEvent.event.data.toString());
+              if (exitReason.revert) {
+                  event.method = 'MessageDispatched(Revert)'
+              }
+          }
+        }
     }
 
     await event.save();

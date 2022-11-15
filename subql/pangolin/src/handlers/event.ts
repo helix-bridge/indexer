@@ -87,6 +87,20 @@ export class EventHandler {
         event.method = 'MessageDispatched(Err)'
     }
 
+    // the call is message_call, and reverted
+    if (this.method === 'MessageDispatched') {
+        if (this.index > 1) {
+            const maybeEthereumExecuteEvent = this.event?.extrinsic?.events[this.index-2];
+            if (maybeEthereumExecuteEvent &&
+                maybeEthereumExecuteEvent.event.method === 'Executed' &&
+                maybeEthereumExecuteEvent.event.section === 'ethereum') {
+              const [_from, _to, _transactionHash, exitReason] = JSON.parse(maybeEthereumExecuteEvent.event.data.toString());
+              if (exitReason.revert) {
+                  event.method = 'MessageDispatched(Revert)'
+              }
+          }
+        }
+    }
     await event.save();
   }
 
