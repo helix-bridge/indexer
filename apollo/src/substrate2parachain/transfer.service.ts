@@ -18,7 +18,7 @@ export class TransferService extends BaseTransferServiceT3 {
       },
       target: {
         chain: 'crab-parachain',
-        url: this.issuingUrl + '/crab-parachain',
+        url: this.issuingUrl,
         feeToken: 'CRAB',
       },
       isLock: true,
@@ -27,12 +27,12 @@ export class TransferService extends BaseTransferServiceT3 {
     {
       source: {
         chain: 'crab-parachain',
-        url: this.issuingUrl + '/crab-parachain',
+        url: this.issuingUrl,
         feeToken: 'CRAB',
       },
       target: {
         chain: 'crab-dvm',
-        url: this.backingUrl + 'crab',
+        url: this.backingUrl + '/crab',
         feeToken: 'CRAB',
       },
       isLock: false,
@@ -73,12 +73,12 @@ export class TransferService extends BaseTransferServiceT3 {
 
   dispatchEndPoints = {
     'crab-dvm': {
-      url: this.backingEndpointUrl + '/crab',
-      laneId: '',
+      url: this.backingEndpointUrl,
+      laneId: '0x70616372',
     },
     'crab-parachain': {
-      url: this.issuingEndpointUrl + '/crab-parachain',
-      laneId: '',
+      url: this.issuingEndpointUrl,
+      laneId: '0x70616372',
     },
     'pangolin-dvm': {
       url: this.backingEndpointUrl,

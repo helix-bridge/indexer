@@ -293,7 +293,9 @@ export class Substrate2parachainService implements OnModuleInit {
           const withdrawInfo = await this.queryTransfer(from.url, transferId, !isLock);
           if (withdrawInfo && withdrawInfo.withdrawtransaction) {
             refunded += 1;
-            const endTime = isLock ? Number(withdrawInfo.withdrawtimestamp) : this.toUnixTime(withdrawInfo.withdrawtimestamp);
+            const endTime = isLock
+              ? Number(withdrawInfo.withdrawtimestamp)
+              : this.toUnixTime(withdrawInfo.withdrawtimestamp);
             await this.aggregationService.updateHistoryRecord({
               where: { id: node.id },
               data: {
@@ -321,7 +323,7 @@ export class Substrate2parachainService implements OnModuleInit {
         for (const unrefundNode of unrefundNodes) {
           const nodes = await this.queryRefund(to.url, unrefundNode.id, isLock);
           if (!nodes || nodes.length == 0) {
-              continue;
+            continue;
           }
 
           const refundIds = nodes.map((item) => `"${endpoint.laneId}${item.id}"`).join(',');

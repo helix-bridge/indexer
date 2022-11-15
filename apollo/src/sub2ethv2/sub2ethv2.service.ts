@@ -279,7 +279,7 @@ export class Sub2ethv2Service implements OnModuleInit {
             .then((res) => res.data?.data?.refundTransferRecords);
 
           if (nodes.length == 0) {
-              continue;
+            continue;
           }
 
           const refundIds = nodes.map((item) => `"${item.id}"`).join(',');

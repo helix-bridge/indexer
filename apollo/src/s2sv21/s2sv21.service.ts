@@ -261,7 +261,7 @@ export class S2sv21Service implements OnModuleInit {
             .then((res) => res.data?.data?.refundTransferRecords);
 
           if (nodes.length == 0) {
-              continue;
+            continue;
           }
 
           const refundIds = nodes.map((item) => `"${item.id}"`).join(',');
