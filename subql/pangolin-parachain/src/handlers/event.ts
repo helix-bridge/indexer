@@ -120,13 +120,13 @@ export class EventHandler {
   }
 
   private async handleTokenIssuedForFailure() {
-      const [lane_id, failure_nonce, recipient, amount] = JSON.parse(this.data) as [
+      const [_laneId, failureNonce, _recipient, amount] = JSON.parse(this.data) as [
           string,
           bigint,
           string,
           string
       ];
-      const event = await TransferRecord.get(this.s2sEventId(failure_nonce));
+      const event = await TransferRecord.get(this.s2sEventId(failureNonce));
       if (event) {
           event.withdrawtimestamp = this.timestamp;
           event.withdrawamount = amount;

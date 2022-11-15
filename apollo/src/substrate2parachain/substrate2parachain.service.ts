@@ -4,8 +4,6 @@ import axios from 'axios';
 import { last } from 'lodash';
 import { getUnixTime } from 'date-fns';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { Transfer, TransferAction } from '../base/TransferService';
-import { SubqlRecord } from '../interface/record';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 import { TransferT3 } from '../base/TransferServiceT3';

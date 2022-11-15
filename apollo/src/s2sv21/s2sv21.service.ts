@@ -270,7 +270,7 @@ export class S2sv21Service implements OnModuleInit {
             .post<{ data: { bridgeDispatchEvents: { nodes: any[] } } }>(
               this.transferService.dispatchEndPoints[from.chain.split('-')[0]],
               {
-                query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block, timestamp }}}`,
+                query: `query { bridgeDispatchEvents (filter: {id: {in: [${refundIds}]}}) { nodes {id, method, block, timestamp }}}`,
                 variables: null,
               }
             )
