@@ -16,7 +16,7 @@ services:
       retries: 10
 
   subquery-node:
-    image: onfinality/subql-node:latest
+    image: onfinality/subql-node:v1.0.0
     depends_on:
       'postgres':
         condition: service_healthy
