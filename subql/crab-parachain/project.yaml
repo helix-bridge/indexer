@@ -19,7 +19,7 @@ network:
     file: ./types.yaml
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 535900
+    startBlock: 535901
     mapping:
       file: ./dist/index.js
       handlers:
@@ -52,7 +52,12 @@ dataSources:
           kind: substrate/EventHandler
           filter:
             module: fromCrabIssuing
-            method: TokenUnlockedConfirmed
+            method: RemoteUnlockForFailure
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: fromCrabIssuing
+            method: TokenIssuedForFailure
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:

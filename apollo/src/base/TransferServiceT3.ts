@@ -15,6 +15,7 @@ export interface PartnerSymbol {
 export interface TransferT3 {
   source: PartnerT3;
   target: PartnerT3;
+  isLock: boolean;
   symbols: PartnerSymbol[];
 }
 

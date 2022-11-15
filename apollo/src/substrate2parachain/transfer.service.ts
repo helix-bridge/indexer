@@ -1,37 +1,104 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BaseTransferService, Transfer } from '../base/TransferService';
+import { BaseTransferServiceT3, TransferT3 } from '../base/TransferServiceT3';
 
 @Injectable()
-export class TransferService extends BaseTransferService {
-  private readonly issuingUrl = this.configService.get<string>('SUBSTRATE_TO_PARACHAIN_ISSUING');
-  private readonly backingUrl = this.configService.get<string>('SUBSTRATE_TO_PARACHAIN_BACKING');
+export class TransferService extends BaseTransferServiceT3 {
+  private readonly backingUrl = this.configService.get<string>('SUB_TO_PARA_BACKING');
+  private readonly issuingUrl = this.configService.get<string>('SUB_TO_PARA_ISSUING');
+  private readonly backingEndpointUrl = this.configService.get<string>('SUB_TO_PARA_END_BACKING');
+  private readonly issuingEndpointUrl = this.configService.get<string>('SUB_TO_PARA_END_ISSUING');
 
-  private readonly chain = this.configService.get<string>('PARACHAIN');
-
-  formalChainTransfers: Transfer[] = [
+  formalChainTransfers: TransferT3[] = [
     {
-      backing: { chain: 'crab', url: this.backingUrl, token: 'CRAB', feeToken: 'CRAB' },
-      issuing: { chain: 'crab-parachain', url: this.issuingUrl, token: 'CRAB', feeToken: 'CRAB' },
+      source: {
+        chain: 'crab-dvm',
+        url: this.backingUrl + '/crab',
+        feeToken: 'CRAB',
+      },
+      target: {
+        chain: 'crab-parachain',
+        url: this.issuingUrl,
+        feeToken: 'CRAB',
+      },
+      isLock: true,
+      symbols: [],
+    },
+    {
+      source: {
+        chain: 'crab-parachain',
+        url: this.issuingUrl,
+        feeToken: 'CRAB',
+      },
+      target: {
+        chain: 'crab-dvm',
+        url: this.backingUrl + '/crab',
+        feeToken: 'CRAB',
+      },
+      isLock: false,
+      symbols: [],
     },
   ];
 
-  /*
-  testChainTransfers: Transfer[] = [
+  testChainTransfers: TransferT3[] = [
     {
-      backing: { chain: 'pangolin', url: this.backingUrl, token: 'PRING', feeToken: 'PRING' },
-      issuing: {
-        chain: 'pangolin-parachain',
-        url: this.issuingUrl,
-        token: 'PRING',
+      source: {
+        chain: 'pangolin-dvm',
+        url: this.backingUrl + '/pangolin',
         feeToken: 'PRING',
       },
+      target: {
+        chain: 'pangolin-parachain',
+        url: this.issuingUrl,
+        feeToken: 'PRING',
+      },
+      isLock: true,
+      symbols: [],
+    },
+    {
+      source: {
+        chain: 'pangolin-parachain',
+        url: this.issuingUrl,
+        feeToken: 'PRING',
+      },
+      target: {
+        chain: 'pangolin-dvm',
+        url: this.backingUrl + '/pangolin',
+        feeToken: 'PRING',
+      },
+      isLock: false,
+      symbols: [],
     },
   ];
-  */
-  testChainTransfers: Transfer[] = [];
+
+  dispatchEndPoints = {
+    'crab-dvm': {
+      url: this.backingEndpointUrl,
+      laneId: '0x70616372',
+    },
+    'crab-parachain': {
+      url: this.issuingEndpointUrl,
+      laneId: '0x70616372',
+    },
+    'pangolin-dvm': {
+      url: this.backingEndpointUrl,
+      laneId: '0x70616c69',
+    },
+    'pangolin-parachain': {
+      url: this.issuingEndpointUrl,
+      laneId: '0x70616c69',
+    },
+  };
 
   constructor(public configService: ConfigService) {
     super(configService);
+  }
+
+  getRecordFromThegraph(first: number, latestNonce: bigint | number) {
+    return `query { transferRecords (first: ${first}, orderBy: timestamp, orderDirection: asc, skip: ${latestNonce}) {id, sender, receiver, amount, fee, timestamp, transaction}}`;
+  }
+
+  getRecordFromSubql(first: number, latestNonce: bigint | number) {
+    return `query { transferRecords (first: ${first}, orderBy: TIMESTAMP_ASC, offset: ${latestNonce}) {totalCount nodes{id, amount, timestamp, transaction, sender, receiver, fee}}}`;
   }
 }

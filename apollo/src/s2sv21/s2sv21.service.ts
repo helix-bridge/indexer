@@ -144,13 +144,13 @@ export class S2sv21Service implements OnModuleInit {
           latestNonce += 1;
         }
         this.logger.log(
-          `sub2eth v21 new records, from ${from.chain}, to ${to.chain}, latest nonce ${latestNonce}, added ${records.length}`
+          `sub2sub v21 new records, from ${from.chain}, to ${to.chain}, latest nonce ${latestNonce}, added ${records.length}`
         );
       }
       this.fetchCache[index].latestNonce = latestNonce;
     } catch (error) {
       this.logger.warn(
-        `sub2eth v21 fetch record failed, from ${from.chain}, to ${to.chain}, ${error}`
+        `sub2sub v21 fetch record failed, from ${from.chain}, to ${to.chain}, ${error}`
       );
     }
   }
@@ -260,13 +260,17 @@ export class S2sv21Service implements OnModuleInit {
             })
             .then((res) => res.data?.data?.refundTransferRecords);
 
+          if (nodes.length == 0) {
+            continue;
+          }
+
           const refundIds = nodes.map((item) => `"${item.id}"`).join(',');
 
           const refundResults = await axios
             .post<{ data: { bridgeDispatchEvents: { nodes: any[] } } }>(
               this.transferService.dispatchEndPoints[from.chain.split('-')[0]],
               {
-                query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block, timestamp }}}`,
+                query: `query { bridgeDispatchEvents (filter: {id: {in: [${refundIds}]}}) { nodes {id, method, block, timestamp }}}`,
                 variables: null,
               }
             )
@@ -275,7 +279,7 @@ export class S2sv21Service implements OnModuleInit {
           const successedResult =
             refundResults.find((r) => r.method === 'MessageDispatched') ?? null;
           if (!successedResult) {
-            if (refundResults.length === refundIds.length) {
+            if (refundResults.length === nodes.length) {
               // all refunds tx failed -> RecordStatus.pendingToRefund
               if (unrefundNode.node.result != RecordStatus.pendingToRefund) {
                 const oldStatus = unrefundNode.node.result;

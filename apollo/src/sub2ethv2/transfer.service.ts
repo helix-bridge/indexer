@@ -20,6 +20,7 @@ export class TransferService extends BaseTransferServiceT3 {
         url: this.issuingSubgraphUrl,
         feeToken: 'ETH',
       },
+      isLock: true,
       symbols: [
         {
           from: 'WRING',
@@ -44,6 +45,7 @@ export class TransferService extends BaseTransferServiceT3 {
         url: this.backingSubgraphUrl,
         feeToken: 'RING',
       },
+      isLock: false,
       symbols: [
         {
           from: 'RING',
@@ -71,6 +73,7 @@ export class TransferService extends BaseTransferServiceT3 {
         url: this.issuingSubgraphUrl,
         feeToken: 'GoerliETH',
       },
+      isLock: true,
       symbols: [
         {
           from: 'WORING',
@@ -95,6 +98,7 @@ export class TransferService extends BaseTransferServiceT3 {
         url: this.backingSubgraphUrl,
         feeToken: 'ORING',
       },
+      isLock: false,
       symbols: [
         {
           from: 'ORING',

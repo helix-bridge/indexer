@@ -15,7 +15,7 @@ network:
 
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 231000
+    startBlock: 1128500
     mapping:
       file: ./dist/index.js
       handlers:
@@ -53,5 +53,11 @@ dataSources:
           kind: substrate/EventHandler
           filter:
             module: fromPangolinIssuing
-            method: TokenUnlockedConfirmed
+            method: RemoteUnlockForFailure
+            
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: fromPangolinIssuing
+            method: TokenIssuedForFailure
 
