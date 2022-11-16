@@ -218,7 +218,7 @@ export class EventHandler {
     const event = new TransferRecord(this.s2sEventId(nonce));
     const sender = AccountHandler.formatAddress(from);
     const receiver = AccountHandler.formatAddress(to);
-    const [_specVersion, _weight, _value, fee, _recipient] = this.args;
+    const [_specVersion, _weight, _gasLimit, _value, fee, _recipient] = this.args;
 
     event.transaction = this.extrinsicHash;
     event.timestamp = this.timestamp;
