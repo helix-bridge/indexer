@@ -1,0 +1,41 @@
+specVersion: 1.0.0
+name: helix-khala
+version: 0.0.1
+runner:
+  node:
+    name: '@subql/node'
+    version: '*'
+  query:
+    name: '@subql/query'
+    version: '*'
+
+description: ''
+repository: git@github.com:helix-bridge/indexer.git
+
+schema:
+  file: ./schema.graphql
+
+network:
+  chainId: '0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d'
+  endpoint: wss://public-rpc.pinknode.io/khala
+  chaintypes:
+    file: ./types.yaml
+
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 2734840
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Success
+
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: XcmpMessageSent
+
