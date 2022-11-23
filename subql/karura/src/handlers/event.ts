@@ -2,10 +2,22 @@ import { SubstrateEvent } from '@subql/types';
 import { Block, XcmSentEvent, XcmReceivedEvent } from '../types';
 import { decodeAddress } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
+import { AccountHandler } from './account';
 
-const hostAccount = 'qmmNufxeWaAVLMER2va1v4w2HbuU683c5gGtuxQG4fKTZSb';
-const xcmStartTimestamp = 1659888000;
-const secondPerDay = 3600 * 24;
+const helixCallMethod = '0x3600';
+const helixFlag = BigInt(204);
+
+const foreignAssets = {
+    3: 'MOVR',
+    13: 'CRAB',
+    18: 'SDN',
+};
+
+const supportedTokens: string[] = [
+    'KAR',
+    'KUSD',
+    'PHA',
+];
 
 export class EventHandler {
   private event: SubstrateEvent;
@@ -65,8 +77,9 @@ export class EventHandler {
       if (this.method === 'XcmpMessageSent') {
         await this.handleXcmMessageSent();
       } else if (this.method === 'Success') {
-        // TODO Fail Event
-        await this.handleXcmMessageReceived();
+        await this.handleXcmMessageReceivedSuccessed();
+      } else if (this.method === 'Fail') {
+        await this.handleXcmMessageReceivedFailed();
       }
     }
   }
@@ -74,23 +87,13 @@ export class EventHandler {
   public async handleXcmMessageSent() {
     const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime() / 1000);
-    let nonce: number;
-    const balanceTransferEvent = this.event?.extrinsic?.events.find((item) => {
-      // tokens (Withdrawn)
-      if (item.event.method === 'Withdrawn') {
-        const [_1, _sender, amount] = JSON.parse(item.event.data.toString());
-        nonce = amount % 1e18;
-        // allow some error for the timestamp, ignore timezone
-        return nonce > xcmStartTimestamp && nonce <= now + secondPerDay;
-      }
-      return false;
-    });
-    if (!balanceTransferEvent) {
-      return;
+    const method = JSON.parse(this.event.extrinsic.extrinsic.method.toString());
+    if (method.callIndex !== helixCallMethod) {
+        return;
     }
-    const [_1, sender, amount] = JSON.parse(balanceTransferEvent.event.data.toString());
-    const args = '[' + this.event.extrinsic.extrinsic.args.toString() + ']';
-    const [_currencyId, _amount, dest, _destWeight] = JSON.parse(args);
+    const currencyId = method.args.currency_id;
+    const amount = method.args.amount;
+    const dest = method.args.dest;
 
     let index = 0;
     while (true) {
@@ -105,39 +108,84 @@ export class EventHandler {
       index++;
     }
 
+    const destChain = dest?.v1?.interior?.x2?.[0].parachain;
     const event = new XcmSentEvent(messageHash + '-' + index);
-    event.sender = u8aToHex(decodeAddress(sender));
-    event.recipient = dest.v1?.interior?.x2[1].accountId32?.id;
-    event.amount = BigInt(amount).toString();
+    if (currencyId) {
+        if (currencyId.token !== undefined) {
+            if (!supportedTokens.includes(currencyId.token)) {
+                return;
+            }
+            event.token = currencyId.token;
+        } else if (currencyId.foreignAsset !== undefined) {
+            const foreignAsset = foreignAssets[currencyId.foreignAsset]
+            if (!foreignAsset) {
+                return;
+            }
+            event.token = foreignAsset
+        } else {
+            return;
+        }
+    }
+
+    const recipient = dest?.v1?.interior?.x2?.[1].accountId32?.id;
+    event.sender = this.event.extrinsic.extrinsic.signer.toHex();
+    event.recipient = recipient;
+    event.amount = amount;
     event.txHash = this.extrinsicHash;
     event.timestamp = now;
-    event.token = 'CRAB';
-    event.nonce = nonce;
-    event.destChainId = dest.v1?.interior?.x2[0].parachain;
+    event.destChainId = destChain;
     event.block = this.simpleBlock();
     await event.save();
   }
 
-  public async handleXcmMessageReceived() {
+  // save all the faild xcm message
+  public async handleXcmMessageReceivedFailed() {
+    const [messageHash] = JSON.parse(this.data) as [string];
+    const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex;
+    let index = 0;
+    while (true) {
+      const event = await XcmReceivedEvent.get(messageHash + '-' + index);
+      if (!event) {
+        break;
+      }
+      // if the same tx hash, don't save again
+      if (event.txHash === extrinsicHash) {
+        return;
+      }
+      index++;
+    }
+    const now = Math.floor(this.timestamp.getTime() / 1000);
+    const event = new XcmReceivedEvent(messageHash + '-' + index);
+    event.txHash = extrinsicHash;
+    event.timestamp = now;
+    event.block = this.simpleBlock();
+    await event.save();
+  }
+
+  public async handleXcmMessageReceivedSuccessed() {
     const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime() / 1000);
     let totalAmount = BigInt(0);
     let recvAmount = BigInt(0);
     let recipient: string;
 
-    this.event?.extrinsic?.events.forEach((item, _index) => {
-      if (item.event.method === 'Deposited') {
-        const [_currencyId, account, amount] = JSON.parse(item.event.data.toString());
-        totalAmount = totalAmount + BigInt(amount);
-        if (account !== hostAccount) {
-          recipient = account;
-          recvAmount = BigInt(amount);
+    this.event?.extrinsic?.events.find((item, index, events) => {
+        if (item.event.index === this.event.event.index) {
+            const depositHostEvent = events[index-1];
+            const [_feeToken, _hostAccount, fee] = JSON.parse(depositHostEvent.event.data.toString());
+            let depositRecipientEvent = events[index-2];
+            if (depositRecipientEvent.event.method !== 'Deposited') {
+                depositRecipientEvent = events[index-3];
+            }
+            const [_token, account, amount] = JSON.parse(depositRecipientEvent.event.data.toString());
+            totalAmount = BigInt(amount) + BigInt(fee);
+            recipient = AccountHandler.formatAddress(account);
+            recvAmount = BigInt(amount);
         }
-      }
     });
-    const nonce = totalAmount % BigInt(1e18);
-    // allow some error for the timestamp, ignore timezone
-    if (nonce < xcmStartTimestamp || nonce > now + secondPerDay) {
+    
+    const flag = totalAmount % BigInt(1000);
+    if (flag !== helixFlag) {
       return;
     }
     if (!recipient) {
@@ -160,7 +208,7 @@ export class EventHandler {
     const event = new XcmReceivedEvent(messageHash + '-' + index);
     event.recipient = recipient;
     event.amount = recvAmount.toString();
-    event.txHash = extrinsicHash;
+    event.txHash = this.extrinsicHash;
     event.timestamp = now;
     event.block = this.simpleBlock();
     await event.save();

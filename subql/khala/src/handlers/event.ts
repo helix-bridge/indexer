@@ -2,7 +2,6 @@ import { SubstrateEvent } from '@subql/types';
 import { Block, XcmSentEvent, XcmReceivedEvent } from '../types';
 import { AccountHandler } from './account';
 
-const hostTailZero = '00000000000000000000';
 const helixCallMethod = '0x5200';
 const helixFlag = BigInt(204);
 
@@ -115,10 +114,10 @@ export class EventHandler {
     const destChain = dest?.interior?.x2?.[0].parachain;
     const amount = assets?.fun?.fungible;
     // filter helix tx
-    //let flag = BigInt(amount) % BigInt(1000);
-    //if (flag !== helixFlag) {
-        //return;
-    //}
+    let flag = BigInt(amount) % BigInt(1000);
+    if (flag !== helixFlag) {
+        return;
+    }
     //asset
     const event = new XcmSentEvent(messageHash + '-' + index);
     event.destChainId = destChain;
@@ -189,19 +188,21 @@ export class EventHandler {
     let recvAmount = BigInt(0);
     let recipient: string;
 
-    if (this.index > 4) {
-         const depositHostEvent = this.event?.extrinsic?.events[this.index-3];
-         const [_hostAccount, fee] = JSON.parse(depositHostEvent.event.data.toString());
-         const depositRecipientEvent = this.event?.extrinsic?.events[this.index-5];
-         const [account, amount] = JSON.parse(depositRecipientEvent.event.data.toString());
-         totalAmount = BigInt(amount) + BigInt(fee);
-         recipient = AccountHandler.formatAddress(account);
-         recvAmount = BigInt(amount);
-    };
-    //const flag = totalAmount % BigInt(1000);
-    //if (flag !== helixFlag) {
-      //return;
-    //}
+    this.event?.extrinsic?.events.find((item, index, events) => {
+        if (item.event.index === this.event.event.index) {
+            const depositHostEvent = this.event?.extrinsic?.events[index-2];
+            const [_hostAccount, fee] = JSON.parse(depositHostEvent.event.data.toString());
+            const depositRecipientEvent = this.event?.extrinsic?.events[index-4];
+            const [account, amount] = JSON.parse(depositRecipientEvent.event.data.toString());
+            totalAmount = BigInt(amount) + BigInt(fee);
+            recipient = AccountHandler.formatAddress(account);
+            recvAmount = BigInt(amount);
+        }
+    });
+    const flag = totalAmount % BigInt(1000);
+    if (flag !== helixFlag) {
+      return;
+    }
     if (!recipient) {
       return;
     }
