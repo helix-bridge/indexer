@@ -7,6 +7,11 @@ const hostAccount = '0x6d6f646C70792f74727372790000000000000000';
 const xcmStartTimestamp = 1659888000;
 const secondPerDay = 3600 * 24;
 
+// X1
+const parachainX1Assets = {
+    10: 'MOVR',
+}
+
 // X2
 const parachainX2Assets = {
     2000: {
@@ -127,16 +132,23 @@ export class EventHandler {
       index++;
     }
 
-    const assetId = assets?.[0].id?.concrete?.interior?.x2;
+    const assetId = assets?.[0].id?.concrete?.interior;
     if (!assetId) {
         return;
     }
 
-    const parachainX2Chain = parachainX2Assets[assetId[0].parachain]
-    if (!parachainX2Chain) {
+    var token: string;
+    //local
+    if (assetId.x1) {
+        token = parachainX1Assets[assetId.x1.palletInstance];
+    } else if (assetId.x2) {
+        const parachainX2Chain = parachainX2Assets[assetId.x2[0].parachain]
+        token = parachainX2Chain[assetId.x2[1][parachainX2Chain.key]];
+    }
+
+    if (!token) {
         return;
     }
-    const parachainX2Token = parachainX2Chain[assetId[1][parachainX2Chain.key]];
 
     const event = new XcmSentEvent(messageHash + '-' + index);
     event.sender = u8aToHex(decodeAddress(sender));
@@ -144,7 +156,7 @@ export class EventHandler {
     event.amount = assets?.[0].fun?.fungible;
     event.txHash = transaction_hash;
     event.timestamp = now;
-    event.token = parachainX2Token;
+    event.token = token;
     event.nonce = nonce;
     event.destChainId = dest.interior?.x2[0]?.parachain;
     event.block = this.simpleBlock();
