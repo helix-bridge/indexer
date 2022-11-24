@@ -7,6 +7,19 @@ const hostAccount = '0x6d6f646C70792f74727372790000000000000000';
 const xcmStartTimestamp = 1659888000;
 const secondPerDay = 3600 * 24;
 
+// X2
+const parachainX2Assets = {
+    2000: {
+        'key': 'generalKey',
+        '0x0080': 'KAR',
+        '0x0081': 'xcAUSD',
+    },
+    2023: {
+        'key': 'palletInstance',
+        10: 'MOVR',
+    },
+}
+
 export class EventHandler {
   private event: SubstrateEvent;
 
@@ -65,37 +78,28 @@ export class EventHandler {
       if (this.method === 'XcmpMessageSent') {
         await this.handleXcmMessageSent();
       } else if (this.method === 'Success') {
-        // TODO Fail Event
-        await this.handleXcmMessageReceived();
+        await this.handleXcmMessageReceivedSuccessed();
+      } else if (this.method === 'Fail') {
+        await this.handleXcmMessageReceivedFailed();
       }
     }
   }
 
+  // it's a ethereum tx, we parse the event of TransferredMultiAssets, it's behind sent event
   public async handleXcmMessageSent() {
     const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime() / 1000);
     let nonce: number;
-    const balanceTransferEvent = this.event?.extrinsic?.events.find((item) => {
-      // tokens (Withdrawn)
-      if (item.event.method === 'Burned') {
-        const [_assetId, _sender, amount] = JSON.parse(item.event.data.toString());
-        nonce = amount % 1e18;
-        // allow some error for the timestamp, ignore timezone
-        return nonce > xcmStartTimestamp && nonce <= now + secondPerDay;
-      }
-      return false;
+    var transferredMultiAssetsEvent;
+    this.event?.extrinsic?.events.find((item, index, events) => {
+        if (item.event.index === this.event.event.index) {
+            transferredMultiAssetsEvent = events[index+1];
+        }
     });
-    if (!balanceTransferEvent) {
-      return;
+    if (!transferredMultiAssetsEvent) {
+        return;
     }
-    const [_1, sender, amount] = JSON.parse(balanceTransferEvent.event.data.toString());
-    const xtokenEvent = this.event?.extrinsic?.events.find((item) => {
-      return item.event.method === 'TransferredMultiAssets';
-    });
-    if (!xtokenEvent) {
-      return;
-    }
-    const [_sender, _2, _3, dest] = JSON.parse(xtokenEvent.event.data.toString());
+    const [sender, assets, _fee, dest] = JSON.parse(transferredMultiAssetsEvent.event.data.toString());
     // get evm transaction hash
     const evmExecuteEvent = this.event?.extrinsic?.events.find((item) => {
       return item.event.method === 'Executed';
@@ -104,6 +108,8 @@ export class EventHandler {
     if (!evmExecuteEvent) {
       return;
     }
+
+    // get the evm txhash
     const [_from, _to, transaction_hash, _exit_reason] = JSON.parse(
       evmExecuteEvent.event.data.toString()
     );
@@ -121,41 +127,88 @@ export class EventHandler {
       index++;
     }
 
+    const assetId = assets?.[0].id?.concrete?.interior?.x2;
+    if (!assetId) {
+        return;
+    }
+
+    const parachainX2Chain = parachainX2Assets[assetId[0].parachain]
+    if (!parachainX2Chain) {
+        return;
+    }
+    const parachainX2Token = parachainX2Chain[assetId[1][parachainX2Chain.key]];
+
     const event = new XcmSentEvent(messageHash + '-' + index);
     event.sender = u8aToHex(decodeAddress(sender));
     event.recipient = dest.interior?.x2[1]?.accountId32?.id;
-    event.amount = BigInt(amount).toString();
+    event.amount = assets?.[0].fun?.fungible;
     event.txHash = transaction_hash;
     event.timestamp = now;
-    event.token = 'CRAB';
+    event.token = parachainX2Token;
     event.nonce = nonce;
     event.destChainId = dest.interior?.x2[0]?.parachain;
     event.block = this.simpleBlock();
     await event.save();
   }
 
-  public async handleXcmMessageReceived() {
+  // save all the faild xcm message
+  public async handleXcmMessageReceivedFailed() {
+    const [messageHash] = JSON.parse(this.data) as [string];
+    const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex;
+    let index = 0;
+    while (true) {
+      const event = await XcmReceivedEvent.get(messageHash + '-' + index);
+      if (!event) {
+        break;
+      }
+      // if the same tx hash, don't save again
+      if (event.txHash === extrinsicHash) {
+        return;
+      }
+      index++;
+    }
+    const now = Math.floor(this.timestamp.getTime() / 1000);
+    const event = new XcmReceivedEvent(messageHash + '-' + index);
+    event.txHash = extrinsicHash;
+    event.timestamp = now;
+    event.block = this.simpleBlock();
+    await event.save();
+  }
+
+  public async handleXcmMessageReceivedSuccessed() {
     const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime() / 1000);
     let totalAmount = BigInt(0);
     let recvAmount = BigInt(0);
     let recipient: string;
 
-    this.event?.extrinsic?.events.forEach((item, _index) => {
-      if (item.event.method === 'Issued') {
-        const [_currencyId, account, amount] = JSON.parse(item.event.data.toString());
-        totalAmount = totalAmount + BigInt(amount);
-        if (account !== hostAccount) {
-          recipient = account;
-          recvAmount = BigInt(amount);
+    this.event?.extrinsic?.events.find((item, index, events) => {
+        if (item.event.index === this.event.event.index) {
+            let feeEvent = events[index-1];
+            if (feeEvent?.event.method === 'Issued') {
+                const transferEvent = events[index-2];
+                const [_feeCurrencyId, _feeAccount, fee] = JSON.parse(feeEvent.event.data.toString());
+                const [_currencyId, account, amount] = JSON.parse(transferEvent.event.data.toString());
+                totalAmount = BigInt(fee) + BigInt(amount);
+                recipient = account;
+                recvAmount = BigInt(amount);
+            // deposit
+            } else {
+                feeEvent = events[index-2];
+                const transferEvent = events[index-3];
+                const [_feeAccount, fee] = JSON.parse(feeEvent.event.data.toString());
+                const [account, amount] = JSON.parse(transferEvent.event.data.toString());
+                totalAmount = BigInt(fee) + BigInt(amount);
+                recipient = account;
+                recvAmount = BigInt(amount);
+            }
         }
-      }
     });
-    const nonce = totalAmount % BigInt(1e18);
-    // allow some error for the timestamp, ignore timezone
-    if (nonce < xcmStartTimestamp || nonce > now + secondPerDay) {
-      return;
-    }
+    // filter helix tx
+    //let flag = BigInt(amount) % BigInt(1000);
+    //if (flag !== helixFlag) {
+        //return;
+    //}
     if (!recipient) {
       return;
     }

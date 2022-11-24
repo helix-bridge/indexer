@@ -136,11 +136,11 @@ export class EventHandler {
             } else {
                 // X2
                 event.token = asset;
-                const parachainX2Chain = parachainX2Assets[asset.x2?.[0].parachain]
+                const parachainX2Chain = parachainX2Assets[asset.x2?.[0].parachain];
                 if (parachainX2Chain) {
-                    const parachainX2Token = parachainX2Chain[asset.x2?.[1][parachainX2Chain.key]]
+                    const parachainX2Token = parachainX2Chain[asset.x2?.[1][parachainX2Chain.key]];
                     if (parachainX2Token) {
-                        event.token = parachainX2Token
+                        event.token = parachainX2Token;
                     }
                 }
             }
