@@ -32,6 +32,11 @@ dataSources:
           filter:
             module: xcmpQueue
             method: Success
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Fail
 
         - handler: handleEvent
           kind: substrate/EventHandler

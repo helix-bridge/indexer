@@ -95,6 +95,11 @@ export class EventHandler {
     const amount = method.args.amount;
     const dest = method.args.dest;
 
+    const flag = BigInt(amount) % BigInt(1000);
+    if (flag !== helixFlag) {
+      return;
+    }
+
     let index = 0;
     while (true) {
       const event = await XcmSentEvent.get(messageHash + '-' + index);
