@@ -19,7 +19,7 @@ network:
     file: ./types.yaml
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 2422710
+    startBlock: 3053770
     mapping:
       file: ./dist/index.js
       handlers:
@@ -28,6 +28,11 @@ dataSources:
           filter:
             module: xcmpQueue
             method: Success
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Fail
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:

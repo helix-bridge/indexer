@@ -3,13 +3,12 @@ import { Block, XcmSentEvent, XcmReceivedEvent } from '../types';
 import { decodeAddress } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 
-const hostAccount = '0x6d6f646C70792f74727372790000000000000000';
-const xcmStartTimestamp = 1659888000;
-const secondPerDay = 3600 * 24;
+const helixFlag = BigInt(204);
 
 // X1
 const parachainX1Assets = {
     10: 'MOVR',
+    2007: 'xcSDN',
 }
 
 // X2
@@ -22,6 +21,10 @@ const parachainX2Assets = {
     2023: {
         'key': 'palletInstance',
         10: 'MOVR',
+    },
+    2105: {
+        'key': 'palletInstance',
+        5: 'xcCRAB',
     },
 }
 
@@ -143,17 +146,24 @@ export class EventHandler {
         token = parachainX1Assets[assetId.x1.palletInstance];
     } else if (assetId.x2) {
         const parachainX2Chain = parachainX2Assets[assetId.x2[0].parachain]
-        token = parachainX2Chain[assetId.x2[1][parachainX2Chain.key]];
+        token = parachainX2Chain?.[assetId.x2[1][parachainX2Chain?.key]];
     }
 
     if (!token) {
         return;
     }
 
+    const amount = assets?.[0].fun?.fungible;
+    // filter helix tx
+    let flag = BigInt(amount) % BigInt(1000);
+    if (flag !== helixFlag) {
+        return;
+    }
+
     const event = new XcmSentEvent(messageHash + '-' + index);
     event.sender = u8aToHex(decodeAddress(sender));
     event.recipient = dest.interior?.x2[1]?.accountId32?.id;
-    event.amount = assets?.[0].fun?.fungible;
+    event.amount = amount;
     event.txHash = transaction_hash;
     event.timestamp = now;
     event.token = token;
@@ -217,10 +227,10 @@ export class EventHandler {
         }
     });
     // filter helix tx
-    //let flag = BigInt(amount) % BigInt(1000);
-    //if (flag !== helixFlag) {
-        //return;
-    //}
+    let flag = totalAmount % BigInt(1000);
+    if (flag !== helixFlag) {
+        return;
+    }
     if (!recipient) {
       return;
     }
