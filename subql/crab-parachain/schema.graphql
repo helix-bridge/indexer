@@ -56,8 +56,8 @@ type XcmSentEvent @entity {
 type XcmReceivedEvent @entity {
   id: ID!
   txHash: String!
-  recipient: String!
-  amount: String!
+  recipient: String
+  amount: String
   timestamp: Int
 
   block: Block
