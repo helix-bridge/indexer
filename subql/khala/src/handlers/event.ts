@@ -190,9 +190,9 @@ export class EventHandler {
 
     this.event?.extrinsic?.events.find((item, index, events) => {
         if (item.event.index === this.event.event.index) {
-            const depositHostEvent = this.event?.extrinsic?.events[index-2];
+            const depositHostEvent = events[index-2];
             const [_hostAccount, fee] = JSON.parse(depositHostEvent.event.data.toString());
-            const depositRecipientEvent = this.event?.extrinsic?.events[index-4];
+            const depositRecipientEvent = events[index-4];
             const [account, amount] = JSON.parse(depositRecipientEvent.event.data.toString());
             totalAmount = BigInt(amount) + BigInt(fee);
             recipient = AccountHandler.formatAddress(account);

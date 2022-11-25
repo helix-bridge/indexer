@@ -1,7 +1,5 @@
 import { SubstrateEvent } from '@subql/types';
 import { Block, XcmSentEvent, XcmReceivedEvent } from '../types';
-import { decodeAddress } from '@polkadot/util-crypto';
-import { u8aToHex } from '@polkadot/util';
 import { AccountHandler } from './account';
 
 const helixCallMethod = '0x3600';

@@ -1,7 +1,5 @@
 import { SubstrateEvent } from '@subql/types';
 import { Block, XcmSentEvent, XcmReceivedEvent } from '../types';
-import { decodeAddress } from '@polkadot/util-crypto';
-import { u8aToHex } from '@polkadot/util';
 
 const helixFlag = BigInt(204);
 
@@ -92,7 +90,7 @@ export class EventHandler {
     const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime() / 1000);
     const args = '[' + this.event.extrinsic.extrinsic.args.toString() + ']';
-    const [dest, beneficiary, assets, fee] = JSON.parse(args);
+    const [dest, beneficiary, assets, _fee] = JSON.parse(args);
 
     let index = 0;
     while (true) {
