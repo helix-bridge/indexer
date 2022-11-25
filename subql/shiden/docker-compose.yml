@@ -16,7 +16,7 @@ services:
       retries: 10
 
   subquery-node:
-    image: onfinality/subql-node:v0.27.2-0
+    image: onfinality/subql-node:v1.14.1
     depends_on:
       'postgres':
         condition: service_healthy
@@ -30,8 +30,10 @@ services:
     volumes:
       - ./:/app
     command:
+      - --disable-historical=true
       - -f=/app
       - --db-schema=app
+      - --network-endpoint=wss://shiden-rpc.dwellir.com
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://subquery-node:3000/ready']
       interval: 3s
@@ -39,7 +41,7 @@ services:
       retries: 10
 
   graphql-engine:
-    image: onfinality/subql-query:v0.10.1-0
+    image: onfinality/subql-query:v1.7.0
     ports:
       - 3000:3000
     depends_on:

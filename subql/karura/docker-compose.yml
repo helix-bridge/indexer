@@ -16,7 +16,7 @@ services:
       retries: 10
 
   subquery-node:
-    image: onfinality/subql-node:v1.0.0
+    image: onfinality/subql-node:v1.14.1
     depends_on:
       'postgres':
         condition: service_healthy
@@ -30,8 +30,10 @@ services:
     volumes:
       - ./:/app
     command:
-      - -f=/app
+      - --disable-historical=true
+      - -f=ipfs://QmSc3W1e2AhedAS7msbbHCJQvucnB7oa8n4JpgS6yFq9MQ
       - --db-schema=app
+      - --network-endpoint=wss://karura-rpc-3.aca-api.network/ws
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://subquery-node:3000/ready']
       interval: 3s
@@ -39,7 +41,7 @@ services:
       retries: 10
 
   graphql-engine:
-    image: onfinality/subql-query:latest
+    image: onfinality/subql-query:v1.7.0
     ports:
       - 3000:3000
     depends_on:

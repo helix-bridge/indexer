@@ -4,10 +4,10 @@ version: 1.0.0
 runner:
   node:
     name: '@subql/node'
-    version: '*'
+    version: v1.14.1
   query:
     name: '@subql/query'
-    version: '*'
+    version: v1.7.0
 description: ''
 repository: git@github.com:helix-bridge/indexer.git
 schema:
@@ -63,6 +63,11 @@ dataSources:
           filter:
             module: xcmpQueue
             method: Success
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Fail
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:

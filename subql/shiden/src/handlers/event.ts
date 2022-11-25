@@ -3,9 +3,7 @@ import { Block, XcmSentEvent, XcmReceivedEvent } from '../types';
 import { decodeAddress } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 
-const hostAccount = 'qmmNufxeWaAVLMER2va1v4w2HbuU683c5gGtuxQG4fKTZSb';
-const xcmStartTimestamp = 1659888000;
-const secondPerDay = 3600 * 24;
+const helixFlag = BigInt(204);
 
 // X1
 const parachainX1Assets = {
@@ -111,11 +109,12 @@ export class EventHandler {
 
     const destChain = dest.v1?.interior?.x1?.parachain;
     const amount = assets.v1?.[0].fun?.fungible;
-    // filter helix tx
-    let nonce = amount % 1e13;
-    if (nonce < xcmStartTimestamp || nonce > now + secondPerDay) {
+
+    let flag = BigInt(amount) % BigInt(1000);
+    if (flag !== helixFlag) {
         return;
     }
+    
     //asset
     const event = new XcmSentEvent(messageHash + '-' + index);
     event.destChainId = destChain;
@@ -151,9 +150,6 @@ export class EventHandler {
     event.sender = this.event.extrinsic.extrinsic.signer.toHex();
     event.txHash = this.extrinsicHash;
     event.timestamp = now;
-    //event.token = this.event.extrinsic.extrinsic.args.toString();
-    event.nonce = nonce;
-    //event.destChainId = dest.v1?.interior?.x2[0].parachain;
     event.block = this.simpleBlock();
     await event.save();
   }
@@ -189,21 +185,38 @@ export class EventHandler {
     let recvAmount = BigInt(0);
     let recipient: string;
 
-    this.event?.extrinsic?.events.forEach((item, _index) => {
-      if (item.event.method === 'Deposited') {
-        const [_currencyId, account, amount] = JSON.parse(item.event.data.toString());
-        totalAmount = totalAmount + BigInt(amount);
-        if (account !== hostAccount) {
-          recipient = account;
-          recvAmount = BigInt(amount);
+    this.event?.extrinsic?.events.find((item, index, events) => {
+        if (item.event.index === this.event.event.index) {
+            let feeEvent = events[index-1];
+            if (feeEvent?.event.method === 'Issued') {
+                const transferEvent = events[index-2];
+                const [_feeCurrencyId, _feeAccount, fee] = JSON.parse(feeEvent.event.data.toString());
+                const [_currencyId, account, amount] = JSON.parse(transferEvent.event.data.toString());
+                totalAmount = BigInt(fee) + BigInt(amount);
+                recipient = account;
+                recvAmount = BigInt(amount);
+            // deposit
+            } else {
+                let transferEvent = events[index-1];
+                let totalEvent = events[index-2];
+                if (transferEvent.event.method !== 'Deposit') {
+                    transferEvent = events[index-2];
+                    totalEvent = events[index-3];
+                }
+                const [account, amount] = JSON.parse(transferEvent.event.data.toString());
+                const [_hostAccount, total] = JSON.parse(totalEvent.event.data.toString());
+                totalAmount = BigInt(total);
+                recipient = account;
+                recvAmount = BigInt(amount);
+            }
         }
-      }
     });
-    const nonce = totalAmount % BigInt(1e18);
-    // allow some error for the timestamp, ignore timezone
-    if (nonce < xcmStartTimestamp || nonce > now + secondPerDay) {
-      return;
+
+    let flag = totalAmount % BigInt(1000);
+    if (flag !== helixFlag) {
+        return;
     }
+
     if (!recipient) {
       return;
     }
