@@ -44,7 +44,7 @@ type XcmSentEvent @entity {
   txHash: String!
   sender: String!
   recipient: String
-  amount: String!
+  amount: String
   timestamp: Int
   destChainId: Int
   token: String

@@ -67,7 +67,7 @@ export class XcmService implements OnModuleInit {
         this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { xcmSentEvents (first: 10, orderBy: TIMESTAMP_ASC, offset: ${this.latestNonce[index]}) { totalCount nodes{id, txHash, sender, recipient, amount, timestamp, destChainId, token, nonce }}}`;
+      const query = `query { xcmSentEvents (first: 10, orderBy: TIMESTAMP_ASC, offset: ${this.latestNonce[index]}) { totalCount nodes{id, txHash, sender, recipient, amount, timestamp, destChainId, token }}}`;
 
       const records = await axios
         .post(transfer.url, {
@@ -90,7 +90,7 @@ export class XcmService implements OnModuleInit {
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: 'xcm-' + transfer.chain,
-            messageNonce: record.nonce.toString(),
+            messageNonce: record.id,
             nonce: this.latestNonce[index] + 1,
             requestTxHash: record.txHash,
             sender: record.sender,

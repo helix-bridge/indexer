@@ -10,6 +10,8 @@ export class TransferService extends BaseTransferServiceT2 {
   );
   private readonly karuraEndpoint = this.configService.get<string>('KARURA_ENDPOINT');
   private readonly moonriverEndpoint = this.configService.get<string>('MOONRIVER_ENDPOINT');
+  private readonly khalaEndpoint = this.configService.get<string>('KHALA_ENDPOINT');
+  private readonly shidenEndpoint = this.configService.get<string>('SHIDEN_ENDPOINT');
 
   // this chainId is parachain id
   formalChainTransfers: PartnerT2[] = [
@@ -27,6 +29,16 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 2023,
       chain: 'moonriver',
       url: this.moonriverEndpoint,
+    },
+    {
+      chainId: 2004,
+      chain: 'khala',
+      url: this.khalaEndpoint,
+    },
+    {
+      chainId: 2007,
+      chain: 'shiden',
+      url: this.shidenEndpoint,
     },
   ];
 

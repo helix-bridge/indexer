@@ -2,12 +2,7 @@ import { SubstrateEvent } from '@subql/types';
 import { Block, BridgeDispatchEvent, TransferRecord, RefundTransferRecord, XcmSentEvent, XcmReceivedEvent } from '../types';
 import { AccountHandler } from './account';
 
-const hostAccounts = [
-  '5HMbbQxR81gQU2P7vKKVLyxZMkmwbSeMhjA4ZfNbXfPg1Seu',
-  '5G9z8Ttoo7892VqBHiSWCbnd2aEdH8noJLqZ4HFMzMVNhvgP',
-];
-const xcmStartTimestamp = 1659888000;
-const secondPerDay = 3600 * 24;
+const helixFlag = BigInt(204);
 
 //const kururaChainId = 2000;
 const moonriverChainId = 2023;
@@ -86,7 +81,9 @@ export class EventHandler {
       if (this.method === 'XcmpMessageSent') {
         await this.handleXcmMessageSent();
       } else if (this.method === 'Success') {
-        await this.handleXcmMessageReceived();
+        await this.handleXcmMessageReceivedSuccessed();
+      } else if (this.method === 'Fail') {
+        await this.handleXcmMessageReceivedFailed();
       }
     }
   }
@@ -98,9 +95,10 @@ export class EventHandler {
     const balanceTransferEvent = this.event?.extrinsic?.events.find((item) => {
       if (item.event.method === 'Transfer') {
         const [_sender, _2, amount] = JSON.parse(item.event.data.toString());
-        nonce = amount % 1e18;
-        // allow some error for the timestamp, ignore timezone
-        return nonce > xcmStartTimestamp && nonce <= now + secondPerDay;
+        let flag = BigInt(amount) % BigInt(1000);
+        if (flag === helixFlag) {
+            return true;
+        }
       }
       return false;
     });
@@ -144,26 +142,51 @@ export class EventHandler {
     await event.save();
   }
 
-  public async handleXcmMessageReceived() {
+  // save all the faild xcm message
+  public async handleXcmMessageReceivedFailed() {
+    const [messageHash] = JSON.parse(this.data) as [string];
+    const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex;
+    let index = 0;
+    while (true) {
+      const event = await XcmReceivedEvent.get(messageHash + '-' + index);
+      if (!event) {
+        break;
+      }
+      // if the same tx hash, don't save again
+      if (event.txHash === extrinsicHash) {
+        return;
+      }
+      index++;
+    }
+    const now = Math.floor(this.timestamp.getTime() / 1000);
+    const event = new XcmReceivedEvent(messageHash + '-' + index);
+    event.txHash = extrinsicHash;
+    event.timestamp = now;
+    event.block = this.simpleBlock();
+    await event.save();
+  }
+
+  public async handleXcmMessageReceivedSuccessed() {
     const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime() / 1000);
     let totalAmount = BigInt(0);
     let recvAmount = BigInt(0);
     let recipient: string;
 
-    this.event?.extrinsic?.events.forEach((item, _index) => {
-      if (item.event.method === 'Deposit') {
-        const [account, amount] = JSON.parse(item.event.data.toString());
-        totalAmount = totalAmount + BigInt(amount);
-        if (!hostAccounts.includes(account)) {
-          recipient = account;
-          recvAmount = BigInt(amount);
+    this.event?.extrinsic?.events.find((item, index, events) => {
+        if (item.event.index === this.event.event.index) {
+            const feeEvent = events[index-1];
+            const transferEvent = events[index-2];
+            const [_feeAccount, fee] = JSON.parse(feeEvent.event.data.toString());
+            const [account, amount] = JSON.parse(transferEvent.event.data.toString());
+            totalAmount = BigInt(fee) + BigInt(amount);
+            recipient = account;
+            recvAmount = BigInt(amount);
         }
-      }
     });
-    const nonce = totalAmount % BigInt(1e18);
-    if (nonce < xcmStartTimestamp || nonce > now + secondPerDay) {
-      return;
+    let flag = totalAmount % BigInt(1000);
+    if (flag !== helixFlag) {
+        return;
     }
     if (!recipient) {
       return;

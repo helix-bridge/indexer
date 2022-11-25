@@ -1,5 +1,5 @@
 specVersion: 1.0.0
-name: moonriver
+name: shiden
 version: 1.0.0
 runner:
   node:
@@ -13,13 +13,13 @@ repository: git@github.com:helix-bridge/indexer.git
 schema:
   file: ./schema.graphql
 network:
-  chainId: '0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b'
-  endpoint: wss://wss.api.moonriver.moonbeam.network
+  chainId: '0xf1cf9022c7ebb34b162d5b5e34e705a5a740b2d0ecc1009fb89023e62a488108'
+  endpoint: wss://shiden-rpc.dwellir.com
   chaintypes:
     file: ./types.yaml
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 3053770
+    startBlock: 2771660
     mapping:
       file: ./dist/index.js
       handlers:

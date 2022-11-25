@@ -31,9 +31,9 @@ services:
       - ./:/app
     command:
       - --disable-historical=true
-      - -f=ipfs://QmSc3W1e2AhedAS7msbbHCJQvucnB7oa8n4JpgS6yFq9MQ
+      - -f=/app
       - --db-schema=app
-      - --network-endpoint=wss://karura-rpc-3.aca-api.network/ws
+      - --network-endpoint=wss://shiden-rpc.dwellir.com
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://subquery-node:3000/ready']
       interval: 3s
