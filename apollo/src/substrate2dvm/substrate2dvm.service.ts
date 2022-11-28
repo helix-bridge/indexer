@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { AggregationService } from '../aggregation/aggregation.service';
 import { RecordsService, RecordStatus } from '../base/RecordsService';
-import { Partner, Transfer } from '../base/TransferService';
+import { Transfer } from '../base/TransferService';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 
