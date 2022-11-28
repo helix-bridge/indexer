@@ -16,7 +16,7 @@ export enum RecordStatus {
 @Injectable()
 export class WtokenService implements OnModuleInit {
   private readonly logger = new Logger('wtoken');
-  protected fetchDataInterval = 10000;
+  protected fetchDataInterval = 3000;
   private readonly latestNonce = new Array(this.transferService.transfers.length).fill(-1);
 
   constructor(
