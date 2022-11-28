@@ -30,7 +30,7 @@ dataSources:
       file: ./src/Bridge.ts
   - kind: ethereum/contract
     name: OriginalTokenVaultV2
-    network: mainnet
+    network: ethereum
     source:
       address: "0xB37D31b2A74029B5951a2778F959282E2D518595"
       abi: OriginalTokenVaultV2

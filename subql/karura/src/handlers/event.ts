@@ -133,7 +133,7 @@ export class EventHandler {
     const recipient = dest?.v1?.interior?.x2?.[1].accountId32?.id;
     event.sender = this.event.extrinsic.extrinsic.signer.toHex();
     event.recipient = recipient;
-    event.amount = amount;
+    event.amount = BigInt(amount).toString();
     event.txHash = this.extrinsicHash;
     event.timestamp = now;
     event.destChainId = destChain;

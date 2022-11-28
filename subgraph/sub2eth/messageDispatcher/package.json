@@ -4,7 +4,10 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ inboundLane/pangoro",
+    "create-ethereum-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ inboundLane/ethereum",
+    "deploy-ethereum-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ inboundLane/ethereum",
+    "create-darwinia-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ inboundLane/darwinia",
+    "deploy-darwinia-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ inboundLane/darwinia",
     "create-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph create --node http://graph-node:8020/ inboundLane/pangoro",
     "remove-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph remove --node http://graph-node:8020/ inboundLane/pangoro",
     "deploy-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 inboundLane/pangoro",

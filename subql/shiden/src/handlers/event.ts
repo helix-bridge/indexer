@@ -89,7 +89,12 @@ export class EventHandler {
   public async handleXcmMessageSent() {
     const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime() / 1000);
-    const args = '[' + this.event.extrinsic.extrinsic.args.toString() + ']';
+    const extrinsicArgs = this.event.extrinsic?.extrinsic?.args?.toString();
+    // not substrate extrinsic, current not support ethereum tx
+    if (!extrinsicArgs) {
+        return;
+    }
+    const args = '[' + extrinsicArgs + ']';
     const [dest, beneficiary, assets, _fee] = JSON.parse(args);
 
     let index = 0;
@@ -105,8 +110,11 @@ export class EventHandler {
       index++;
     }
 
-    const destChain = dest.v1?.interior?.x1?.parachain;
-    const amount = assets.v1?.[0].fun?.fungible;
+    const destChain = dest?.v1?.interior?.x1?.parachain;
+    const amount = assets?.v1?.[0].fun?.fungible;
+    if (!destChain || !amount) {
+        return;
+    }
 
     let flag = BigInt(amount) % BigInt(1000);
     if (flag !== helixFlag) {
@@ -116,7 +124,7 @@ export class EventHandler {
     //asset
     const event = new XcmSentEvent(messageHash + '-' + index);
     event.destChainId = destChain;
-    event.amount = amount;
+    event.amount = BigInt(amount).toString();
     const asset = assets.v1?.[0].id?.concrete?.interior;
     // local asset
     if (asset) {

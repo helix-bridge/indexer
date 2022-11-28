@@ -31,7 +31,7 @@ services:
       - ./:/app
     command:
       - --disable-historical=true
-      - -f=ipfs://QmcHFn6U9e85deF2nNrw7JFiChmitCAt94RBWX1v6eNkBz
+      - -f=/app
       - --db-schema=app
       - --network-endpoint=wss://public-rpc.pinknode.io/khala
     healthcheck:
