@@ -20,7 +20,7 @@ enum RecordStatus {
 @Injectable()
 export class S2sv21Service implements OnModuleInit {
   private readonly logger = new Logger('sub2subv21');
-  protected fetchSendDataInterval = 10000;
+  protected fetchSendDataInterval = 3000;
   protected fetchHistoryDataFirst = 10;
   private readonly takeEachTime = 3;
   private skip = new Array(this.transferService.transfers.length).fill(0);

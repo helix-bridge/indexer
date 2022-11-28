@@ -23,7 +23,7 @@ enum RecordStatus {
 @Injectable()
 export class Substrate2parachainService implements OnModuleInit {
   private readonly logger = new Logger('Substrate<>Parachain');
-  protected fetchSendDataInterval = 20000;
+  protected fetchSendDataInterval = 3000;
   protected fetchHistoryDataFirst = 10;
   private readonly takeEachTime = 3;
   private skip = new Array(this.transferService.transfers.length).fill(0);

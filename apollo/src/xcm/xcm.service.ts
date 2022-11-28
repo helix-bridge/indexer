@@ -18,7 +18,7 @@ export enum RecordStatus {
 @Injectable()
 export class XcmService implements OnModuleInit {
   private readonly logger = new Logger('xcm');
-  protected fetchSendDataInterval = 10000;
+  protected fetchSendDataInterval = 2000;
   protected isSyncingHistory = new Array(this.transferService.transfers.length).fill(false);
   private readonly latestNonce = new Array(this.transferService.transfers.length).fill(-1);
   private readonly takeEachTime = 3;
@@ -164,14 +164,16 @@ export class XcmService implements OnModuleInit {
         }
 
         const isFailed: boolean = node.amount === null;
-        
+
         await this.aggregationService.updateHistoryRecord({
           where: { id: record.id },
           data: {
             responseTxHash: node.txHash,
             recvAmount: isFailed ? '0' : node.amount,
             endTime: Number(node.timestamp),
-            fee: (global.BigInt(record.sendAmount) - global.BigInt(isFailed ? 0 : node.amount)).toString(),
+            fee: (
+              global.BigInt(record.sendAmount) - global.BigInt(isFailed ? 0 : node.amount)
+            ).toString(),
             result: isFailed ? RecordStatus.failed : RecordStatus.success,
           },
         });

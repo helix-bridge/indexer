@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { AggregationService } from '../aggregation/aggregation.service';
 import { RecordsService, RecordStatus } from '../base/RecordsService';
-import { Partner, Transfer } from '../base/TransferService';
+import { Transfer } from '../base/TransferService';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 
@@ -94,8 +94,7 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
             sender: node.senderId,
             recipient: node.recipientId,
             sendToken: from.token,
-            recvToken: Object.values(transfer).find((item: Partner) => item.chain === node.toChain)
-              ?.token,
+            recvToken: from.token,
             sendAmount: node.amount,
             recvAmount,
             startTime: this.toUnixTime(node.timestamp),

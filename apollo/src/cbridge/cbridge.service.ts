@@ -45,7 +45,7 @@ export enum XferStatus {
 export class CbridgeService implements OnModuleInit {
   private readonly logger = new Logger('cBridge');
   protected isSyncingHistory = new Array(this.transferService.transfers.length).fill(false);
-  protected fetchSendDataInterval = 30000;
+  protected fetchSendDataInterval = 10000;
   private readonly latestNonce = new Array(this.transferService.transfers.length).fill(-1);
 
   private readonly takeEachTime = 3;
