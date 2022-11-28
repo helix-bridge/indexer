@@ -121,7 +121,7 @@ export class EventHandler {
     //asset
     const event = new XcmSentEvent(messageHash + '-' + index);
     event.destChainId = destChain;
-    event.amount = amount;
+    event.amount = BigInt(amount).toString();
     const asset = assets?.id?.concrete?.interior;
     // local asset
     if (asset) {
@@ -190,13 +190,21 @@ export class EventHandler {
 
     this.event?.extrinsic?.events.find((item, index, events) => {
         if (item.event.index === this.event.event.index) {
-            const depositHostEvent = events[index-2];
-            const [_hostAccount, fee] = JSON.parse(depositHostEvent.event.data.toString());
-            const depositRecipientEvent = events[index-4];
-            const [account, amount] = JSON.parse(depositRecipientEvent.event.data.toString());
-            totalAmount = BigInt(amount) + BigInt(fee);
-            recipient = AccountHandler.formatAddress(account);
-            recvAmount = BigInt(amount);
+            for (var searchIndex = index-2; searchIndex >= 0; searchIndex--) {
+                const maybeBalanceDeposit = events[searchIndex];
+                if (maybeBalanceDeposit.event.section === 'balances' && maybeBalanceDeposit.event.method === 'Deposited') {
+                    if (totalAmount === BigInt(0) ) {
+                        const [_hostAccount, fee] = JSON.parse(maybeBalanceDeposit.event.data.toString());
+                        totalAmount += BigInt(fee);
+                    } else {
+                        const [account, amount] = JSON.parse(maybeBalanceDeposit.event.data.toString());
+                        totalAmount += BigInt(amount);
+                        recipient = AccountHandler.formatAddress(account);
+                        recvAmount = BigInt(amount);
+                        break;
+                    }
+                }
+            }
         }
     });
     const flag = totalAmount % BigInt(1000);

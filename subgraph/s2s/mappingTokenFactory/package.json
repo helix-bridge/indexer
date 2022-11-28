@@ -4,7 +4,8 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ s2sMappingTokenFactory/crab",
+    "create-crab-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ s2sMappingTokenFactory/crab",
+    "deploy-crab-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ s2sMappingTokenFactory/crab",
     "create-pangolin-local": "cp subgraph.yaml.pangolin subgraph.yaml; graph create --node http://graph-node:8020/ s2sMappingTokenFactory/pangolin",
     "remove-pangolin-local": "cp subgraph.yaml.pangolin subgraph.yaml; graph remove --node http://graph-node:8020/ s2sMappingTokenFactory/pangolin",
     "deploy-pangolin-local": "cp subgraph.yaml.pangolin subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 s2sMappingTokenFactory/pangolin",

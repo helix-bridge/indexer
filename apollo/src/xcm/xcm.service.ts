@@ -11,6 +11,8 @@ export enum RecordStatus {
   pendingToClaim,
   success,
   refunded,
+  // failed and cannot refund
+  failed,
 }
 
 @Injectable()
@@ -160,16 +162,20 @@ export class XcmService implements OnModuleInit {
         if (node === null) {
           continue;
         }
+
+        const isFailed: boolean = node.amount === null;
+        
         await this.aggregationService.updateHistoryRecord({
           where: { id: record.id },
           data: {
             responseTxHash: node.txHash,
-            recvAmount: node.amount,
+            recvAmount: isFailed ? '0' : node.amount,
             endTime: Number(node.timestamp),
-            fee: (global.BigInt(record.sendAmount) - global.BigInt(node.amount)).toString(),
-            result: RecordStatus.success,
+            fee: (global.BigInt(record.sendAmount) - global.BigInt(isFailed ? 0 : node.amount)).toString(),
+            result: isFailed ? RecordStatus.failed : RecordStatus.success,
           },
         });
+        this.logger.log(`xcm update records, result ${!isFailed}, id ${record.id}`);
       }
     } catch (error) {
       this.logger.warn(`fetch xcm status failed, error ${error}`);

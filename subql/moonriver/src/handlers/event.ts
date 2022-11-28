@@ -163,7 +163,7 @@ export class EventHandler {
     const event = new XcmSentEvent(messageHash + '-' + index);
     event.sender = u8aToHex(decodeAddress(sender));
     event.recipient = dest.interior?.x2[1]?.accountId32?.id;
-    event.amount = amount;
+    event.amount = BigInt(amount).toString();
     event.txHash = transaction_hash;
     event.timestamp = now;
     event.token = token;
