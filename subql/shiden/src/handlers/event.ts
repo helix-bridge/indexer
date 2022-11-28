@@ -194,13 +194,15 @@ export class EventHandler {
     this.event?.extrinsic?.events.find((item, index, events) => {
         if (item.event.index === this.event.event.index) {
             let feeEvent = events[index-1];
-            if (feeEvent?.event.method === 'Issued') {
+            if (feeEvent?.event?.method === 'Issued') {
                 const transferEvent = events[index-2];
-                const [_feeCurrencyId, _feeAccount, fee] = JSON.parse(feeEvent.event.data.toString());
-                const [_currencyId, account, amount] = JSON.parse(transferEvent.event.data.toString());
-                totalAmount = BigInt(fee) + BigInt(amount);
-                recipient = account;
-                recvAmount = BigInt(amount);
+                if (transferEvent) {
+                    const [_feeCurrencyId, _feeAccount, fee] = JSON.parse(feeEvent.event.data.toString());
+                    const [_currencyId, account, amount] = JSON.parse(transferEvent.event.data.toString());
+                    totalAmount = BigInt(fee) + BigInt(amount);
+                    recipient = account;
+                    recvAmount = BigInt(amount);
+                }
             // deposit
             } else {
                 let transferEvent = events[index-1];
@@ -209,11 +211,13 @@ export class EventHandler {
                     transferEvent = events[index-2];
                     totalEvent = events[index-3];
                 }
-                const [account, amount] = JSON.parse(transferEvent.event.data.toString());
-                const [_hostAccount, total] = JSON.parse(totalEvent.event.data.toString());
-                totalAmount = BigInt(total);
-                recipient = account;
-                recvAmount = BigInt(amount);
+                if (transferEvent && totalEvent) {
+                    const [account, amount] = JSON.parse(transferEvent.event.data.toString());
+                    const [_hostAccount, total] = JSON.parse(totalEvent.event.data.toString());
+                    totalAmount = BigInt(total);
+                    recipient = account;
+                    recvAmount = BigInt(amount);
+                }
             }
         }
     });

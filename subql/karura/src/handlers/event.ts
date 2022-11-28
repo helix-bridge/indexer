@@ -175,12 +175,17 @@ export class EventHandler {
     this.event?.extrinsic?.events.find((item, index, events) => {
         if (item.event.index === this.event.event.index) {
             const depositHostEvent = events[index-1];
-            const [_feeToken, _hostAccount, fee] = JSON.parse(depositHostEvent.event.data.toString());
+            const feeInfos = JSON.parse(depositHostEvent.event.data.toString());
             let depositRecipientEvent = events[index-2];
-            if (depositRecipientEvent.event.method !== 'Deposited') {
+            if (depositRecipientEvent.event.method !== 'Deposited' && depositRecipientEvent.event.method !== 'Deposit') {
                 depositRecipientEvent = events[index-3];
             }
-            const [_token, account, amount] = JSON.parse(depositRecipientEvent.event.data.toString());
+            const transferInfos = JSON.parse(depositRecipientEvent.event.data.toString());
+            if (feeInfos.length < 2 || transferInfos.length < 2) {
+                return;
+            }
+            const fee = feeInfos.slice(-2)[1];
+            const [account, amount] = transferInfos.slice(-2);
             totalAmount = BigInt(amount) + BigInt(fee);
             recipient = AccountHandler.formatAddress(account);
             recvAmount = BigInt(amount);

@@ -94,8 +94,7 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
             sender: node.senderId,
             recipient: node.recipientId,
             sendToken: from.token,
-            recvToken: Object.values(transfer).find((item: Partner) => item.chain === node.toChain)
-              ?.token,
+            recvToken: from.token,
             sendAmount: node.amount,
             recvAmount,
             startTime: this.toUnixTime(node.timestamp),
