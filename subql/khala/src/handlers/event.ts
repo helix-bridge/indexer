@@ -9,6 +9,7 @@ const helixFlag = BigInt(204);
 const parachainX1Assets = {
     2004: 'PHA',
     2012: 'CSM',
+    2007: 'SDN',
 }
 
 // X2
@@ -192,18 +193,31 @@ export class EventHandler {
         if (item.event.index === this.event.event.index) {
             for (var searchIndex = index-2; searchIndex >= 0; searchIndex--) {
                 const maybeBalanceDeposit = events[searchIndex];
-                if (maybeBalanceDeposit.event.section === 'balances' && maybeBalanceDeposit.event.method === 'Deposited') {
+                // another xcmp message
+                if (maybeBalanceDeposit.event.section === 'xcmpqueue') {
+                    break;
+                }
+                if ((maybeBalanceDeposit.event.section === 'balances' && maybeBalanceDeposit.event.method === 'Deposit') ||
+                    (maybeBalanceDeposit.event.section === 'assets' && maybeBalanceDeposit.event.method === 'Issued')) {
                     if (totalAmount === BigInt(0) ) {
-                        const [_hostAccount, fee] = JSON.parse(maybeBalanceDeposit.event.data.toString());
+                        const feeInfos = JSON.parse(maybeBalanceDeposit.event.data.toString());
+                        if (feeInfos.length < 2) {
+                            break;
+                        }
+                        const fee = feeInfos.slice(-2)[1];
                         totalAmount += BigInt(fee);
                     } else {
-                        const [account, amount] = JSON.parse(maybeBalanceDeposit.event.data.toString());
+                        const transferInfos = JSON.parse(maybeBalanceDeposit.event.data.toString());
+                        if (transferInfos.length < 2) {
+                            break;
+                        }
+                        const [account, amount] = transferInfos.slice(-2);
                         totalAmount += BigInt(amount);
                         recipient = AccountHandler.formatAddress(account);
                         recvAmount = BigInt(amount);
                         break;
                     }
-                }
+                } 
             }
         }
     });

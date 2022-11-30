@@ -11,6 +11,7 @@ export enum RecordStatus {
   pendingToClaim,
   success,
   refunded,
+  pendingToConfirmRefund,
   // failed and cannot refund
   failed,
 }

@@ -14,6 +14,7 @@ const parachainX2Assets = {
     2000: {
         'key': 'generalKey',
         '0x0080': 'KAR',
+        '0x0081': 'aUSD',
     },
     2023: {
         'key': 'palletInstance',

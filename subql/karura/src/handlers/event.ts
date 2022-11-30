@@ -179,6 +179,9 @@ export class EventHandler {
             let depositRecipientEvent = events[index-2];
             if (depositRecipientEvent.event.method !== 'Deposited' && depositRecipientEvent.event.method !== 'Deposit') {
                 depositRecipientEvent = events[index-3];
+                if (depositRecipientEvent.event.method !== 'Deposited' && depositRecipientEvent.event.method !== 'Deposit') {
+                    return;
+                }
             }
             const transferInfos = JSON.parse(depositRecipientEvent.event.data.toString());
             if (feeInfos.length < 2 || transferInfos.length < 2) {
