@@ -2,6 +2,7 @@ import { SubstrateEvent } from '@subql/types';
 import { Block, XcmSentEvent, XcmReceivedEvent } from '../types';
 import { AccountHandler } from './account';
 
+const thisChainId = '2004';
 const helixCallMethod = '0x5200';
 const helixFlag = BigInt(204);
 
@@ -77,6 +78,27 @@ export class EventHandler {
     return this.event.block.timestamp;
   }
 
+  private xcmSendMessageId(destChainId: string): string {
+      const [messageHash] = JSON.parse(this.data) as [string];
+      return thisChainId + '-' + destChainId + '-' + messageHash;
+  }
+
+  private xcmRecvMessageId(sourceChainId: string): string {
+      const [messageHash] = JSON.parse(this.data) as [string];
+      return sourceChainId + '-' + thisChainId + '-' + messageHash;
+  }
+
+  private xcmRecvParachainId(): string {
+      const extrinsicArgs = this.event.extrinsic?.extrinsic?.args?.toString();
+
+      if (!extrinsicArgs) {
+          return;
+      }
+      const chainIds = JSON.parse(extrinsicArgs)?.horizontalMessages;
+      const sourceChainId = Object.keys(chainIds).find(id => chainIds[id].length > 0);
+      return sourceChainId;
+  }
+
   public async save() {
     if (this.section === 'xcmpQueue') {
       if (this.method === 'XcmpMessageSent') {
@@ -90,7 +112,6 @@ export class EventHandler {
   }
 
   public async handleXcmMessageSent() {
-    const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime() / 1000);
     const method = JSON.parse(this.event.extrinsic.extrinsic.method.toString());
     // not helix called method
@@ -99,9 +120,19 @@ export class EventHandler {
     }
     const assets = method.args.asset;
     const dest = method.args.dest;
+    
+    const destChain = dest?.interior?.x2?.[0].parachain;
+    const amount = assets?.fun?.fungible;
+    // filter helix tx
+    let flag = BigInt(amount) % BigInt(1000);
+    if (!destChain || flag !== helixFlag) {
+        return;
+    }
+    //asset
     let index = 0;
+    const messageId = this.xcmSendMessageId(destChain);
     while (true) {
-      const event = await XcmSentEvent.get(messageHash + '-' + index);
+      const event = await XcmSentEvent.get(messageId + '-' + index);
       if (!event) {
         break;
       }
@@ -112,15 +143,7 @@ export class EventHandler {
       index++;
     }
 
-    const destChain = dest?.interior?.x2?.[0].parachain;
-    const amount = assets?.fun?.fungible;
-    // filter helix tx
-    let flag = BigInt(amount) % BigInt(1000);
-    if (flag !== helixFlag) {
-        return;
-    }
-    //asset
-    const event = new XcmSentEvent(messageHash + '-' + index);
+    const event = new XcmSentEvent(messageId + '-' + index);
     event.destChainId = destChain;
     event.amount = BigInt(amount).toString();
     const asset = assets?.id?.concrete?.interior;
@@ -160,11 +183,16 @@ export class EventHandler {
 
   // save all the faild xcm message
   public async handleXcmMessageReceivedFailed() {
-    const [messageHash] = JSON.parse(this.data) as [string];
+    const sourceChainId =  this.xcmRecvParachainId();
+    if (!sourceChainId) {
+        return;
+    }
+
+    const messageId = this.xcmRecvMessageId(sourceChainId);
     const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex;
     let index = 0;
     while (true) {
-      const event = await XcmReceivedEvent.get(messageHash + '-' + index);
+      const event = await XcmReceivedEvent.get(messageId + '-' + index);
       if (!event) {
         break;
       }
@@ -175,7 +203,7 @@ export class EventHandler {
       index++;
     }
     const now = Math.floor(this.timestamp.getTime() / 1000);
-    const event = new XcmReceivedEvent(messageHash + '-' + index);
+    const event = new XcmReceivedEvent(messageId + '-' + index);
     event.txHash = extrinsicHash;
     event.timestamp = now;
     event.block = this.simpleBlock();
@@ -183,7 +211,12 @@ export class EventHandler {
   }
 
   public async handleXcmMessageReceivedSuccessed() {
-    const [messageHash] = JSON.parse(this.data) as [string];
+    const sourceChainId =  this.xcmRecvParachainId();
+    if (!sourceChainId) {
+        return;
+    }
+
+    const messageId = this.xcmRecvMessageId(sourceChainId);
     const now = Math.floor(this.timestamp.getTime() / 1000);
     let totalAmount = BigInt(0);
     let recvAmount = BigInt(0);
@@ -232,7 +265,7 @@ export class EventHandler {
     const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex;
     let index = 0;
     while (true) {
-      const event = await XcmReceivedEvent.get(messageHash + '-' + index);
+      const event = await XcmReceivedEvent.get(messageId + '-' + index);
       if (!event) {
         break;
       }
@@ -242,7 +275,7 @@ export class EventHandler {
       }
       index++;
     }
-    const event = new XcmReceivedEvent(messageHash + '-' + index);
+    const event = new XcmReceivedEvent(messageId + '-' + index);
     event.recipient = recipient;
     event.amount = recvAmount.toString();
     event.txHash = extrinsicHash;

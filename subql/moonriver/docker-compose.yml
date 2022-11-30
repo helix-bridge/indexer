@@ -31,7 +31,7 @@ services:
       - ./:/app
     command:
       - --disable-historical=true
-      - -f=ipfs://QmNRfPN1Tjh6mGag6saECsfQppvTjXm8YHy9zMdbiBC5Fw
+      - -f=/app
       - --db-schema=app
       - --network-endpoint=wss://wss.api.moonriver.moonbeam.network
     healthcheck:

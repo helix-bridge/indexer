@@ -19,7 +19,7 @@ network:
     file: ./types.yaml
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 3126239
+    startBlock: 3160000
     mapping:
       file: ./dist/index.js
       handlers:
