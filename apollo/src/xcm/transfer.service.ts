@@ -30,24 +30,6 @@ export class TransferService extends BaseTransferServiceT2 {
       chain: 'moonriver',
       url: this.moonriverEndpoint,
     },
-  ];
-
-  testChainTransfers: PartnerT2[] = [
-    {
-      chainId: 2105,
-      chain: 'crab-parachain',
-      url: this.crabParachainEndpoint,
-    },
-    {
-      chainId: 2000,
-      chain: 'karura',
-      url: this.karuraEndpoint,
-    },
-    {
-      chainId: 2023,
-      chain: 'moonriver',
-      url: this.moonriverEndpoint,
-    },
     {
       chainId: 2004,
       chain: 'khala',
@@ -59,6 +41,8 @@ export class TransferService extends BaseTransferServiceT2 {
       url: this.shidenEndpoint,
     },
   ];
+
+  testChainTransfers: PartnerT2[] = [];
   addressToTokenInfo: { [key: string]: AddressTokenMap } = {};
 
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
