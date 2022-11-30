@@ -2,7 +2,7 @@ import { SubstrateEvent } from '@subql/types';
 import { Block, BridgeDispatchEvent, TransferRecord, RefundTransferRecord, XcmSentEvent, XcmReceivedEvent } from '../types';
 import { AccountHandler } from './account';
 
-const thisChainId = '2000';
+const thisChainId = '2105';
 const helixFlag = BigInt(204);
 
 //const kururaChainId = 2000;

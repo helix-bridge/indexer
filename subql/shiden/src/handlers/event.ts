@@ -173,7 +173,10 @@ export class EventHandler {
     }
 
     // recipient
-    const recipient = beneficiary.v1?.interior?.x1?.accountId32?.id;
+    let recipient = beneficiary.v1?.interior?.x1?.accountId32?.id;
+    if (!recipient) {
+        recipient = beneficiary.v1?.interior?.x1?.accountKey20?.key;
+    }
     event.recipient = recipient;
 
     event.sender = this.event.extrinsic.extrinsic.signer.toHex();
