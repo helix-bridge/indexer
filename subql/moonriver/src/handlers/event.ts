@@ -10,6 +10,7 @@ const helixFlag = BigInt(204);
 const parachainX1Assets = {
     10: 'MOVR',
     2007: 'xcSDN',
+    2004: 'PHA',
 }
 
 // X2
@@ -166,7 +167,12 @@ export class EventHandler {
     var token: string;
     //local
     if (assetId.x1) {
-        token = parachainX1Assets[assetId.x1.palletInstance];
+        // local
+        if (assetId.x1.palletInstance) {
+            token = parachainX1Assets[assetId.x1.palletInstance];
+        } else {
+            token = parachainX1Assets[assetId.x1.parachain];
+        }
     } else if (assetId.x2) {
         const parachainX2Chain = parachainX2Assets[assetId.x2[0].parachain]
         token = parachainX2Chain?.[assetId.x2[1][parachainX2Chain?.key]];

@@ -152,7 +152,10 @@ export class EventHandler {
         }
     }
 
-    const recipient = dest?.v1?.interior?.x2?.[1].accountId32?.id;
+    let recipient = dest?.v1?.interior?.x2?.[1].accountId32?.id;
+    if (!recipient) {
+        recipient = dest.v1?.interior?.x2?.[1].accountKey20?.key;
+    }
     event.sender = this.event.extrinsic.extrinsic.signer.toHex();
     event.recipient = recipient;
     event.amount = BigInt(amount).toString();

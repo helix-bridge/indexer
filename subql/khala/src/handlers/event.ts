@@ -172,7 +172,10 @@ export class EventHandler {
     }
 
     // recipient
-    const recipient = dest?.interior?.x2?.[1].accountId32?.id;
+    let recipient = dest?.interior?.x2?.[1].accountId32?.id;
+    if (!recipient) {
+        recipient = dest?.interior?.x2?.[1].accountKey20?.key;
+    }
     event.recipient = recipient;
     event.sender = this.event.extrinsic.extrinsic.signer.toHex();
     event.txHash = this.extrinsicHash;
@@ -221,6 +224,7 @@ export class EventHandler {
     let totalAmount = BigInt(0);
     let recvAmount = BigInt(0);
     let recipient: string;
+    let hostAccount: string;
 
     this.event?.extrinsic?.events.find((item, index, events) => {
         if (item.event.index === this.event.event.index) {
@@ -237,8 +241,9 @@ export class EventHandler {
                         if (feeInfos.length < 2) {
                             break;
                         }
-                        const fee = feeInfos.slice(-2)[1];
+                        const [account, fee] = feeInfos.slice(-2);
                         totalAmount += BigInt(fee);
+                        hostAccount = AccountHandler.formatAddress(account); 
                     } else {
                         const transferInfos = JSON.parse(maybeBalanceDeposit.event.data.toString());
                         if (transferInfos.length < 2) {
@@ -259,7 +264,9 @@ export class EventHandler {
       return;
     }
     if (!recipient) {
-      return;
+      // special treatment, for KAR, can't calculate fee
+      recvAmount = totalAmount;
+      recipient = hostAccount;
     }
 
     const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex;
