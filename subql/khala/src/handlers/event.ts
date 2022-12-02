@@ -2,6 +2,7 @@ import { SubstrateEvent } from '@subql/types';
 import { Block, XcmSentEvent, XcmReceivedEvent } from '../types';
 import { AccountHandler } from './account';
 
+const thisChainId = '2004';
 const helixCallMethod = '0x5200';
 const helixFlag = BigInt(204);
 
@@ -9,6 +10,7 @@ const helixFlag = BigInt(204);
 const parachainX1Assets = {
     2004: 'PHA',
     2012: 'CSM',
+    2007: 'SDN',
 }
 
 // X2
@@ -76,6 +78,27 @@ export class EventHandler {
     return this.event.block.timestamp;
   }
 
+  private xcmSendMessageId(destChainId: string): string {
+      const [messageHash] = JSON.parse(this.data) as [string];
+      return thisChainId + '-' + destChainId + '-' + messageHash;
+  }
+
+  private xcmRecvMessageId(sourceChainId: string): string {
+      const [messageHash] = JSON.parse(this.data) as [string];
+      return sourceChainId + '-' + thisChainId + '-' + messageHash;
+  }
+
+  private xcmRecvParachainId(): string {
+      const extrinsicArgs = this.event.extrinsic?.extrinsic?.args?.toString();
+
+      if (!extrinsicArgs) {
+          return;
+      }
+      const chainIds = JSON.parse(extrinsicArgs)?.horizontalMessages;
+      const sourceChainId = Object.keys(chainIds).find(id => chainIds[id].length > 0);
+      return sourceChainId;
+  }
+
   public async save() {
     if (this.section === 'xcmpQueue') {
       if (this.method === 'XcmpMessageSent') {
@@ -89,7 +112,6 @@ export class EventHandler {
   }
 
   public async handleXcmMessageSent() {
-    const [messageHash] = JSON.parse(this.data) as [string];
     const now = Math.floor(this.timestamp.getTime() / 1000);
     const method = JSON.parse(this.event.extrinsic.extrinsic.method.toString());
     // not helix called method
@@ -98,9 +120,19 @@ export class EventHandler {
     }
     const assets = method.args.asset;
     const dest = method.args.dest;
+    
+    const destChain = dest?.interior?.x2?.[0].parachain;
+    const amount = assets?.fun?.fungible;
+    // filter helix tx
+    let flag = BigInt(amount) % BigInt(1000);
+    if (!destChain || flag !== helixFlag) {
+        return;
+    }
+    //asset
     let index = 0;
+    const messageId = this.xcmSendMessageId(destChain);
     while (true) {
-      const event = await XcmSentEvent.get(messageHash + '-' + index);
+      const event = await XcmSentEvent.get(messageId + '-' + index);
       if (!event) {
         break;
       }
@@ -111,15 +143,7 @@ export class EventHandler {
       index++;
     }
 
-    const destChain = dest?.interior?.x2?.[0].parachain;
-    const amount = assets?.fun?.fungible;
-    // filter helix tx
-    let flag = BigInt(amount) % BigInt(1000);
-    if (flag !== helixFlag) {
-        return;
-    }
-    //asset
-    const event = new XcmSentEvent(messageHash + '-' + index);
+    const event = new XcmSentEvent(messageId + '-' + index);
     event.destChainId = destChain;
     event.amount = BigInt(amount).toString();
     const asset = assets?.id?.concrete?.interior;
@@ -148,7 +172,10 @@ export class EventHandler {
     }
 
     // recipient
-    const recipient = dest?.interior?.x2?.[1].accountId32?.id;
+    let recipient = dest?.interior?.x2?.[1].accountId32?.id;
+    if (!recipient) {
+        recipient = dest?.interior?.x2?.[1].accountKey20?.key;
+    }
     event.recipient = recipient;
     event.sender = this.event.extrinsic.extrinsic.signer.toHex();
     event.txHash = this.extrinsicHash;
@@ -159,11 +186,16 @@ export class EventHandler {
 
   // save all the faild xcm message
   public async handleXcmMessageReceivedFailed() {
-    const [messageHash] = JSON.parse(this.data) as [string];
+    const sourceChainId =  this.xcmRecvParachainId();
+    if (!sourceChainId) {
+        return;
+    }
+
+    const messageId = this.xcmRecvMessageId(sourceChainId);
     const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex;
     let index = 0;
     while (true) {
-      const event = await XcmReceivedEvent.get(messageHash + '-' + index);
+      const event = await XcmReceivedEvent.get(messageId + '-' + index);
       if (!event) {
         break;
       }
@@ -174,7 +206,7 @@ export class EventHandler {
       index++;
     }
     const now = Math.floor(this.timestamp.getTime() / 1000);
-    const event = new XcmReceivedEvent(messageHash + '-' + index);
+    const event = new XcmReceivedEvent(messageId + '-' + index);
     event.txHash = extrinsicHash;
     event.timestamp = now;
     event.block = this.simpleBlock();
@@ -182,28 +214,48 @@ export class EventHandler {
   }
 
   public async handleXcmMessageReceivedSuccessed() {
-    const [messageHash] = JSON.parse(this.data) as [string];
+    const sourceChainId =  this.xcmRecvParachainId();
+    if (!sourceChainId) {
+        return;
+    }
+
+    const messageId = this.xcmRecvMessageId(sourceChainId);
     const now = Math.floor(this.timestamp.getTime() / 1000);
     let totalAmount = BigInt(0);
     let recvAmount = BigInt(0);
     let recipient: string;
+    let hostAccount: string;
 
     this.event?.extrinsic?.events.find((item, index, events) => {
         if (item.event.index === this.event.event.index) {
             for (var searchIndex = index-2; searchIndex >= 0; searchIndex--) {
                 const maybeBalanceDeposit = events[searchIndex];
-                if (maybeBalanceDeposit.event.section === 'balances' && maybeBalanceDeposit.event.method === 'Deposited') {
+                // another xcmp message
+                if (maybeBalanceDeposit.event.section === 'xcmpqueue') {
+                    break;
+                }
+                if ((maybeBalanceDeposit.event.section === 'balances' && maybeBalanceDeposit.event.method === 'Deposit') ||
+                    (maybeBalanceDeposit.event.section === 'assets' && maybeBalanceDeposit.event.method === 'Issued')) {
                     if (totalAmount === BigInt(0) ) {
-                        const [_hostAccount, fee] = JSON.parse(maybeBalanceDeposit.event.data.toString());
+                        const feeInfos = JSON.parse(maybeBalanceDeposit.event.data.toString());
+                        if (feeInfos.length < 2) {
+                            break;
+                        }
+                        const [account, fee] = feeInfos.slice(-2);
                         totalAmount += BigInt(fee);
+                        hostAccount = AccountHandler.formatAddress(account); 
                     } else {
-                        const [account, amount] = JSON.parse(maybeBalanceDeposit.event.data.toString());
+                        const transferInfos = JSON.parse(maybeBalanceDeposit.event.data.toString());
+                        if (transferInfos.length < 2) {
+                            break;
+                        }
+                        const [account, amount] = transferInfos.slice(-2);
                         totalAmount += BigInt(amount);
                         recipient = AccountHandler.formatAddress(account);
                         recvAmount = BigInt(amount);
                         break;
                     }
-                }
+                } 
             }
         }
     });
@@ -212,13 +264,15 @@ export class EventHandler {
       return;
     }
     if (!recipient) {
-      return;
+      // special treatment, for KAR, can't calculate fee
+      recvAmount = totalAmount;
+      recipient = hostAccount;
     }
 
     const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex;
     let index = 0;
     while (true) {
-      const event = await XcmReceivedEvent.get(messageHash + '-' + index);
+      const event = await XcmReceivedEvent.get(messageId + '-' + index);
       if (!event) {
         break;
       }
@@ -228,7 +282,7 @@ export class EventHandler {
       }
       index++;
     }
-    const event = new XcmReceivedEvent(messageHash + '-' + index);
+    const event = new XcmReceivedEvent(messageId + '-' + index);
     event.recipient = recipient;
     event.amount = recvAmount.toString();
     event.txHash = extrinsicHash;

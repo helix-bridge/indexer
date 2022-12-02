@@ -11,6 +11,7 @@ export enum RecordStatus {
   pendingToClaim,
   success,
   refunded,
+  pendingToConfirmRefund,
   // failed and cannot refund
   failed,
 }
@@ -55,8 +56,8 @@ export class XcmService implements OnModuleInit {
     return this.transferService.transfers.find((transfer) => transfer.chainId === id) ?? null;
   }
 
-  protected genID(transfer: PartnerT2, toChainId: string, transferId: string): string {
-    return `${transfer.chain.split('-')[0]}-${toChainId}-xcm-${transferId}`;
+  protected genID(transferId: string): string {
+    return `xcm-${transferId}`;
   }
 
   async fetchRecords(transfer: PartnerT2, index: number) {
@@ -88,7 +89,7 @@ export class XcmService implements OnModuleInit {
           }
 
           await this.aggregationService.createHistoryRecord({
-            id: this.genID(transfer, record.destChainId, record.id),
+            id: this.genID(record.id),
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: 'xcm-' + transfer.chain,
@@ -146,8 +147,8 @@ export class XcmService implements OnModuleInit {
 
       for (const record of uncheckedRecords) {
         const recordSplitted = record.id.split('-');
-        const dstChainId = recordSplitted[1];
-        const transferId = recordSplitted[3] + '-' + recordSplitted[4];
+        const dstChainId = recordSplitted[2];
+        const transferId = recordSplitted.slice(-4).join('-');
         const dstChain = this.getDestChain(Number(dstChainId));
         if (dstChain === null) {
           continue;
