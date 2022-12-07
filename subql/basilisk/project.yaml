@@ -1,0 +1,39 @@
+specVersion: 1.0.0
+name: basilisk
+version: 1.0.0
+runner:
+  node:
+    name: '@subql/node'
+    version: v1.14.1
+  query:
+    name: '@subql/query'
+    version: v1.7.0
+description: ''
+repository: git@github.com:helix-bridge/indexer.git
+schema:
+  file: ./schema.graphql
+network:
+  chainId: '0xa85cfb9b9fd4d622a5b28289a02347af987d8f73fa3108450e2b4a11c1ce5755'
+  endpoint: wss://basilisk-rpc.dwellir.com
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 2197550
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Success
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Fail
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xTokens
+            method: TransferredMultiAssets
+

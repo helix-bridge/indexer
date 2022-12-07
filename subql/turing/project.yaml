@@ -1,0 +1,39 @@
+specVersion: 1.0.0
+name: turing
+version: 1.0.0
+runner:
+  node:
+    name: '@subql/node'
+    version: v1.14.1
+  query:
+    name: '@subql/query'
+    version: v1.7.0
+description: ''
+repository: git@github.com:helix-bridge/indexer.git
+schema:
+  file: ./schema.graphql
+network:
+  chainId: '0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d'
+  endpoint: wss://turing-rpc.dwellir.com
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 745500
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Success
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Fail
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xTokens
+            method: TransferredMultiAssets
+

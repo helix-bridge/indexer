@@ -8,6 +8,7 @@ const helixFlag = BigInt(204);
 
 const foreignAssets = {
     3: 'MOVR',
+    4: 'HKO',
     13: 'CRAB',
     18: 'SDN',
 };

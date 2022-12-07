@@ -1,0 +1,39 @@
+specVersion: 1.0.0
+name: parallel-heiko
+version: 1.0.0
+runner:
+  node:
+    name: '@subql/node'
+    version: v1.14.1
+  query:
+    name: '@subql/query'
+    version: v1.7.0
+description: ''
+repository: git@github.com:helix-bridge/indexer.git
+schema:
+  file: ./schema.graphql
+network:
+  chainId: '0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b'
+  endpoint: wss://heiko-rpc.parallel.fi
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 2197550
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Success
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Fail
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xTokens
+            method: TransferredMultiAssets
+

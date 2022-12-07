@@ -1,0 +1,38 @@
+specVersion: 1.0.0
+name: bifrost
+version: 1.0.0
+runner:
+  node:
+    name: '@subql/node'
+    version: v1.14.1
+  query:
+    name: '@subql/query'
+    version: v1.7.0
+description: ''
+repository: git@github.com:helix-bridge/indexer.git
+schema:
+  file: ./schema.graphql
+network:
+  chainId: '0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed'
+  endpoint: wss://bifrost-rpc.dwellir.com
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 2954440
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Success
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Fail
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xTokens
+            method: TransferredMultiAssets

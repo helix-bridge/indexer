@@ -1,15 +1,14 @@
 import { SubstrateEvent } from '@subql/types';
 import { Block, XcmSentEvent, XcmReceivedEvent } from '../types';
-import { decodeAddress } from '@polkadot/util-crypto';
-import { u8aToHex } from '@polkadot/util';
+import { AccountHandler } from './account';
 
-const thisChainId = '2023';
+const thisChainId = '2085';
 const helixFlag = BigInt(204);
 
 // X1
 const parachainX1Assets = {
     10: 'MOVR',
-    2007: 'xcSDN',
+    2007: 'SDN',
     2004: 'PHA',
 }
 
@@ -18,7 +17,12 @@ const parachainX2Assets = {
     2000: {
         'key': 'generalKey',
         '0x0080': 'KAR',
-        '0x0081': 'xcAUSD',
+        '0x0081': 'KUSD',
+    },
+    2001: {
+        'key': 'generalKey',
+        '0x0001': 'BNC',
+        '0x0207': 'ZLK',
     },
     2023: {
         'key': 'palletInstance',
@@ -26,7 +30,16 @@ const parachainX2Assets = {
     },
     2105: {
         'key': 'palletInstance',
-        5: 'xcCRAB',
+        5: 'CRAB',
+    },
+    2092: {
+        'key': 'generalKey',
+        '0x000b': 'KBTC',
+        '0x000c': 'KINT',
+    },
+    2090: {
+        'key': 'generalIndex',
+        '0': 'BSX',
     },
 }
 
@@ -105,10 +118,12 @@ export class EventHandler {
   }
 
   public async save() {
-    if (this.section === 'xcmpQueue') {
-      if (this.method === 'XcmpMessageSent') {
-        await this.handleXcmMessageSent();
-      } else if (this.method === 'Success') {
+    if (this.section === 'xTokens') {
+      if (this.method === 'TransferredMultiAssets') {
+        await this.handleTransferredMultiAssets();
+      }
+    } else if (this.section === 'xcmpQueue') {
+      if (this.method === 'Success') {
         await this.handleXcmMessageReceivedSuccessed();
       } else if (this.method === 'Fail') {
         await this.handleXcmMessageReceivedFailed();
@@ -117,33 +132,29 @@ export class EventHandler {
   }
 
   // it's a ethereum tx, we parse the event of TransferredMultiAssets, it's behind sent event
-  public async handleXcmMessageSent() {
+  public async handleTransferredMultiAssets() {
     const now = Math.floor(this.timestamp.getTime() / 1000);
     let nonce: number;
-    var transferredMultiAssetsEvent;
-    this.event?.extrinsic?.events.find((item, index, events) => {
-        if (item.event.index === this.event.event.index) {
-            transferredMultiAssetsEvent = events[index+1];
+    const [sender, assets, _fee, dest] = JSON.parse(this.event.event.data.toString());
+    // maybe x2 or x4 format
+    let destx2 = dest?.interior?.x2;
+    let destx4 = dest?.interior?.x4;
+    let destChainId: string;
+    let destAccount: string;
+    if (destx2) {
+        destChainId = destx2[0].parachain
+        destAccount = destx2[1].accountId32?.id;
+        if (!destAccount) {
+            destAccount = destx2[1].accountKey20?.key;
         }
-    });
-    if (!transferredMultiAssetsEvent || transferredMultiAssetsEvent.method !== 'TransferredMultiAssets') {
-        return;
+    } else if (destx4) {
+        destChainId = destx4[0].parachain;
+        destAccount = destx4[3].generalKey;
     }
-    const [sender, assets, _fee, dest] = JSON.parse(transferredMultiAssetsEvent.event.data.toString());
-    const destChainId = dest.interior?.x2[0]?.parachain;
-    // get evm transaction hash
-    const evmExecuteEvent = this.event?.extrinsic?.events.find((item) => {
-      return item.event.method === 'Executed';
-    });
     // filter no evm transactions
-    if (!destChainId || !evmExecuteEvent) {
+    if (!destChainId || !destAccount) {
       return;
     }
-
-    // get the evm txhash
-    const [_from, _to, transaction_hash, _exit_reason] = JSON.parse(
-      evmExecuteEvent.event.data.toString()
-    );
 
     let index = 0;
     const messageId = this.xcmSendMessageId(destChainId);
@@ -153,7 +164,7 @@ export class EventHandler {
         break;
       }
       // if the same tx hash, don't save again
-      if (event.txHash === transaction_hash) {
+      if (event.txHash === this.extrinsicHash) {
         return;
       }
       index++;
@@ -165,9 +176,14 @@ export class EventHandler {
     }
 
     var token: string;
+    token = assets?.[0].id?.concrete.toString();
     //local
-    if (assetId.x1) {
-        // local
+    if (assetId.here !== undefined) {
+        // TODO
+        if (assets?.[0].id?.concrete?.parents === 1) {
+            token = 'KSM';
+        }
+    } else if (assetId.x1) {
         if (assetId.x1.palletInstance) {
             token = parachainX1Assets[assetId.x1.palletInstance];
         } else {
@@ -186,18 +202,18 @@ export class EventHandler {
     // filter helix tx
     let flag = BigInt(amount) % BigInt(1000);
     if (flag !== helixFlag) {
-        return;
+        //return;
     }
 
     const event = new XcmSentEvent(messageId + '-' + index);
-    event.sender = u8aToHex(decodeAddress(sender));
-    event.recipient = dest.interior?.x2[1]?.accountId32?.id;
+    event.sender = AccountHandler.formatAddress(sender);
+    event.recipient = destAccount;
     event.amount = BigInt(amount).toString();
-    event.txHash = transaction_hash;
+    event.txHash = this.extrinsicHash;
     event.timestamp = now;
     event.token = token;
     event.nonce = nonce;
-    event.destChainId = dest.interior?.x2[0]?.parachain;
+    event.destChainId = Number(destChainId);
     event.block = this.simpleBlock();
     await event.save();
   }
@@ -245,30 +261,40 @@ export class EventHandler {
 
     this.event?.extrinsic?.events.find((item, index, events) => {
         if (item.event.index === this.event.event.index) {
-            let feeEvent = events[index-1];
-            if (feeEvent?.event.method === 'Issued') {
-                const transferEvent = events[index-2];
-                const [_feeCurrencyId, _feeAccount, fee] = JSON.parse(feeEvent.event.data.toString());
-                const [_currencyId, account, amount] = JSON.parse(transferEvent.event.data.toString());
-                totalAmount = BigInt(fee) + BigInt(amount);
-                recipient = account;
-                recvAmount = BigInt(amount);
-            // deposit
-            } else {
-                feeEvent = events[index-2];
-                const transferEvent = events[index-3];
-                const [_feeAccount, fee] = JSON.parse(feeEvent.event.data.toString());
-                const [account, amount] = JSON.parse(transferEvent.event.data.toString());
-                totalAmount = BigInt(fee) + BigInt(amount);
-                recipient = account;
-                recvAmount = BigInt(amount);
+            for (var searchIndex = index-2; searchIndex >= 0; searchIndex--) {
+                const maybeBalanceDeposit = events[searchIndex];
+                // another xcmp message
+                if (maybeBalanceDeposit.event.section === 'xcmpqueue') {
+                    break;
+                }
+                if (maybeBalanceDeposit.event.section === 'balances' && maybeBalanceDeposit.event.method === 'Deposit') {
+                    if (totalAmount === BigInt(0) ) {
+                        const feeInfos = JSON.parse(maybeBalanceDeposit.event.data.toString());
+                        if (feeInfos.length < 2) {
+                            break;
+                        }
+                        const [account, fee] = feeInfos.slice(-2);
+                        totalAmount += BigInt(fee);
+                        //hostAccount = AccountHandler.formatAddress(account); 
+                    } else {
+                        const transferInfos = JSON.parse(maybeBalanceDeposit.event.data.toString());
+                        if (transferInfos.length < 2) {
+                            break;
+                        }
+                        const [account, amount] = transferInfos.slice(-2);
+                        totalAmount += BigInt(amount);
+                        recipient = AccountHandler.formatAddress(account);
+                        recvAmount = BigInt(amount);
+                        break;
+                    }
+                }
             }
         }
     });
     // filter helix tx
     let flag = totalAmount % BigInt(1000);
     if (flag !== helixFlag) {
-        return;
+        //return;
     }
     if (!recipient) {
       return;

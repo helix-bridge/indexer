@@ -1,0 +1,39 @@
+specVersion: 1.0.0
+name: kintsugi
+version: 1.0.0
+runner:
+  node:
+    name: '@subql/node'
+    version: v1.14.1
+  query:
+    name: '@subql/query'
+    version: v1.7.0
+description: ''
+repository: git@github.com:helix-bridge/indexer.git
+schema:
+  file: ./schema.graphql
+network:
+  chainId: '0x9af9a64e6e4da8e3073901c3ff0cc4c3aad9563786d89daf6ad820b6e14a0b8b'
+  endpoint: wss://bifrost-rpc.dwellir.com
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 1869200
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Success
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xcmpQueue
+            method: Fail
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: xTokens
+            method: TransferredMultiAssets
+
