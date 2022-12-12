@@ -106,7 +106,11 @@ export class EventHandler {
 
   public async handleXcmMessageSent() {
     const now = Math.floor(this.timestamp.getTime() / 1000);
-    const method = JSON.parse(this.event.extrinsic.extrinsic.method.toString());
+    const extrinsicMethod = this.event.extrinsic?.extrinsic?.method.toString();
+    if (!extrinsicMethod) {
+        return;
+    }
+    const method = JSON.parse(extrinsicMethod);
     if (method.callIndex !== helixCallMethod) {
         return;
     }
@@ -209,24 +213,29 @@ export class EventHandler {
 
     this.event?.extrinsic?.events.find((item, index, events) => {
         if (item.event.index === this.event.event.index) {
-            const depositHostEvent = events[index-1];
-            const feeInfos = JSON.parse(depositHostEvent.event.data.toString());
-            let depositRecipientEvent = events[index-2];
-            if (depositRecipientEvent.event.method !== 'Deposited' && depositRecipientEvent.event.method !== 'Deposit') {
-                depositRecipientEvent = events[index-3];
-                if (depositRecipientEvent.event.method !== 'Deposited' && depositRecipientEvent.event.method !== 'Deposit') {
-                    return;
+            var depositHostEvent;
+            for (var searchIndex = index-1; searchIndex >= 0; searchIndex--) {
+                const maybeBalanceDeposit = events[searchIndex];
+                if (maybeBalanceDeposit.event.section === 'xcmpqueue') {
+                    break;
+                }
+                if ( maybeBalanceDeposit.event.method === 'Deposit' || maybeBalanceDeposit.event.method === 'Deposited' ) {
+                    if (!depositHostEvent) {
+                        depositHostEvent = maybeBalanceDeposit;
+                    } else {
+                        const depositRecipientEvent = maybeBalanceDeposit;
+
+                        const feeInfos = JSON.parse(depositHostEvent.event.data.toString());
+                        const transferInfos = JSON.parse(depositRecipientEvent.event.data.toString());
+                        const fee = feeInfos.slice(-2)[1];
+                        const [account, amount] = transferInfos.slice(-2);
+                        totalAmount = BigInt(amount) + BigInt(fee);
+                        recipient = AccountHandler.formatAddress(account);
+                        recvAmount = BigInt(amount);
+                        break;
+                    }
                 }
             }
-            const transferInfos = JSON.parse(depositRecipientEvent.event.data.toString());
-            if (feeInfos.length < 2 || transferInfos.length < 2) {
-                return;
-            }
-            const fee = feeInfos.slice(-2)[1];
-            const [account, amount] = transferInfos.slice(-2);
-            totalAmount = BigInt(amount) + BigInt(fee);
-            recipient = AccountHandler.formatAddress(account);
-            recvAmount = BigInt(amount);
         }
     });
     

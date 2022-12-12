@@ -180,6 +180,7 @@ export class S2sv2Service implements OnModuleInit {
         .map((item) => `"${last(item.id.split('-'))}"`)
         .join(',');
 
+      var updated = 0;
       if (ids.length > 0) {
         const nodes = await axios
           .post<{ data: { bridgeDispatchEvents: { nodes: any[] } } }>(
@@ -208,6 +209,7 @@ export class S2sv2Service implements OnModuleInit {
                 endTime: this.toUnixTime(node.timestamp),
               },
             });
+            updated += 1;
           }
         }
       }
@@ -229,9 +231,9 @@ export class S2sv2Service implements OnModuleInit {
           }
         }
       }
-      if (refunded > 0 || ids.length > 0) {
+      if (refunded > 0 || updated > 0) {
         this.logger.log(
-          `s2s v2 update records, from ${from.chain}, to ${to.chain}, ids ${ids}, refunded ${refunded}`
+          `s2s v2 update records, from ${from.chain}, to ${to.chain}, ids ${ids}, updated ${updated} refunded ${refunded}`
         );
       }
     } catch (error) {
