@@ -48,9 +48,9 @@ const SupportedTokens: string[] = [
   // usdc on Avalanche
   "0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664",
   // usdt on Avalanche
-  "0xc7198437980c041c805A1EDcbA50c1Ce5db95118",
+  "0xc7198437980c041c805a1edcba50c1ce5db95118",
   // usdc on Optimism
-  "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
+  "0x7f5c764cbc14f9669b88837ca1490cca17c31607",
   // usdt on Optimism
   "0x94b008aa00579c1307b0ef2c499ad98a8ce58e58",
   // usdc on Astar
