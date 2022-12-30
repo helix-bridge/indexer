@@ -38,9 +38,10 @@ export class S2sv21Service implements OnModuleInit {
 
   async onModuleInit() {
     this.transferService.transfers.forEach((item, index) => {
+      const isLock = item.isLock ? 'lock' : 'unlock';
       const prefix = `${item.source.chain}-${item.target.chain}`;
       this.taskService.addInterval(
-        `${prefix}-sub2subv21-fetch_history_data`,
+        `${prefix}-sub2subv21-${isLock}`,
         this.fetchSendDataInterval,
         async () => {
           if (this.fetchCache[index].isSyncingHistory) {
@@ -59,7 +60,8 @@ export class S2sv21Service implements OnModuleInit {
   // two directions must use the same laneId
   protected genID(transfer: TransferT3, id: string) {
     const fullId = this.idAppendLaneId(id);
-    return `${transfer.source.chain}2${transfer.target.chain}-sub2subv21-${fullId}`;
+    const isLock = transfer.isLock ? 'lock' : 'unlock';
+    return `${transfer.source.chain}2${transfer.target.chain}-sub2subv21(${isLock})-${fullId}`;
   }
 
   private getMessageNonceFromId(id: string) {

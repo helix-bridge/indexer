@@ -49,6 +49,46 @@ export class TransferService extends BaseTransferServiceT3 {
         },
       ],
     },
+    {
+      source: {
+        chain: 'crab-dvm',
+        url: this.issuingSubgraphUrl + '/crab',
+        feeToken: 'CRAB',
+      },
+      target: {
+        chain: 'darwinia-dvm',
+        url: this.backingSubgraphUrl + '/darwinia',
+        feeToken: 'RING',
+      },
+      isLock: false,
+      symbols: [
+        {
+          from: 'WRING',
+          to: 'xWRING',
+          address: '0x273131f7cb50ac002bdd08ca721988731f7e1092',
+        },
+      ],
+    },
+    {
+      source: {
+        chain: 'darwinia-dvm',
+        url: this.backingSubgraphUrl + '/darwinia',
+        feeToken: 'RING',
+      },
+      target: {
+        chain: 'crab-dvm',
+        url: this.issuingSubgraphUrl + '/crab',
+        feeToken: 'CRAB',
+      },
+      isLock: true,
+      symbols: [
+        {
+          from: 'xWRING',
+          to: 'WRING',
+          address: '0xe7578598aac020abfb918f33a20fad5b71d670b4',
+        },
+      ],
+    },
   ];
 
   testChainTransfers: TransferT3[] = [];
