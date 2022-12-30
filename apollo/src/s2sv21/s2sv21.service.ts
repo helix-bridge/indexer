@@ -90,12 +90,13 @@ export class S2sv21Service implements OnModuleInit {
   async fetchRecords(transfer: TransferT3, index: number) {
     let latestNonce = this.fetchCache[index].latestNonce;
     const { source: from, target: to, symbols } = transfer;
+    const isLock = transfer.isLock ? 'lock' : 'unlock';
     try {
       if (latestNonce === -1) {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
           fromChain: from.chain,
           toChain: to.chain,
-          bridge: 'helix-sub2subv21',
+          bridge: `helix-sub2subv21(${isLock})`,
         });
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
@@ -123,7 +124,7 @@ export class S2sv21Service implements OnModuleInit {
             id: this.genID(transfer, record.id),
             sendAmount: record.amount,
             recvAmount: record.amount,
-            bridge: 'helix-sub2subv21',
+            bridge: `helix-sub2subv21(${isLock})`,
             reason: '',
             endTime: 0,
             fee: record.fee,
@@ -159,6 +160,7 @@ export class S2sv21Service implements OnModuleInit {
 
   async fetchStatus(transfer: TransferT3, index: number) {
     const { source: from, target: to } = transfer;
+    const isLock = transfer.isLock ? 'lock' : 'unlock';
 
     try {
       const uncheckedRecords = await this.aggregationService
@@ -168,7 +170,7 @@ export class S2sv21Service implements OnModuleInit {
           where: {
             fromChain: from.chain,
             toChain: to.chain,
-            bridge: 'helix-sub2subv21',
+            bridge: `helix-sub2subv21(${isLock})`,
             responseTxHash: '',
           },
         })
