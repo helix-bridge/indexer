@@ -46,7 +46,7 @@ export class BigIntScalar extends BigInt {}
     Substrate2dvmModule,
     Substrate2parachainModule,
     CbridgeModule,
-    S2sv2Module,
+    //S2sv2Module,
     StatisticModule,
     XcmModule,
     Sub2ethv2Module,
