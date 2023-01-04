@@ -3,6 +3,12 @@ import { Block, BridgeDispatchEvent, S2SEvent, S2sUnlocked, Transfer } from '../
 import { AccountHandler } from './account';
 import { S2sDailyStatisticsHandler } from './daily';
 
+const FilterAddress: string[] = [
+    // darwinia s2s endpoint
+    "0x58c16265ba9cb71afcec1b71831714138bdc344c",
+    "0xbee2395d630a5821204b7c60b00c659d0893be46",
+];
+
 export class EventHandler {
   private event: SubstrateEvent;
 
@@ -119,6 +125,10 @@ export class EventHandler {
     const recipient = AccountHandler.formatAddress(to);
     const senderIsDvm = AccountHandler.isDvmAddress(sender);
     const recipientIsDvm = AccountHandler.isDvmAddress(recipient);
+
+    if (FilterAddress.includes(sender) || FilterAddress.includes(recipient)) {
+        return;
+    }
 
     if (!senderIsDvm && recipientIsDvm) {
       const recipientDvm = AccountHandler.truncateToDvmAddress(recipient);
