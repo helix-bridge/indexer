@@ -19,6 +19,9 @@ const FilterAddress: string[] = [
 ];
 
 export function handleDeposit(event: Deposit): void {
+  if (FilterAddress.includes(event.params.dst.toHexString())) {
+      return;
+  }
   let message_id = event.transaction.hash.toHexString();
   let entity = TransferRecord.load(message_id);
   if (entity == null) {
@@ -32,6 +35,9 @@ export function handleDeposit(event: Deposit): void {
 }
 
 export function handleWithdrawal(event: Withdrawal): void {
+  if (FilterAddress.includes(event.params.src.toHexString())) {
+      return;
+  }
   let message_id = event.transaction.hash.toHexString();
   let entity = TransferRecord.load(message_id);
   if (entity == null) {
