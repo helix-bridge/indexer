@@ -124,8 +124,4 @@ export class TransferService extends BaseTransferServiceT3 {
   constructor(public configService: ConfigService) {
     super(configService);
   }
-
-  getRecordQueryString(first: number, latestNonce: bigint | number, addressIn: string) {
-    return `query { transferRecords (first: ${first}, orderBy: start_timestamp, orderDirection: asc, skip: ${latestNonce}, where: {token_in: [${addressIn}]}) {id, sender, receiver, token, amount, fee, start_timestamp, transaction_hash, is_native}}`;
-  }
 }

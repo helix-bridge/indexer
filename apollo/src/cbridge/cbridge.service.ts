@@ -157,9 +157,7 @@ export class CbridgeService implements OnModuleInit {
         this.fetchCache[index].latestNonce = latestNonce;
       }
     } catch (error) {
-      this.logger.warn(
-        `save new send record failed ${transfer.chain}, ${latestNonce}, ${error}`
-      );
+      this.logger.warn(`save new send record failed ${transfer.chain}, ${latestNonce}, ${error}`);
     }
   }
 

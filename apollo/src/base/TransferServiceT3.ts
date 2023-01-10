@@ -1,9 +1,19 @@
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
-import { HistoryRecord, Prisma } from '@prisma/client';
-import { TasksService } from '../tasks/tasks.service';
 import axios from 'axios';
+import { last } from 'lodash';
+import { HistoryRecord } from '../graphql';
+import { TasksService } from '../tasks/tasks.service';
 import { AggregationService } from '../aggregation/aggregation.service';
+
+export enum RecordStatus {
+  pending,
+  pendingToRefund,
+  pendingToClaim,
+  success,
+  refunded,
+  pendingToConfirmRefund,
+}
 
 export interface PartnerT3 {
   chain: string;
@@ -25,16 +35,16 @@ export interface TransferT3 {
 }
 
 export interface FetchCacheInfo {
-  latestNonce: number,
+  latestNonce: number;
   isSyncingHistory: boolean;
-  skip: number,
+  skip: number;
 }
 
 export interface BridgeBaseConfigure {
-  name: string,
-  fetchHistoryDataFirst: number,
-  fetchSendDataInterval: number,
-  takeEachTime: number,
+  name: string;
+  fetchHistoryDataFirst: number;
+  fetchSendDataInterval: number;
+  takeEachTime: number;
 }
 
 export abstract class BaseTransferServiceT3 {
@@ -56,21 +66,25 @@ export abstract class BaseServiceT3 {
   abstract logger: Logger;
   abstract fetchCache: FetchCacheInfo[];
   abstract baseConfigure: BridgeBaseConfigure;
-  abstract fetchStatus(transfer: TransferT3, index: number);
   abstract genID(transfer: TransferT3, id: string): string;
-  
+  abstract queryTransfer(transfer: TransferT3, srcTransferId: string);
+  abstract nodeIdToTransferId(id: string): string;
+  abstract formatTransferId(id: string): string;
+  abstract updateRecordStatus(uncheckedRecords: HistoryRecord[], ids: string, transfer: TransferT3);
+  abstract fetchRefundResult(ids: string, transfer: TransferT3);
+
   constructor(
     protected aggregationService: AggregationService,
     protected transferService: BaseTransferServiceT3,
-    protected taskService: TasksService,
-  ){}
+    protected taskService: TasksService
+  ) {}
 
   async init() {
     this.transferService.transfers.forEach((item, index) => {
       const isLock = item.isLock ? 'lock' : 'unlock';
       const prefix = `${item.source.chain}-${item.target.chain}`;
       this.taskService.addInterval(
-        `${prefix}-sub2subv21-${isLock}`,
+        `${prefix}-${this.baseConfigure.name}-${isLock}`,
         this.baseConfigure.fetchSendDataInterval,
         async () => {
           this.schedule(item, index);
@@ -81,7 +95,7 @@ export abstract class BaseServiceT3 {
 
   protected async schedule(item: TransferT3, index: number) {
     if (this.fetchCache[index].isSyncingHistory) {
-        return;
+      return;
     }
     this.fetchCache[index].isSyncingHistory = true;
     // from source chain
@@ -114,9 +128,9 @@ export abstract class BaseServiceT3 {
       const records = await axios
         .post(from.url, {
           query: this.getRecordQueryString(
-              this.baseConfigure.fetchHistoryDataFirst,
-              latestNonce,
-              addressIn
+            this.baseConfigure.fetchHistoryDataFirst,
+            latestNonce,
+            addressIn
           ),
           variables: null,
         })
@@ -171,5 +185,133 @@ export abstract class BaseServiceT3 {
       );
     }
   }
-}
 
+  async fetchStatus(transfer: TransferT3, index: number) {
+    const { source: from, target: to } = transfer;
+    const isLock = transfer.isLock ? 'lock' : 'unlock';
+
+    try {
+      const uncheckedRecords = await this.aggregationService
+        .queryHistoryRecords({
+          skip: this.fetchCache[index].skip,
+          take: this.baseConfigure.takeEachTime,
+          where: {
+            fromChain: from.chain,
+            toChain: to.chain,
+            bridge: `helix-${this.baseConfigure.name}(${isLock})`,
+            responseTxHash: '',
+          },
+        })
+        .then((result) => result.records);
+      if (uncheckedRecords.length < this.baseConfigure.takeEachTime) {
+        this.fetchCache[index].skip = 0;
+      } else {
+        this.fetchCache[index].skip += this.baseConfigure.takeEachTime;
+      }
+      const ids = uncheckedRecords
+        .filter((item) => item.reason === '' && item.result !== RecordStatus.pendingToConfirmRefund)
+        .map((item) => `"${last(item.id.split('-'))}"`)
+        .join(',');
+
+      if (ids.length > 0) {
+        await this.updateRecordStatus(uncheckedRecords, ids, transfer);
+      }
+      let refunded = 0;
+      const unrefunded = [];
+      for (const node of uncheckedRecords) {
+        if (
+          node.result === RecordStatus.pendingToRefund ||
+          node.result === RecordStatus.pendingToConfirmRefund
+        ) {
+          const transferId = this.nodeIdToTransferId(node.id);
+          const withdrawInfo = await this.queryTransfer(transfer, transferId);
+          if (withdrawInfo && withdrawInfo.withdraw_transaction) {
+            refunded += 1;
+            await this.aggregationService.updateHistoryRecord({
+              where: { id: node.id },
+              data: {
+                responseTxHash: withdrawInfo.withdraw_transaction,
+                endTime: Number(withdrawInfo.withdraw_timestamp),
+                result: RecordStatus.refunded,
+                recvToken: node.sendToken,
+              },
+            });
+          } else {
+            unrefunded.push(node);
+          }
+        }
+      }
+
+      // query if all the refund tx confirmed or one of them confirmed successed
+      if (unrefunded.length > 0) {
+        // 1. query refund start tx on target chain
+        // 2. query refund result tx on source chain
+        const unrefundNodes = unrefunded.map((item) => {
+          const transferId = this.nodeIdToTransferId(item.id);
+          const formatedTransferId = this.formatTransferId(transferId);
+          return { id: formatedTransferId, node: item };
+        });
+
+        for (const unrefundNode of unrefundNodes) {
+          const nodes = await axios
+            .post(to.url, {
+              query: `query { refundTransferRecords (where: {source_id: "${unrefundNode.id}"}) { id, source_id, transaction_hash, timestamp }}`,
+              variables: null,
+            })
+            .then((res) => res.data?.data?.refundTransferRecords);
+
+          if (nodes.length == 0) {
+            continue;
+          }
+
+          const refundIds = nodes.map((item) => `"${item.id}"`).join(',');
+
+          const [successedResult, size] = await this.fetchRefundResult(refundIds, transfer);
+          if (!successedResult) {
+            if (size === nodes.length) {
+              // all refunds tx failed -> RecordStatus.pendingToRefund
+              if (unrefundNode.node.result != RecordStatus.pendingToRefund) {
+                const oldStatus = unrefundNode.node.result;
+                unrefundNode.node.result = RecordStatus.pendingToRefund;
+                this.logger.log(
+                  `${this.baseConfigure.name} no refund successed, status from ${oldStatus} to ${RecordStatus.pendingToRefund}`
+                );
+                // update db
+                await this.aggregationService.updateHistoryRecord({
+                  where: { id: unrefundNode.node.id },
+                  data: {
+                    result: RecordStatus.pendingToRefund,
+                  },
+                });
+              }
+            } else {
+              // some tx not confirmed -> RecordStatus.pendingToConfirmRefund
+              if (unrefundNode.node.result != RecordStatus.pendingToConfirmRefund) {
+                this.logger.log(
+                  `${this.baseConfigure.name} waiting for refund confirmed, id: ${unrefundNode.node.id} old status ${unrefundNode.node.result}`
+                );
+                unrefundNode.node.result = RecordStatus.pendingToConfirmRefund;
+                // update db
+                await this.aggregationService.updateHistoryRecord({
+                  where: { id: unrefundNode.node.id },
+                  data: {
+                    result: RecordStatus.pendingToConfirmRefund,
+                  },
+                });
+              }
+            }
+          }
+        }
+      }
+      if (refunded > 0) {
+        this.logger.log(
+          `${this.baseConfigure.name} update records, from ${from.chain}, to ${to.chain}, ids ${ids}, refunded ${refunded}`
+        );
+      }
+    } catch (error) {
+      this.logger.warn(
+        `${this.baseConfigure.name} update record failed, from ${from.chain}, to ${to.chain}, ${error}`
+      );
+    }
+  }
+}
