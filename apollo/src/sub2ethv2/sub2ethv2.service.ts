@@ -6,7 +6,7 @@ import { getUnixTime } from 'date-fns';
 import { AggregationService } from '../aggregation/aggregation.service';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
-import { TransferT3 } from '../base/TransferServiceT3';
+import { TransferT3, BaseServiceT3, FetchCacheInfo, BridgeBaseConfigure } from '../base/TransferServiceT3';
 
 enum Sub2EthStatus {
   pending = 1,
@@ -24,23 +24,27 @@ enum RecordStatus {
 }
 
 @Injectable()
-export class Sub2ethv2Service implements OnModuleInit {
-  private readonly logger = new Logger('sub2ethv2');
-  protected fetchSendDataInterval = 10000;
-  protected fetchHistoryDataFirst = 10;
-  private readonly takeEachTime = 3;
-  private skip = new Array(this.transferService.transfers.length).fill(0);
+export class Sub2ethv2Service extends BaseServiceT3 implements OnModuleInit {
+  logger: Logger = new Logger('sub2ethv2');
+  baseConfigure: BridgeBaseConfigure = {
+    name: 'sub2subv21',
+    fetchHistoryDataFirst: 10,
+    fetchSendDataInterval: 3000,
+    takeEachTime: 3,
+  };
 
-  private fetchCache = new Array(this.transferService.transfers.length)
+  fetchCache: FetchCacheInfo[] = new Array(this.transferService.transfers.length)
     .fill('')
-    .map((_) => ({ latestNonce: -1, isSyncingHistory: false }));
+    .map((_) => ({ latestNonce: -1, isSyncingHistory: false, skip: 0 }));
 
   constructor(
     public configService: ConfigService,
-    private aggregationService: AggregationService,
-    private taskService: TasksService,
-    private transferService: TransferService
-  ) {}
+    protected aggregationService: AggregationService,
+    protected taskService: TasksService,
+    protected transferService: TransferService
+  ) {
+      super(aggregationService, transferService, taskService);
+  }
 
   private subStatus2RecordStatus(s: Sub2EthStatus) {
     if (s === Sub2EthStatus.pending) {
@@ -53,29 +57,13 @@ export class Sub2ethv2Service implements OnModuleInit {
   }
 
   async onModuleInit() {
-    this.transferService.transfers.forEach((item, index) => {
-      const prefix = `${item.source.chain}-${item.target.chain}`;
-      this.taskService.addInterval(
-        `${prefix}-sub2ethv2-fetch_history_data`,
-        this.fetchSendDataInterval,
-        async () => {
-          if (this.fetchCache[index].isSyncingHistory) {
-            return;
-          }
-          this.fetchCache[index].isSyncingHistory = true;
-          // from source chain
-          await this.fetchRecords(item, index);
-          // from target chain
-          await this.fetchStatus(item, index);
-          this.fetchCache[index].isSyncingHistory = false;
-        }
-      );
-    });
+    this.init();
   }
 
   // two directions must use the same laneId
-  protected genID(transfer: TransferT3, id: string) {
-    return `${transfer.source.chain}2${transfer.target.chain}-sub2ethv2-${id}`;
+  genID(transfer: TransferT3, id: string) {
+    const isLock = transfer.isLock ? 'lock' : 'unlock';
+    return `${transfer.source.chain}2${transfer.target.chain}-${this.baseConfigure.name}(${isLock})-${id}`;
   }
 
   private getMessageNonceFromId(id: string) {
@@ -97,90 +85,14 @@ export class Sub2ethv2Service implements OnModuleInit {
       .then((res) => res.data?.data?.transferRecord);
   }
 
-  async fetchRecords(transfer: TransferT3, index: number) {
-    let latestNonce = this.fetchCache[index].latestNonce;
-    const { source: from, target: to, symbols } = transfer;
-    try {
-      if (latestNonce === -1) {
-        const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
-          fromChain: from.chain,
-          toChain: to.chain,
-          bridge: 'helix-sub2ethv2',
-        });
-        latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
-      }
-
-      const addressIn = symbols.map((item) => `"${item.address}"`).join(',');
-
-      const records = await axios
-        .post(from.url, {
-          query: this.transferService.getRecordQueryString(
-            this.fetchHistoryDataFirst,
-            latestNonce,
-            addressIn
-          ),
-          variables: null,
-        })
-        .then((res) => res.data?.data?.transferRecords);
-
-      if (records && records.length > 0) {
-        for (const record of records) {
-          const symbol = symbols.find((item) => item.address === record.token) ?? null;
-          if (!symbol) {
-            continue;
-          }
-          const fromToken =
-            record.is_native && symbol.from.indexOf('W') === 0
-              ? symbol.from.substring(1)
-              : symbol.from;
-          const toToken =
-            record.is_native && symbol.to.indexOf('W') === 0 ? symbol.to.substring(1) : symbol.to;
-          await this.aggregationService.createHistoryRecord({
-            id: this.genID(transfer, record.id),
-            sendAmount: record.amount,
-            recvAmount: record.amount,
-            bridge: 'helix-sub2ethv2',
-            reason: '',
-            endTime: 0,
-            fee: record.fee,
-            feeToken: from.feeToken,
-            fromChain: from.chain,
-            messageNonce: record.id,
-            nonce: latestNonce + 1,
-            recipient: record.receiver,
-            requestTxHash: record.transaction_hash,
-            result: 0,
-            sender: record.sender,
-            startTime: Number(record.start_timestamp),
-            responseTxHash: '',
-            toChain: to.chain,
-            sendToken: fromToken,
-            recvToken: toToken,
-            sendTokenAddress: record.token,
-            guardSignatures: null,
-          });
-          latestNonce += 1;
-        }
-        this.logger.log(
-          `sub2eth v2 new records, from ${from.chain}, to ${to.chain}, latest nonce ${latestNonce}, added ${records.length}`
-        );
-      }
-      this.fetchCache[index].latestNonce = latestNonce;
-    } catch (error) {
-      this.logger.warn(
-        `sub2eth v2 fetch record failed, from ${from.chain}, to ${to.chain}, ${error}`
-      );
-    }
-  }
-
   async fetchStatus(transfer: TransferT3, index: number) {
     const { source: from, target: to } = transfer;
 
     try {
       const uncheckedRecords = await this.aggregationService
         .queryHistoryRecords({
-          skip: this.skip[index],
-          take: this.takeEachTime,
+          skip: this.fetchCache[index].skip,
+          take: this.baseConfigure.takeEachTime,
           where: {
             fromChain: from.chain,
             toChain: to.chain,
@@ -189,10 +101,10 @@ export class Sub2ethv2Service implements OnModuleInit {
           },
         })
         .then((result) => result.records);
-      if (uncheckedRecords.length < this.takeEachTime) {
-        this.skip[index] = 0;
+      if (uncheckedRecords.length < this.baseConfigure.takeEachTime) {
+        this.fetchCache[index].skip = 0;
       } else {
-        this.skip[index] += this.takeEachTime;
+        this.fetchCache[index].skip += this.baseConfigure.takeEachTime;
       }
       const ids = uncheckedRecords
         .filter((item) => item.reason === '' && item.result !== RecordStatus.pendingToConfirmRefund)
