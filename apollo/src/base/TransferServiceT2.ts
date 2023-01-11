@@ -7,6 +7,17 @@ where each chain connects all other chains at the same time.
 And we configure a collection of chains, where all chains in the collection may be connected to each other with bridges of the same model
 */
 
+export enum RecordStatus {
+  pending,
+  pendingToRefund,
+  pendingToClaim,
+  success,
+  refunded,
+  pendingToConfirmRefund,
+  // failed and cannot refund
+  failed,
+}
+
 export interface PartnerT2 {
   chainId: number;
   chain: string;

@@ -3,8 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { PartnerT2 } from '../base/TransferServiceT2';
-import { RecordStatus } from '../base/RecordsService';
+import { PartnerT2, RecordStatus } from '../base/TransferServiceT2';
 import { HistoryRecord } from '../graphql';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
@@ -44,9 +43,12 @@ export enum XferStatus {
 @Injectable()
 export class CbridgeService implements OnModuleInit {
   private readonly logger = new Logger('cBridge');
-  protected isSyncingHistory = new Array(this.transferService.transfers.length).fill(false);
+
+  private fetchCache = new Array(this.transferService.transfers.length)
+    .fill('')
+    .map((_) => ({ latestNonce: -1, isSyncingHistory: false }));
+
   protected fetchSendDataInterval = 10000;
-  private readonly latestNonce = new Array(this.transferService.transfers.length).fill(-1);
 
   private readonly takeEachTime = 3;
   private skip = new Array(this.transferService.transfers.length).fill(0);
@@ -67,13 +69,13 @@ export class CbridgeService implements OnModuleInit {
         `${item.chain}-cbridge-fetch_history_data`,
         this.fetchSendDataInterval,
         async () => {
-          if (this.isSyncingHistory[index]) {
+          if (this.fetchCache[index].isSyncingHistory) {
             return;
           }
-          this.isSyncingHistory[index] = true;
+          this.fetchCache[index].isSyncingHistory = true;
           await this.fetchRecords(item, index);
           await this.fetchStatus(item, index);
-          this.isSyncingHistory[index] = false;
+          this.fetchCache[index].isSyncingHistory = false;
         }
       );
     });
@@ -89,16 +91,17 @@ export class CbridgeService implements OnModuleInit {
 
   async fetchRecords(transfer: PartnerT2, index: number) {
     // the nonce of cBridge message is not increased
+    let latestNonce = this.fetchCache[index].latestNonce;
     try {
-      if (this.latestNonce[index] === -1) {
+      if (latestNonce === -1) {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
           fromChain: transfer.chain,
           bridge: 'cBridge-' + transfer.chain,
         });
-        this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
+        latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { transferRecords(first: 10, orderBy: start_timestamp, orderDirection: asc, skip: ${this.latestNonce[index]}) { id, sender, receiver, token, amount, dst_chainid, request_transaction, start_timestamp, nonce } }`;
+      const query = `query { transferRecords(first: 10, orderBy: start_timestamp, orderDirection: asc, skip: ${latestNonce}) { id, sender, receiver, token, amount, dst_chainid, request_transaction, start_timestamp, nonce } }`;
       const records = await axios
         .post(transfer.url, {
           query: query,
@@ -111,7 +114,7 @@ export class CbridgeService implements OnModuleInit {
           const toChain = this.getDestChain(Number(record.dst_chainid));
 
           if (toChain === null) {
-            this.latestNonce[index] += 1;
+            latestNonce += 1;
             continue;
           }
 
@@ -127,7 +130,7 @@ export class CbridgeService implements OnModuleInit {
             toChain: toChain.chain,
             bridge: 'cBridge-' + transfer.chain,
             messageNonce: record.nonce,
-            nonce: this.latestNonce[index] + 1,
+            nonce: latestNonce + 1,
             requestTxHash: record.request_transaction,
             sender: record.sender,
             recipient: record.receiver,
@@ -144,17 +147,16 @@ export class CbridgeService implements OnModuleInit {
             reason: '',
             sendTokenAddress: record.token,
           });
-          this.latestNonce[index] += 1;
+          latestNonce += 1;
         }
 
         this.logger.log(
-          `save new send record succeeded ${transfer.chain}, nonce: ${this.latestNonce}, added: ${records.length}`
+          `save new send record succeeded ${transfer.chain}, nonce: ${latestNonce}, added: ${records.length}`
         );
+        this.fetchCache[index].latestNonce = latestNonce;
       }
     } catch (error) {
-      this.logger.warn(
-        `save new send record failed ${transfer.chain}, ${this.latestNonce}, ${error}`
-      );
+      this.logger.warn(`save new send record failed ${transfer.chain}, ${latestNonce}, ${error}`);
     }
   }
 

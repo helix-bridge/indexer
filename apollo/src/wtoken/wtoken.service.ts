@@ -62,9 +62,9 @@ export class WtokenService implements OnModuleInit {
 
       if (records && records.length > 0) {
         for (const record of records) {
-          const tokenInfo = this.transferService.getInfoByKey(transfer.source.chain, 'all');
-          const sendToken = record.direction === 0 ? tokenInfo.origin : tokenInfo.token;
-          const recvToken = record.direction === 0 ? tokenInfo.token : tokenInfo.origin;
+          const symbol = transfer.symbols[0];
+          const sendToken = record.direction === 0 ? symbol.from : symbol.to;
+          const recvToken = record.direction === 0 ? symbol.to : symbol.from;
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, record.id),
             fromChain: transfer.source.chain,

@@ -1,27 +1,17 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import axios from 'axios';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { PartnerT2 } from '../base/TransferServiceT2';
+import { PartnerT2, RecordStatus } from '../base/TransferServiceT2';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
-
-export enum RecordStatus {
-  pending,
-  pendingToRefund,
-  pendingToClaim,
-  success,
-  refunded,
-  pendingToConfirmRefund,
-  // failed and cannot refund
-  failed,
-}
 
 @Injectable()
 export class XcmService implements OnModuleInit {
   private readonly logger = new Logger('xcm');
+  private fetchCache = new Array(this.transferService.transfers.length)
+    .fill('')
+    .map((_) => ({ latestNonce: -1, isSyncingHistory: false }));
   protected fetchSendDataInterval = 2000;
-  protected isSyncingHistory = new Array(this.transferService.transfers.length).fill(false);
-  private readonly latestNonce = new Array(this.transferService.transfers.length).fill(-1);
   private readonly takeEachTime = 3;
   private skip = new Array(this.transferService.transfers.length).fill(0);
 
@@ -38,15 +28,15 @@ export class XcmService implements OnModuleInit {
         `${prefix}-xcm-fetch_history_data`,
         this.fetchSendDataInterval,
         async () => {
-          if (this.isSyncingHistory[index]) {
+          if (this.fetchCache[index].isSyncingHistory) {
             return;
           }
-          this.isSyncingHistory[index] = true;
+          this.fetchCache[index].isSyncingHistory = true;
           // from source chain
           await this.fetchRecords(item, index);
           // from target chain
           await this.fetchStatus(item, index);
-          this.isSyncingHistory[index] = false;
+          this.fetchCache[index].isSyncingHistory = false;
         }
       );
     });
@@ -61,16 +51,17 @@ export class XcmService implements OnModuleInit {
   }
 
   async fetchRecords(transfer: PartnerT2, index: number) {
+    let latestNonce = this.fetchCache[index].latestNonce;
     try {
-      if (this.latestNonce[index] === -1) {
+      if (latestNonce === -1) {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
           fromChain: transfer.chain,
           bridge: 'xcm-' + transfer.chain,
         });
-        this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
+        latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { xcmSentEvents (first: 10, orderBy: TIMESTAMP_ASC, offset: ${this.latestNonce[index]}) { totalCount nodes{id, txHash, sender, recipient, amount, timestamp, destChainId, token }}}`;
+      const query = `query { xcmSentEvents (first: 10, orderBy: TIMESTAMP_ASC, offset: ${latestNonce}) { totalCount nodes{id, txHash, sender, recipient, amount, timestamp, destChainId, token }}}`;
 
       const records = await axios
         .post(transfer.url, {
@@ -84,7 +75,7 @@ export class XcmService implements OnModuleInit {
           const toChain = this.getDestChain(Number(record.destChainId));
 
           if (toChain === null) {
-            this.latestNonce[index] += 1;
+            latestNonce += 1;
             continue;
           }
 
@@ -94,7 +85,7 @@ export class XcmService implements OnModuleInit {
             toChain: toChain.chain,
             bridge: 'xcm-' + transfer.chain,
             messageNonce: record.id,
-            nonce: this.latestNonce[index] + 1,
+            nonce: latestNonce + 1,
             requestTxHash: record.txHash,
             sender: record.sender,
             recipient: record.recipient,
@@ -111,16 +102,17 @@ export class XcmService implements OnModuleInit {
             reason: '',
             sendTokenAddress: record.token,
           });
-          this.latestNonce[index] += 1;
+          latestNonce += 1;
         }
 
         this.logger.log(
-          `save new xcm send record succeeded ${transfer.chain}, nonce: ${this.latestNonce}, added: ${records.length}`
+          `save new xcm send record succeeded ${transfer.chain}, nonce: ${latestNonce}, added: ${records.length}`
         );
+        this.fetchCache[index].latestNonce = latestNonce;
       }
     } catch (error) {
       this.logger.warn(
-        `save new xcm send record failed ${transfer.chain}, ${this.latestNonce}, ${error}`
+        `save new xcm send record failed ${transfer.chain}, ${latestNonce}, ${error}`
       );
     }
   }
