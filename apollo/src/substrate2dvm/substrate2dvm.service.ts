@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { getUnixTime } from 'date-fns';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { TransferT3, RecordStatus } from '../base/TransferServiceT3';
+import { TransferT1, RecordStatus } from '../base/TransferServiceT1';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 
@@ -15,12 +15,6 @@ export class Substrate2dvmService implements OnModuleInit {
 
   private readonly latestNonce = new Array(this.transferService.transfers.length).fill(-1);
 
-  // unused vars
-  protected needSyncLock = [];
-  protected needSyncLockConfirmed = [];
-  protected needSyncBurn = [];
-  protected needSyncBurnConfirmed = [];
-
   constructor(
     public configService: ConfigService,
     private aggregationService: AggregationService,
@@ -28,7 +22,7 @@ export class Substrate2dvmService implements OnModuleInit {
     private transferService: TransferService
   ) {}
 
-  protected genID(transfer: TransferT3, identifier: string) {
+  protected genID(transfer: TransferT1, identifier: string) {
     return `${transfer.source.chain}2${transfer.target.chain}-${identifier}`;
   }
 
@@ -54,7 +48,7 @@ export class Substrate2dvmService implements OnModuleInit {
     return getUnixTime(new Date(time)) - timezone;
   }
 
-  async fetchRecords(transfer: TransferT3, index: number) {
+  async fetchRecords(transfer: TransferT1, index: number) {
     const { source: from, target: to } = transfer;
 
     try {

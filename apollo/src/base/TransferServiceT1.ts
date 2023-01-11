@@ -15,7 +15,7 @@ export enum RecordStatus {
   pendingToConfirmRefund,
 }
 
-export interface PartnerT3 {
+export interface PartnerT1 {
   chain: string;
   url: string;
   feeToken: string;
@@ -27,9 +27,9 @@ export interface PartnerSymbol {
   address: string;
 }
 
-export interface TransferT3 {
-  source: PartnerT3;
-  target: PartnerT3;
+export interface TransferT1 {
+  source: PartnerT1;
+  target: PartnerT1;
   isLock: boolean;
   symbols: PartnerSymbol[];
 }
@@ -47,9 +47,9 @@ export interface BridgeBaseConfigure {
   takeEachTime: number;
 }
 
-export abstract class BaseTransferServiceT3 {
-  abstract formalChainTransfers: TransferT3[];
-  abstract testChainTransfers: TransferT3[];
+export abstract class BaseTransferServiceT1 {
+  abstract formalChainTransfers: TransferT1[];
+  abstract testChainTransfers: TransferT1[];
 
   isTest: boolean;
 
@@ -57,25 +57,25 @@ export abstract class BaseTransferServiceT3 {
     this.isTest = configService.get<string>('CHAIN_TYPE') === 'test';
   }
 
-  get transfers(): TransferT3[] {
+  get transfers(): TransferT1[] {
     return this.isTest ? this.testChainTransfers : this.formalChainTransfers;
   }
 }
 
-export abstract class BaseServiceT3 {
+export abstract class BaseServiceT1 {
   abstract logger: Logger;
   abstract fetchCache: FetchCacheInfo[];
   abstract baseConfigure: BridgeBaseConfigure;
-  abstract genID(transfer: TransferT3, id: string): string;
-  abstract queryTransfer(transfer: TransferT3, srcTransferId: string);
+  abstract genID(transfer: TransferT1, id: string): string;
+  abstract queryTransfer(transfer: TransferT1, srcTransferId: string);
   abstract nodeIdToTransferId(id: string): string;
   abstract formatTransferId(id: string): string;
-  abstract updateRecordStatus(uncheckedRecords: HistoryRecord[], ids: string, transfer: TransferT3);
-  abstract fetchRefundResult(ids: string, transfer: TransferT3);
+  abstract updateRecordStatus(uncheckedRecords: HistoryRecord[], ids: string, transfer: TransferT1);
+  abstract fetchRefundResult(ids: string, transfer: TransferT1);
 
   constructor(
     protected aggregationService: AggregationService,
-    protected transferService: BaseTransferServiceT3,
+    protected transferService: BaseTransferServiceT1,
     protected taskService: TasksService
   ) {}
 
@@ -93,7 +93,7 @@ export abstract class BaseServiceT3 {
     });
   }
 
-  protected async schedule(item: TransferT3, index: number) {
+  protected async schedule(item: TransferT1, index: number) {
     if (this.fetchCache[index].isSyncingHistory) {
       return;
     }
@@ -109,7 +109,7 @@ export abstract class BaseServiceT3 {
     return `query { transferRecords (first: ${first}, orderBy: start_timestamp, orderDirection: asc, skip: ${latestNonce}, where: {token_in: [${addressIn}]}) {id, sender, receiver, token, amount, fee, start_timestamp, transaction_hash, is_native}}`;
   }
 
-  async fetchRecords(transfer: TransferT3, index: number) {
+  async fetchRecords(transfer: TransferT1, index: number) {
     let latestNonce = this.fetchCache[index].latestNonce;
     const { source: from, target: to, symbols } = transfer;
     const isLock = transfer.isLock ? 'lock' : 'unlock';
@@ -186,7 +186,7 @@ export abstract class BaseServiceT3 {
     }
   }
 
-  async fetchStatus(transfer: TransferT3, index: number) {
+  async fetchStatus(transfer: TransferT1, index: number) {
     const { source: from, target: to } = transfer;
     const isLock = transfer.isLock ? 'lock' : 'unlock';
 

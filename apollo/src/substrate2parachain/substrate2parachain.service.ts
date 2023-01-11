@@ -6,7 +6,7 @@ import { getUnixTime } from 'date-fns';
 import { AggregationService } from '../aggregation/aggregation.service';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
-import { TransferT3 } from '../base/TransferServiceT3';
+import { TransferT1 } from '../base/TransferServiceT1';
 
 enum RecordStatus {
   pending,
@@ -64,7 +64,7 @@ export class Substrate2parachainService implements OnModuleInit {
   }
 
   // two directions must use the same laneId
-  protected genID(transfer: TransferT3, id: string) {
+  protected genID(transfer: TransferT1, id: string) {
     return `${transfer.source.chain}2${transfer.target.chain}-sub2para-${id}`;
   }
 
@@ -158,7 +158,7 @@ export class Substrate2parachainService implements OnModuleInit {
     }
   }
 
-  async fetchRecords(transfer: TransferT3, index: number) {
+  async fetchRecords(transfer: TransferT1, index: number) {
     let latestNonce = this.fetchCache[index].latestNonce;
     let { source: from, target: to, isLock } = transfer;
 
@@ -216,7 +216,7 @@ export class Substrate2parachainService implements OnModuleInit {
     }
   }
 
-  async fetchStatus(transfer: TransferT3, index: number) {
+  async fetchStatus(transfer: TransferT1, index: number) {
     let { source: from, target: to, isLock } = transfer;
     try {
       const uncheckedRecords = await this.aggregationService

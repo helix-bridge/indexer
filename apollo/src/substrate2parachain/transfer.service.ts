@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BaseTransferServiceT3, TransferT3 } from '../base/TransferServiceT3';
+import { BaseTransferServiceT1, TransferT1 } from '../base/TransferServiceT1';
 
 @Injectable()
-export class TransferService extends BaseTransferServiceT3 {
+export class TransferService extends BaseTransferServiceT1 {
   private readonly backingUrl = this.configService.get<string>('SUB_TO_PARA_BACKING');
   private readonly issuingUrl = this.configService.get<string>('SUB_TO_PARA_ISSUING');
   private readonly backingEndpointUrl = this.configService.get<string>('SUB_TO_PARA_END_BACKING');
   private readonly issuingEndpointUrl = this.configService.get<string>('SUB_TO_PARA_END_ISSUING');
 
-  formalChainTransfers: TransferT3[] = [
+  formalChainTransfers: TransferT1[] = [
     {
       source: {
         chain: 'crab-dvm',
@@ -40,7 +40,7 @@ export class TransferService extends BaseTransferServiceT3 {
     },
   ];
 
-  testChainTransfers: TransferT3[] = [
+  testChainTransfers: TransferT1[] = [
     {
       source: {
         chain: 'pangolin-dvm',

@@ -7,12 +7,12 @@ import { AggregationService } from '../aggregation/aggregation.service';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 import {
-  TransferT3,
-  BaseServiceT3,
+  TransferT1,
+  BaseServiceT1,
   FetchCacheInfo,
   BridgeBaseConfigure,
   RecordStatus,
-} from '../base/TransferServiceT3';
+} from '../base/TransferServiceT1';
 
 enum Sub2EthStatus {
   pending = 1,
@@ -21,7 +21,7 @@ enum Sub2EthStatus {
 }
 
 @Injectable()
-export class Sub2ethv2Service extends BaseServiceT3 implements OnModuleInit {
+export class Sub2ethv2Service extends BaseServiceT1 implements OnModuleInit {
   logger: Logger = new Logger('sub2ethv2');
   baseConfigure: BridgeBaseConfigure = {
     name: 'sub2subv21',
@@ -58,12 +58,12 @@ export class Sub2ethv2Service extends BaseServiceT3 implements OnModuleInit {
   }
 
   // two directions must use the same laneId
-  genID(transfer: TransferT3, id: string): string {
+  genID(transfer: TransferT1, id: string): string {
     const isLock = transfer.isLock ? 'lock' : 'unlock';
     return `${transfer.source.chain}2${transfer.target.chain}-${this.baseConfigure.name}(${isLock})-${id}`;
   }
 
-  async queryTransfer(transfer: TransferT3, srcTransferId: string) {
+  async queryTransfer(transfer: TransferT1, srcTransferId: string) {
     const query = `query { transferRecord(id: "${srcTransferId}") {withdraw_timestamp, withdraw_transaction}}`;
     return await axios
       .post(transfer.source.url, {
@@ -85,7 +85,7 @@ export class Sub2ethv2Service extends BaseServiceT3 implements OnModuleInit {
     }
   }
 
-  async updateRecordStatus(uncheckedRecords: HistoryRecord[], ids: string, transfer: TransferT3) {
+  async updateRecordStatus(uncheckedRecords: HistoryRecord[], ids: string, transfer: TransferT1) {
     const nodes = await axios
       .post(this.transferService.dispatchEndPoints[transfer.target.chain.split('-')[0]], {
         query: `query { messageDispatchedResults (where: {id_in: [${ids}]}) { id, token, transaction_hash, result, timestamp }}`,
@@ -117,7 +117,7 @@ export class Sub2ethv2Service extends BaseServiceT3 implements OnModuleInit {
     }
   }
 
-  async fetchRefundResult(ids: string, transfer: TransferT3) {
+  async fetchRefundResult(ids: string, transfer: TransferT1) {
     const refundResults = await axios
       .post(this.transferService.dispatchEndPoints[transfer.source.chain.split('-')[0]], {
         query: `query { messageDispatchedResults (where: {id_in: [${ids}]}) { id, token, transaction_hash, result, timestamp }}`,

@@ -1,20 +1,9 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import axios from 'axios';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { PartnerT2 } from '../base/TransferServiceT2';
+import { PartnerT2, RecordStatus } from '../base/TransferServiceT2';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
-
-export enum RecordStatus {
-  pending,
-  pendingToRefund,
-  pendingToClaim,
-  success,
-  refunded,
-  pendingToConfirmRefund,
-  // failed and cannot refund
-  failed,
-}
 
 @Injectable()
 export class XcmService implements OnModuleInit {

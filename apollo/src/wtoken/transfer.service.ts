@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BaseTransferServiceT3, TransferT3 } from '../base/TransferServiceT3';
+import { BaseTransferServiceT1, TransferT1 } from '../base/TransferServiceT1';
 
 @Injectable()
-export class TransferService extends BaseTransferServiceT3 {
+export class TransferService extends BaseTransferServiceT1 {
   private readonly endpoint = this.configService.get<string>('WTOKEN_ENDPOINT');
 
-  formalChainTransfers: TransferT3[] = [
+  formalChainTransfers: TransferT1[] = [
     {
       source: {
         chain: 'darwinia-dvm',
@@ -49,7 +49,7 @@ export class TransferService extends BaseTransferServiceT3 {
     },
   ];
 
-  testChainTransfers: TransferT3[] = [];
+  testChainTransfers: TransferT1[] = [];
 
   constructor(public configService: ConfigService) {
     super(configService);

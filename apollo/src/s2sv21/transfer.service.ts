@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BaseTransferServiceT3, TransferT3 } from '../base/TransferServiceT3';
+import { BaseTransferServiceT1, TransferT1 } from '../base/TransferServiceT1';
 
 @Injectable()
-export class TransferService extends BaseTransferServiceT3 {
+export class TransferService extends BaseTransferServiceT1 {
   private readonly backingSubgraphUrl = this.configService.get<string>('S2S_BACKING');
   private readonly issuingSubgraphUrl = this.configService.get<string>('S2S_ISSUING');
   private readonly subql = this.configService.get<string>('SUBQL');
 
-  formalChainTransfers: TransferT3[] = [
+  formalChainTransfers: TransferT1[] = [
     {
       source: {
         chain: 'crab-dvm',
@@ -91,7 +91,7 @@ export class TransferService extends BaseTransferServiceT3 {
     },
   ];
 
-  testChainTransfers: TransferT3[] = [];
+  testChainTransfers: TransferT1[] = [];
 
   dispatchEndPoints = {
     crab: this.subql + 'crab',

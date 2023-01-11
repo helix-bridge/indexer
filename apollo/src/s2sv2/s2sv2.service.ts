@@ -6,7 +6,7 @@ import { getUnixTime } from 'date-fns';
 import { AggregationService } from '../aggregation/aggregation.service';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
-import { TransferT3 } from '../base/TransferServiceT3';
+import { TransferT1 } from '../base/TransferServiceT1';
 import { Token } from '../base/AddressToken';
 
 enum RecordStatus {
@@ -58,7 +58,7 @@ export class S2sv2Service implements OnModuleInit {
   }
 
   // two directions must use the same laneId
-  protected genID(transfer: TransferT3, id: string) {
+  protected genID(transfer: TransferT1, id: string) {
     return `${transfer.source.chain}2${transfer.target.chain}-s2sv2-${id}`;
   }
 
@@ -80,7 +80,7 @@ export class S2sv2Service implements OnModuleInit {
     return getUnixTime(new Date(time)) - timezone;
   }
 
-  async queryTransfer(transfer: TransferT3, srcTransferId: string) {
+  async queryTransfer(transfer: TransferT1, srcTransferId: string) {
     const query = `query { transferRecord(id: "${srcTransferId}") {withdraw_timestamp, withdraw_transaction}}`;
     return await axios
       .post(transfer.source.url, {
@@ -90,7 +90,7 @@ export class S2sv2Service implements OnModuleInit {
       .then((res) => res.data?.data?.transferRecord);
   }
 
-  async fetchRecords(transfer: TransferT3, index: number) {
+  async fetchRecords(transfer: TransferT1, index: number) {
     let latestNonce = this.fetchCache[index].latestNonce;
     const { source: from, target: to } = transfer;
     try {
@@ -155,7 +155,7 @@ export class S2sv2Service implements OnModuleInit {
     }
   }
 
-  async fetchStatus(transfer: TransferT3, index: number) {
+  async fetchStatus(transfer: TransferT1, index: number) {
     const { source: from, target: to } = transfer;
 
     try {

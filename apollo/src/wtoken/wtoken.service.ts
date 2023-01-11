@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import axios from 'axios';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { TransferT3 } from '../base/TransferServiceT3';
+import { TransferT1 } from '../base/TransferServiceT1';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 
@@ -38,11 +38,11 @@ export class WtokenService implements OnModuleInit {
     });
   }
 
-  protected genID(transfer: TransferT3, identifier: string) {
+  protected genID(transfer: TransferT1, identifier: string) {
     return `${transfer.source.chain}-wtoken-${identifier}`;
   }
 
-  async fetchRecords(transfer: TransferT3, index: number) {
+  async fetchRecords(transfer: TransferT1, index: number) {
     try {
       if (this.latestNonce[index] === -1) {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({

@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BaseTransferServiceT3, TransferT3 } from '../base/TransferServiceT3';
-import { AddressTokenMap } from '../base/AddressToken';
+import { BaseTransferServiceT1, TransferT1 } from '../base/TransferServiceT1';
 
 @Injectable()
-export class TransferService extends BaseTransferServiceT3 {
+export class TransferService extends BaseTransferServiceT1 {
   private readonly subql = this.configService.get<string>('SUBQL');
   private readonly subqlX = this.configService.get<string>('SUBQL_X');
   private readonly subqlS = this.configService.get<string>('SUBQL_S');
@@ -12,7 +11,7 @@ export class TransferService extends BaseTransferServiceT3 {
   private readonly issuingSubgraphUrl = this.configService.get<string>('S2S_ISSUING');
   private readonly backingSubgraphUrl = this.configService.get<string>('S2S_BACKING');
 
-  formalChainTransfers: TransferT3[] = [
+  formalChainTransfers: TransferT1[] = [
     {
       source: {
         chain: 'darwinia-dvm',
@@ -55,7 +54,7 @@ export class TransferService extends BaseTransferServiceT3 {
     },
   ];
 
-  testChainTransfers: TransferT3[] = [];
+  testChainTransfers: TransferT1[] = [];
 
   dispatchEndPoints = {
     pangolin: this.subqlX + 'pchain',
