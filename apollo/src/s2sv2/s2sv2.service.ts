@@ -7,7 +7,6 @@ import { AggregationService } from '../aggregation/aggregation.service';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 import { TransferT1 } from '../base/TransferServiceT1';
-import { Token } from '../base/AddressToken';
 
 enum RecordStatus {
   pending,
