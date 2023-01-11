@@ -1,14 +1,14 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { getUnixTime } from 'date-fns';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { RecordsService, RecordStatus } from '../base/RecordsService';
-import { Transfer } from '../base/TransferService';
+import { TransferT3, RecordStatus } from '../base/TransferServiceT3';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 
 @Injectable()
-export class Substrate2dvmService extends RecordsService implements OnModuleInit {
+export class Substrate2dvmService implements OnModuleInit {
   private readonly logger = new Logger('Substrate<>DVM');
 
   protected isSyncingHistory = new Array(this.transferService.transfers.length).fill(false);
@@ -26,33 +26,36 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
     private aggregationService: AggregationService,
     private taskService: TasksService,
     private transferService: TransferService
-  ) {
-    super();
-  }
+  ) {}
 
-  protected genID(transfer: Transfer, identifier: string) {
-    return `${transfer.backing.chain}2${transfer.issuing.chain}-${identifier}`;
+  protected genID(transfer: TransferT3, identifier: string) {
+    return `${transfer.source.chain}2${transfer.target.chain}-${identifier}`;
   }
 
   async onModuleInit() {
     this.transferService.transfers.forEach((item, index) => {
       this.taskService.addInterval(
-        `${item.backing.chain}-dvm-fetch_history_${item.backing.token}`,
+        `${item.source.chain}-dvm-fetch_history_${item.target.chain}`,
         10000,
         async () => {
           if (this.isSyncingHistory[index]) {
             return;
           }
           this.isSyncingHistory[index] = true;
-          await this.fetchRecords(item, '', index);
+          await this.fetchRecords(item, index);
           this.isSyncingHistory[index] = false;
         }
       );
     });
   }
 
-  async fetchRecords(transfer: Transfer, _, index: number) {
-    const { backing: from, issuing: to } = transfer;
+  protected toUnixTime(time: string) {
+    const timezone = new Date().getTimezoneOffset() * 60;
+    return getUnixTime(new Date(time)) - timezone;
+  }
+
+  async fetchRecords(transfer: TransferT3, index: number) {
+    const { source: from, target: to } = transfer;
 
     try {
       if (this.latestNonce[index] === -1) {
@@ -67,8 +70,7 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
         this.latestNonce[index] = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const section = /kton/i.test(from.token) ? 'kton' : 'balances';
-      const query = `query { transfers (first: 10, orderBy: TIMESTAMP_ASC, offset: ${this.latestNonce[index]}, filter: { section: { equalTo: "${section}" }}) { totalCount nodes{id, senderId, recipientId, fromChain, toChain, amount, timestamp }}}`;
+      const query = `query { transfers (first: 10, orderBy: TIMESTAMP_ASC, offset: ${this.latestNonce[index]}) { totalCount nodes{id, section, senderId, recipientId, fromChain, toChain, amount, timestamp }}}`;
       const nodes = await axios
         .post(from.url, {
           query: query,
@@ -83,6 +85,13 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
             ? (amount / BigInt(1e9)).toString()
             : (amount * BigInt(1e9)).toString();
 
+          const symbol = transfer.symbols.find((item) => item.address === node.section) ?? null;
+          if (symbol == null) {
+            continue;
+          }
+          const sendToken = symbol.from;
+          const recvToken = symbol.to;
+
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, node.id),
             fromChain: node.fromChain,
@@ -93,8 +102,8 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
             requestTxHash: node.id,
             sender: node.senderId,
             recipient: node.recipientId,
-            sendToken: from.token,
-            recvToken: from.token,
+            sendToken: sendToken,
+            recvToken: recvToken,
             sendAmount: node.amount,
             recvAmount,
             startTime: this.toUnixTime(node.timestamp),
@@ -111,22 +120,11 @@ export class Substrate2dvmService extends RecordsService implements OnModuleInit
         }
 
         this.logger.log(
-          this.fetchRecordsLog('Smart', from.chain, to.chain, {
-            latestNonce: this.latestNonce[index],
-            added: nodes.length,
-          })
+          `sub2dvm save record successed from ${from.chain} to ${to.chain} latestNonce ${this.latestNonce[index]}, added ${nodes.length}`
         );
       }
     } catch (error) {
-      this.logger.warn(this.fetchRecordsLog('Smart', from.chain, to.chain, { error }));
+      this.logger.warn(`sub2dvm save record failed from ${from.chain} to ${to.chain} ${error}`);
     }
-  }
-
-  async checkDispatched(): Promise<void> {
-    // does not need to check
-  }
-
-  async checkConfirmed(): Promise<void> {
-    // does not need to check
   }
 }

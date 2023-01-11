@@ -1,56 +1,65 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BaseTransferService, Transfer } from '../base/TransferService';
+import { BaseTransferServiceT3, TransferT3 } from '../base/TransferServiceT3';
 
 @Injectable()
-export class TransferService extends BaseTransferService {
+export class TransferService extends BaseTransferServiceT3 {
   private readonly endpoint = this.configService.get<string>('SUBSTRATE_DVM_ENDPOINT');
 
-  formalChainTransfers: Transfer[] = [
+  formalChainTransfers: TransferT3[] = [
     {
-      backing: { chain: 'crab', url: this.endpoint + 'crab', token: 'CRAB', feeToken: 'CRAB' },
-      issuing: { chain: 'crab-dvm', url: this.endpoint + 'crab', token: 'CRAB', feeToken: 'CRAB' },
-    },
-    {
-      backing: { chain: 'crab', url: this.endpoint + 'crab', token: 'CKTON', feeToken: 'CRAB' },
-      issuing: {
-        chain: 'crab-dvm',
+      source: {
+        chain: 'crab',
         url: this.endpoint + 'crab',
-        token: 'WCKTON',
         feeToken: 'CRAB',
       },
+      target: {
+        chain: 'crab-dvm',
+        url: this.endpoint + 'crab',
+        feeToken: 'CRAB',
+      },
+      isLock: true,
+      symbols: [
+        {
+          from: 'CRAB',
+          to: 'CRAB',
+          address: 'balances',
+        },
+        {
+          from: 'CKTON',
+          to: 'CKTON',
+          address: 'kton',
+        },
+      ],
     },
     {
-      backing: {
+      source: {
         chain: 'darwinia',
         url: this.endpoint + 'darwinia',
-        token: 'RING',
         feeToken: 'RING',
       },
-      issuing: {
+      target: {
         chain: 'darwinia-dvm',
         url: this.endpoint + 'darwinia',
-        token: 'RING',
         feeToken: 'RING',
       },
-    },
-    {
-      backing: {
-        chain: 'darwinia',
-        url: this.endpoint + 'darwinia',
-        token: 'KTON',
-        feeToken: 'RING',
-      },
-      issuing: {
-        chain: 'darwinia-dvm',
-        url: this.endpoint + 'darwinia',
-        token: 'WKTON',
-        feeToken: 'RING',
-      },
+      isLock: true,
+      symbols: [
+        {
+          from: 'RING',
+          to: 'RING',
+          address: 'balances',
+        },
+        {
+          from: 'KTON',
+          to: 'KTON',
+          address: 'kton',
+        },
+      ],
     },
   ];
 
-  testChainTransfers: Transfer[] = [];
+  testChainTransfers: TransferT3[] = [];
 
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
 
