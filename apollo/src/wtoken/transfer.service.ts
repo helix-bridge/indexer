@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BaseTransferServiceT1, TransferT1 } from '../base/TransferServiceT1';
-import { AddressTokenMap } from '../base/AddressToken';
+import { BaseTransferServiceT3, TransferT3 } from '../base/TransferServiceT3';
 
 @Injectable()
-export class TransferService extends BaseTransferServiceT1 {
+export class TransferService extends BaseTransferServiceT3 {
   private readonly endpoint = this.configService.get<string>('WTOKEN_ENDPOINT');
 
-  formalChainTransfers: TransferT1[] = [
+  formalChainTransfers: TransferT3[] = [
     {
       source: {
         chain: 'darwinia-dvm',
@@ -19,6 +18,14 @@ export class TransferService extends BaseTransferServiceT1 {
         url: this.endpoint + '/darwinia',
         feeToken: 'RING',
       },
+      isLock: true,
+      symbols: [
+        {
+          from: 'RING',
+          to: 'WRING',
+          address: '',
+        },
+      ],
     },
     {
       source: {
@@ -31,26 +38,18 @@ export class TransferService extends BaseTransferServiceT1 {
         url: this.endpoint + '/crab',
         feeToken: 'CRAB',
       },
+      isLock: true,
+      symbols: [
+        {
+          from: 'CRAB',
+          to: 'WCRAB',
+          address: '',
+        },
+      ],
     },
   ];
-  readonly addressToTokenInfo: { [key: string]: AddressTokenMap } = {
-    'darwinia-dvm': {
-      all: {
-        token: 'WRING',
-        decimals: 1e18,
-        origin: 'RING',
-      },
-    },
-    'crab-dvm': {
-      all: {
-        token: 'WCRAB',
-        decimals: 1e18,
-        origin: 'CRAB',
-      },
-    },
-  };
 
-  testChainTransfers: TransferT1[] = [];
+  testChainTransfers: TransferT3[] = [];
 
   constructor(public configService: ConfigService) {
     super(configService);

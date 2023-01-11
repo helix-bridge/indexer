@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import axios from 'axios';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { TransferT1 } from '../base/TransferServiceT1';
+import { TransferT3 } from '../base/TransferServiceT3';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 
@@ -38,11 +38,11 @@ export class WtokenService implements OnModuleInit {
     });
   }
 
-  protected genID(transfer: TransferT1, identifier: string) {
+  protected genID(transfer: TransferT3, identifier: string) {
     return `${transfer.source.chain}-wtoken-${identifier}`;
   }
 
-  async fetchRecords(transfer: TransferT1, index: number) {
+  async fetchRecords(transfer: TransferT3, index: number) {
     try {
       if (this.latestNonce[index] === -1) {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
@@ -62,9 +62,9 @@ export class WtokenService implements OnModuleInit {
 
       if (records && records.length > 0) {
         for (const record of records) {
-          const tokenInfo = this.transferService.getInfoByKey(transfer.source.chain, 'all');
-          const sendToken = record.direction === 0 ? tokenInfo.origin : tokenInfo.token;
-          const recvToken = record.direction === 0 ? tokenInfo.token : tokenInfo.origin;
+          const symbol = transfer.symbols[0];
+          const sendToken = record.direction === 0 ? symbol.from : symbol.to;
+          const recvToken = record.direction === 0 ? symbol.to : symbol.from;
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, record.id),
             fromChain: transfer.source.chain,
