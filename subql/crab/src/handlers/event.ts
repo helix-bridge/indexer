@@ -168,16 +168,18 @@ export class EventHandler {
     const senderIsDvm = AccountHandler.isDvmAddress(sender);
     const recipientIsDvm = AccountHandler.isDvmAddress(recipient);
 
-    if (FilterAddress.includes(sender) || FilterAddress.includes(recipient)) {
-        return;
-    }
-
     if (!senderIsDvm && recipientIsDvm) {
       const recipientDvm = AccountHandler.truncateToDvmAddress(recipient);
+      if (FilterAddress.includes(recipientDvm)) {
+          return;
+      }
 
       await this.handleTransfer('crab', 'crab-dvm', sender, recipientDvm, amount);
     } else if (senderIsDvm && !recipientIsDvm) {
       const senderDvm = AccountHandler.truncateToDvmAddress(sender);
+      if (FilterAddress.includes(senderDvm)) {
+          return;
+      }
 
       // @see https://crab.subscan.io/extrinsic/11451549-0 治理或 evm 发出的交易可能没有extrinsics
       const executedEvent = this.event.extrinsic?.events.find(
