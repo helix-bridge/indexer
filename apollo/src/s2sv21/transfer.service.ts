@@ -6,7 +6,7 @@ import { BaseTransferServiceT1, TransferT1 } from '../base/TransferServiceT1';
 export class TransferService extends BaseTransferServiceT1 {
   private readonly backingSubgraphUrl = this.configService.get<string>('S2S_BACKING');
   private readonly issuingSubgraphUrl = this.configService.get<string>('S2S_ISSUING');
-  private readonly subql = this.configService.get<string>('SUBQL');
+  private readonly subql = this.configService.get<string>('SUBSTRATE_DVM_ENDPOINT');
 
   formalChainTransfers: TransferT1[] = [
     {
