@@ -16,14 +16,14 @@ export class GuardService {
     {
       fromChain: 'pangoro-dvm',
       toChain: 'goerli',
-      bridge: 'helix-sub2ethv2',
+      bridge: 'helix-sub2ethv2(lock)',
       chainId: 5,
       contract: '0xB63846f957A97eC982b83Bb50957A519878196Ef',
     },
     {
       fromChain: 'darwinia-dvm',
       toChain: 'ethereum',
-      bridge: 'helix-sub2ethv2',
+      bridge: 'helix-sub2ethv2(lock)',
       chainId: 1,
       contract: '0x61B6B8c7C00aA7F060a2BEDeE6b11927CC9c3eF1',
     },

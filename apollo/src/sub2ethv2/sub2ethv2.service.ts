@@ -24,7 +24,7 @@ enum Sub2EthStatus {
 export class Sub2ethv2Service extends BaseServiceT1 implements OnModuleInit {
   logger: Logger = new Logger('sub2ethv2');
   baseConfigure: BridgeBaseConfigure = {
-    name: 'sub2subv21',
+    name: 'sub2ethv2',
     fetchHistoryDataFirst: 10,
     fetchSendDataInterval: 3000,
     takeEachTime: 3,
