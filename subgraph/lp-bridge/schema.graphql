@@ -1,0 +1,25 @@
+type LpTransferRecord @entity {
+  id: ID!
+  nonce: BigInt!
+  remote_chainid: BigInt!
+  sender: Bytes!
+  receiver: Bytes!
+  token: Bytes!
+  amount: BigInt!
+  timestamp: BigInt!
+  transaction_hash: Bytes!
+  fee: BigInt
+  is_native: Boolean!
+  issuing_native: Boolean!
+
+  liquidate_withdrawn_sender: Bytes
+  liquidate_transaction_hash: Bytes
+}
+
+type LpRelayRecord @entity {
+  id: ID!
+  relayer: Bytes!
+  transaction_hash: Bytes!
+  timestamp: BigInt!
+}
+

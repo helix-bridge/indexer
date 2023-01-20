@@ -19,6 +19,7 @@ export class AggregationResolver {
     @Args('recipient') recipient: string,
     @Args('fromChains') fromChains: string[],
     @Args('toChains') toChains: string[],
+    @Args('bridges') bridges: string,
     @Args('row') row: number,
     @Args('page') page: number,
     @Args('results') results: number[]
@@ -34,11 +35,13 @@ export class AggregationResolver {
     const fromChainCondition =
       fromChains && fromChains.length ? { fromChain: { in: fromChains } } : {};
     const toChainCondition = toChains && toChains.length ? { toChain: { in: toChains } } : {};
+    const bridgeCondition = bridges && bridges.length ? { bridge: { in: bridges } } : {};
     const chainConditions = {
       AND: {
         ...resultCondition,
         ...fromChainCondition,
         ...toChainCondition,
+        ...bridgeCondition,
       },
     };
 
