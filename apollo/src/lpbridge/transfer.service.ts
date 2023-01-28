@@ -34,7 +34,7 @@ export class TransferService extends BaseTransferServiceT2 {
       '0x2d2b97ea380b0185e9fdf8271d1afb5d2bf18329': {
         token: 'WCRAB',
         decimals: 1e18,
-        origin: 'xWCRAB',
+        origin: 'WCRAB',
       },
     },
     'darwinia-dvm': {

@@ -1,6 +1,7 @@
 import { Args, Query, Mutation, Resolver } from '@nestjs/graphql';
 import { isEmpty, isNull, isUndefined } from 'lodash';
 import { AggregationService } from './aggregation.service';
+import { Prisma } from '@prisma/client';
 
 @Resolver()
 export class AggregationResolver {
@@ -22,10 +23,15 @@ export class AggregationResolver {
     @Args('bridges') bridges: string,
     @Args('row') row: number,
     @Args('page') page: number,
-    @Args('results') results: number[]
+    @Args('results') results: number[],
+    @Args('recvTokenAddress') recvTokenAddress: string,
+    @Args('order') order: string
   ) {
     const skip = row * page || 0;
     const take = row || 10;
+    const orderBy = order
+      ? { [order]: Prisma.SortOrder.desc }
+      : { startTime: Prisma.SortOrder.desc };
     const isValid = (item) =>
       !Object.values(item).some((value) => isUndefined(value) || isNull(value) || value === '');
 
@@ -36,12 +42,15 @@ export class AggregationResolver {
       fromChains && fromChains.length ? { fromChain: { in: fromChains } } : {};
     const toChainCondition = toChains && toChains.length ? { toChain: { in: toChains } } : {};
     const bridgeCondition = bridges && bridges.length ? { bridge: { in: bridges } } : {};
+    const recvTokenCondition =
+      recvTokenAddress && recvTokenAddress.length ? { recvTokenAddress: recvTokenAddress } : {};
     const chainConditions = {
       AND: {
         ...resultCondition,
         ...fromChainCondition,
         ...toChainCondition,
         ...bridgeCondition,
+        ...recvTokenCondition,
       },
     };
 
@@ -56,6 +65,7 @@ export class AggregationResolver {
       skip,
       take,
       where,
+      orderBy,
     });
   }
 

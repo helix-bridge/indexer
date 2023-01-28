@@ -105,13 +105,14 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     skip?: number;
     take?: number;
     where?: Prisma.HistoryRecordWhereInput;
+    orderBy?: Prisma.Enumerable<Prisma.HistoryRecordOrderByWithRelationAndSearchRelevanceInput>;
   }): Promise<HistoryRecords> {
-    const { skip, take, where } = params;
+    const { skip, take, where, orderBy } = params;
     const records = await this.historyRecord.findMany({
       skip,
       take,
       where,
-      orderBy: { startTime: 'desc' },
+      orderBy,
     });
     const total = await this.historyRecord.count({ where });
 

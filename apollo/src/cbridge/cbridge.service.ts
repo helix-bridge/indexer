@@ -119,9 +119,13 @@ export class CbridgeService implements OnModuleInit {
           }
 
           const sendTokenInfo = this.transferService.getInfoByKey(transfer.chain, record.token);
-          const recvTokenInfo: Token | undefined = this.transferService.findInfoByOrigin(
+          const tokenAddress: string | undefined = this.transferService.findInfoByOrigin(
             toChain.chain,
             sendTokenInfo.origin
+          );
+          const recvTokenInfo: Token | undefined = this.transferService.getInfoByKey(
+            toChain.chain,
+            tokenAddress
           );
 
           await this.aggregationService.createHistoryRecord({
@@ -146,6 +150,7 @@ export class CbridgeService implements OnModuleInit {
             responseTxHash: '',
             reason: '',
             sendTokenAddress: record.token,
+            recvTokenAddress: tokenAddress,
           });
           latestNonce += 1;
         }

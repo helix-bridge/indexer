@@ -44,8 +44,9 @@ export function handleLiquidityWithdrawn(event: LiquidityWithdrawn): void {
   if (entity == null) {
       return;
   }
-  entity.liquidate_withdrawn_sender = event.transaction.from;
+  entity.liquidate_withdrawn_sender = event.params.receiver;
   entity.liquidate_transaction_hash = event.transaction.hash;
+  entity.liquidate_withdrawn_timestamp = event.block.timestamp;
   entity.save();
 }
 

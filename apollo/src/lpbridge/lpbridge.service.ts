@@ -51,8 +51,13 @@ export class LpbridgeService implements OnModuleInit {
     return this.transferService.transfers.find((transfer) => transfer.chainId === id) ?? null;
   }
 
-  protected genID(transfer: PartnerT2, toChainId: string, transferId: string): string {
-    return `${transfer.chain.split('-')[0]}-${toChainId}-lpbridge-${transferId}`;
+  protected genID(
+    transfer: PartnerT2,
+    fromChainId: string,
+    toChainId: string,
+    transferId: string
+  ): string {
+    return `${transfer.chain.split('-')[0]}-${fromChainId}-${toChainId}-lpbridge-${transferId}`;
   }
 
   async fetchRecords(transfer: PartnerT2, index: number) {
@@ -79,20 +84,26 @@ export class LpbridgeService implements OnModuleInit {
         for (const record of records) {
           const toChain = this.getDestChain(Number(record.remote_chainid));
           const sendTokenInfo = this.transferService.getInfoByKey(transfer.chain, record.token);
-          const recvTokenInfo: Token | undefined = this.transferService.findInfoByOrigin(
+          const tokenAddress: string | undefined = this.transferService.findInfoByOrigin(
             toChain.chain,
             sendTokenInfo.origin
           );
+          const recvTokenInfo: Token | undefined = this.transferService.getInfoByKey(
+            toChain.chain,
+            tokenAddress
+          );
           var responseHash = '';
           var result = RecordStatus.pending;
+          var endTime = 0;
           if (record.liquidate_withdrawn_sender === record.sender) {
             responseHash = record.liquidate_transaction_hash;
             result = RecordStatus.refunded;
+            endTime = Number(record.liquidate_withdrawn_timestamp);
           }
           // todo use reason save native
           const reason = record.issuing_native ? 'issuing_native' : 'issuing_erc20';
           await this.aggregationService.createHistoryRecord({
-            id: this.genID(transfer, record.remote_chainid, record.id),
+            id: this.genID(transfer, transfer.chainId.toString(), record.remote_chainid, record.id),
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: 'lpbridge-' + transfer.chain,
@@ -106,13 +117,14 @@ export class LpbridgeService implements OnModuleInit {
             sendAmount: record.amount,
             recvAmount: '0',
             startTime: Number(record.timestamp),
-            endTime: 0,
+            endTime: endTime,
             result: result,
             fee: record.fee,
             feeToken: sendTokenInfo.token,
             responseTxHash: responseHash,
             reason: reason,
             sendTokenAddress: record.token,
+            recvTokenAddress: tokenAddress,
           });
           latestNonce += 1;
         }
@@ -125,6 +137,17 @@ export class LpbridgeService implements OnModuleInit {
     } catch (error) {
       this.logger.warn(`save new send record failed ${transfer.chain}, ${latestNonce}, ${error}`);
     }
+  }
+
+  async queryRecord(transfer: PartnerT2, id: string) {
+    const query = `query { lpTransferRecord(id: "${id}") { id, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp } }`;
+    const record = await axios
+      .post(transfer.url, {
+        query: query,
+        variables: null,
+      })
+      .then((res) => res.data?.data?.lpTransferRecord);
+    return record;
   }
 
   async fetchStatus(transfer: PartnerT2, index: number) {
@@ -141,7 +164,7 @@ export class LpbridgeService implements OnModuleInit {
         })
         .then((result) => result.records);
 
-      if (uncheckedRecords.length < this.takeEachTime) {
+      if (uncheckedRecords.length <= this.takeEachTime) {
         this.skip[index] = 0;
       } else {
         this.skip[index] += this.takeEachTime;
@@ -150,7 +173,27 @@ export class LpbridgeService implements OnModuleInit {
       for (const record of uncheckedRecords) {
         const recordSplitted = record.id.split('-');
         const transferId = last(recordSplitted);
-        const dstChainId = recordSplitted[1];
+        const dstChainId = recordSplitted[2];
+
+        const transferRecord = await this.queryRecord(transfer, transferId);
+        if (transferRecord && transferRecord.liquidate_withdrawn_sender === record.sender) {
+          record.responseTxHash = transferRecord.liquidate_transaction_hash;
+          record.result = RecordStatus.refunded;
+          const updateData = {
+            result: RecordStatus.refunded,
+            responseTxHash: transferRecord.liquidate_transaction_hash,
+            endTime: Number(transferRecord.liquidate_withdrawn_timestamp),
+          };
+
+          await this.aggregationService.updateHistoryRecord({
+            where: { id: record.id },
+            data: updateData,
+          });
+          this.logger.log(
+            `lpbridge refund id: ${record.id} refund responseTxHash: ${transferRecord.liquidate_transaction_hash}`
+          );
+          return;
+        }
 
         const toChain = this.getDestChain(Number(dstChainId));
         const query = `query { lpRelayRecord(id: "${transferId}") { id, timestamp, transaction_hash }}`;
@@ -166,7 +209,6 @@ export class LpbridgeService implements OnModuleInit {
             result: RecordStatus.success,
             responseTxHash: relayRecord.transaction_hash,
             endTime: Number(relayRecord.timestamp),
-            reason: 'relayed',
             recvAmount: record.sendAmount,
             recvToken: record.recvToken,
           };
