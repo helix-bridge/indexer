@@ -19,26 +19,31 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 2105,
       chain: 'crab-parachain',
       url: this.crabParachainEndpoint,
+      bridge: 'xcm',
     },
     {
       chainId: 2000,
       chain: 'karura',
       url: this.karuraEndpoint,
+      bridge: 'xcm',
     },
     {
       chainId: 2023,
       chain: 'moonriver',
       url: this.moonriverEndpoint,
+      bridge: 'xcm',
     },
     {
       chainId: 2004,
       chain: 'khala',
       url: this.khalaEndpoint,
+      bridge: 'xcm',
     },
     {
       chainId: 2007,
       chain: 'shiden',
       url: this.shidenEndpoint,
+      bridge: 'xcm',
     },
   ];
 

@@ -47,8 +47,8 @@ export class LpbridgeService implements OnModuleInit {
     });
   }
 
-  private getDestChain(id: number): PartnerT2 | null {
-    return this.transferService.transfers.find((transfer) => transfer.chainId === id) ?? null;
+  private getDestChain(id: number, bridge: string): PartnerT2 | null {
+    return this.transferService.transfers.find((transfer) => transfer.chainId === id && transfer.bridge === bridge) ?? null;
   }
 
   protected genID(
@@ -82,7 +82,7 @@ export class LpbridgeService implements OnModuleInit {
 
       if (records && records.length > 0) {
         for (const record of records) {
-          const toChain = this.getDestChain(Number(record.remote_chainid));
+          const toChain = this.getDestChain(Number(record.remote_chainid), transfer.bridge);
           const sendTokenInfo = this.transferService.getInfoByKey(transfer.chain, record.token);
           const tokenAddress: string | undefined = this.transferService.findInfoByOrigin(
             toChain.chain,
@@ -216,7 +216,7 @@ export class LpbridgeService implements OnModuleInit {
           }
         }
 
-        const toChain = this.getDestChain(Number(dstChainId));
+        const toChain = this.getDestChain(Number(dstChainId), transfer.bridge);
         const query = `query { lpRelayRecord(id: "${transferId}") { id, timestamp, transaction_hash }}`;
         const relayRecord = await axios
           .post(toChain.url, {

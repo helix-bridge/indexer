@@ -20,46 +20,55 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 128,
       chain: 'heco',
       url: this.hecoEndpoint,
+      bridge: 'cbridge',
     },
     {
       chainId: 44,
       chain: 'crab-dvm',
       url: this.crabSmartEndpoint,
+      bridge: 'cbridge',
     },
     {
       chainId: 137,
       chain: 'polygon',
       url: this.polygonEndpoint,
+      bridge: 'cbridge',
     },
     {
       chainId: 1,
       chain: 'ethereum',
       url: this.ethereumEndpoint,
+      bridge: 'cbridge',
     },
     {
       chainId: 42161,
       chain: 'arbitrum',
       url: this.arbitrumEndpoint,
+      bridge: 'cbridge',
     },
     {
       chainId: 592,
       chain: 'astar',
       url: this.astarEndpoint,
+      bridge: 'cbridge',
     },
     {
       chainId: 43114,
       chain: 'avalanche',
       url: this.avalancheEndpoint,
+      bridge: 'cbridge',
     },
     {
       chainId: 56,
       chain: 'bsc',
       url: this.bscEndpoint,
+      bridge: 'cbridge',
     },
     {
       chainId: 10,
       chain: 'optimism',
       url: this.optimismEndpoint,
+      bridge: 'cbridge',
     },
   ];
 
