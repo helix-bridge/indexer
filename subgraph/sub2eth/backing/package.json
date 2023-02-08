@@ -1,17 +1,17 @@
 {
-  "name": "sub2ethBacking",
+  "name": "sub2ethbacking",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "create-darwinia-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ sub2ethBacking/darwinia",
-    "deploy-darwinia-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ sub2ethBacking/darwinia",
-    "create-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph create --node http://graph-node:8020/ sub2ethBacking/pangoro",
-    "remove-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph remove --node http://graph-node:8020/ sub2ethBacking/pangoro",
-    "deploy-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 sub2ethBacking/pangoro",
-    "create-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph create --node http://graph-node:8020/ sub2ethBacking/darwinia",
-    "remove-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph remove --node http://graph-node:8020/ sub2ethBacking/darwinia",
-    "deploy-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 sub2ethBacking/darwinia"
+    "create-darwinia-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ sub2ethbacking/darwinia",
+    "deploy-darwinia-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ sub2ethbacking/darwinia",
+    "create-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph create --node http://graph-node:8020/ sub2ethbacking/pangoro",
+    "remove-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph remove --node http://graph-node:8020/ sub2ethbacking/pangoro",
+    "deploy-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 sub2ethbacking/pangoro",
+    "create-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph create --node http://graph-node:8020/ sub2ethbacking/darwinia",
+    "remove-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph remove --node http://graph-node:8020/ sub2ethbacking/darwinia",
+    "deploy-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 sub2ethbacking/darwinia"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.21.1",

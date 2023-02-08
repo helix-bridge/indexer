@@ -1,19 +1,19 @@
 {
-  "name": "inboundLane",
+  "name": "sub2ethinboundLane",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "create-ethereum-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ inboundLane/ethereum",
-    "deploy-ethereum-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ inboundLane/ethereum",
-    "create-darwinia-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ inboundLane/darwinia",
-    "deploy-darwinia-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ inboundLane/darwinia",
-    "create-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph create --node http://graph-node:8020/ inboundLane/pangoro",
-    "remove-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph remove --node http://graph-node:8020/ inboundLane/pangoro",
-    "deploy-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 inboundLane/pangoro",
-    "create-goerli-local": "cp subgraph.yaml.goerli subgraph.yaml; graph create --node http://graph-node:8020/ inboundLane/goerli",
-    "remove-goerli-local": "cp subgraph.yaml.goerli subgraph.yaml; graph remove --node http://graph-node:8020/ inboundLane/goerli",
-    "deploy-goerli-local": "cp subgraph.yaml.goerli subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 inboundLane/goerli"
+    "create-ethereum-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ sub2ethinboundLane/ethereum",
+    "deploy-ethereum-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ sub2ethinboundLane/ethereum",
+    "create-darwinia-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ sub2ethinboundLane/darwinia",
+    "deploy-darwinia-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ sub2ethinboundLane/darwinia",
+    "create-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph create --node http://graph-node:8020/ sub2ethinboundLane/pangoro",
+    "remove-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph remove --node http://graph-node:8020/ sub2ethinboundLane/pangoro",
+    "deploy-pangoro-local": "cp subgraph.yaml.pangoro subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 sub2ethinboundLane/pangoro",
+    "create-goerli-local": "cp subgraph.yaml.goerli subgraph.yaml; graph create --node http://graph-node:8020/ sub2ethinboundLane/goerli",
+    "remove-goerli-local": "cp subgraph.yaml.goerli subgraph.yaml; graph remove --node http://graph-node:8020/ sub2ethinboundLane/goerli",
+    "deploy-goerli-local": "cp subgraph.yaml.goerli subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 sub2ethinboundLane/goerli"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.21.1",

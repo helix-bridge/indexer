@@ -1,17 +1,17 @@
 {
-  "name": "sub2ethMappingTokenFactory",
+  "name": "sub2ethissuing",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "create-ethereum-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ sub2ethMappingTokenFactory/ethereum",
-    "deploy-ethereum-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ sub2ethMappingTokenFactory/ethereum",
-    "create-goerli-local": "cp subgraph.yaml.goerli subgraph.yaml; graph create --node http://graph-node:8020/ sub2ethMappingTokenFactory/goerli",
-    "remove-goerli-local": "cp subgraph.yaml.goerli subgraph.yaml; graph remove --node http://graph-node:8020/ sub2ethMappingTokenFactory/goerli",
-    "deploy-goerli-local": "cp subgraph.yaml.goerli subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 sub2ethMappingTokenFactory/goerli",
-    "create-ethereum-local": "cp subgraph.yaml.ethereum subgraph.yaml; graph create --node http://graph-node:8020/ sub2ethMappingTokenFactory/ethereum",
-    "remove-ethereum-local": "cp subgraph.yaml.ethereum subgraph.yaml; graph remove --node http://graph-node:8020/ sub2ethMappingTokenFactory/ethereum",
-    "deploy-ethereum-local": "cp subgraph.yaml.ethereum subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 sub2ethMappingTokenFactory/ethereum"
+    "create-ethereum-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ sub2ethissuing/ethereum",
+    "deploy-ethereum-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ sub2ethissuing/ethereum",
+    "create-goerli-local": "cp subgraph.yaml.goerli subgraph.yaml; graph create --node http://graph-node:8020/ sub2ethissuing/goerli",
+    "remove-goerli-local": "cp subgraph.yaml.goerli subgraph.yaml; graph remove --node http://graph-node:8020/ sub2ethissuing/goerli",
+    "deploy-goerli-local": "cp subgraph.yaml.goerli subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 sub2ethissuing/goerli",
+    "create-ethereum-local": "cp subgraph.yaml.ethereum subgraph.yaml; graph create --node http://graph-node:8020/ sub2ethissuing/ethereum",
+    "remove-ethereum-local": "cp subgraph.yaml.ethereum subgraph.yaml; graph remove --node http://graph-node:8020/ sub2ethissuing/ethereum",
+    "deploy-ethereum-local": "cp subgraph.yaml.ethereum subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 sub2ethissuing/ethereum"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.21.1",
