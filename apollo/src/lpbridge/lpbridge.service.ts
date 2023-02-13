@@ -4,7 +4,6 @@ import axios from 'axios';
 import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
 import { PartnerT2, RecordStatus } from '../base/TransferServiceT2';
-import { HistoryRecord } from '../graphql';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 import { Token } from '../base/AddressToken';
