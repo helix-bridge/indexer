@@ -19,6 +19,7 @@ import { XcmModule } from './xcm/xcm.module';
 import { Sub2ethv2Module } from './sub2ethv2/sub2ethv2.module';
 import { WtokenModule } from './wtoken/wtoken.module';
 import { S2sv21Module } from './s2sv21/s2sv21.module';
+import { LpbridgeModule } from './lpbridge/lpbridge.module';
 
 const chainEnvFilePath = `.env.${process.env.NODE_ENV || 'prod'}`;
 
@@ -50,6 +51,7 @@ export class BigIntScalar extends BigInt {}
     StatisticModule,
     XcmModule,
     Sub2ethv2Module,
+    LpbridgeModule,
     WtokenModule,
     S2sv21Module,
   ],

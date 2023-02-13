@@ -105,11 +105,6 @@ export class LpbridgeService implements OnModuleInit {
           var responseHash = '';
           var result = RecordStatus.pending;
           var endTime = 0;
-          if (record.liquidate_withdrawn_sender === record.sender) {
-            responseHash = record.liquidate_transaction_hash;
-            result = RecordStatus.refunded;
-            endTime = Number(record.liquidate_withdrawn_timestamp);
-          }
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, transfer.chainId.toString(), record.remote_chainid, record.id),
             fromChain: transfer.chain,
@@ -183,65 +178,73 @@ export class LpbridgeService implements OnModuleInit {
         const transferId = last(recordSplitted);
         const dstChainId = recordSplitted[2];
 
-        const transferRecord = await this.queryRecord(transfer, transferId);
-        if (transferRecord) {
-          if (transferRecord.liquidate_withdrawn_sender === record.sender) {
-            record.responseTxHash = transferRecord.liquidate_transaction_hash;
-            record.result = RecordStatus.refunded;
-            const updateData = {
-              result: RecordStatus.refunded,
-              responseTxHash: transferRecord.liquidate_transaction_hash,
-              endTime: Number(transferRecord.liquidate_withdrawn_timestamp),
-            };
+        // query from dest chain to get status relayed/pendingToConfirmRefund/pending
+        let txStatus = record.result;
 
-            await this.aggregationService.updateHistoryRecord({
-              where: { id: record.id },
-              data: updateData,
-            });
-            this.logger.log(
-              `lpbridge refund id: ${record.id} refund responseTxHash: ${transferRecord.liquidate_transaction_hash}`
-            );
-            return;
-          } else if (transferRecord.fee !== record.fee) {
-            const updateData = {
-              fee: transferRecord.fee,
-            };
-            await this.aggregationService.updateHistoryRecord({
-              where: { id: record.id },
-              data: updateData,
-            });
-            this.logger.log(
-              `lpbridge fee updated id: ${record.id} fee: ${record.fee} => ${transferRecord.fee}`
-            );
-          }
+        if (txStatus === RecordStatus.pending) {
+            const toChain = this.getDestChain(Number(dstChainId), transfer.bridge);
+            const query = `query { lpRelayRecord(id: "${transferId}") { id, timestamp, transaction_hash, canceled }}`;
+            const relayRecord = await axios
+            .post(toChain.url, {
+                query: query,
+                variables: null,
+            })
+            .then((res) => res.data?.data?.lpRelayRecord);
+
+            if (relayRecord) {
+                txStatus = relayRecord.canceled ? RecordStatus.pendingToConfirmRefund : RecordStatus.success;
+                const updateData = {
+                    result: txStatus,
+                    responseTxHash: relayRecord.canceled ? '' : relayRecord.transaction_hash,
+                    endTime: relayRecord.canceled ? 0 : Number(relayRecord.timestamp),
+                    recvAmount: record.sendAmount,
+                    recvToken: record.recvToken,
+                };
+
+                await this.aggregationService.updateHistoryRecord({
+                    where: { id: record.id },
+                    data: updateData,
+                });
+
+                this.logger.log(
+                    `lpbridge new status id: ${record.id} relayed responseTxHash: ${relayRecord.transaction_hash}`
+                );
+            }
         }
 
-        const toChain = this.getDestChain(Number(dstChainId), transfer.bridge);
-        const query = `query { lpRelayRecord(id: "${transferId}") { id, timestamp, transaction_hash }}`;
-        const relayRecord = await axios
-          .post(toChain.url, {
-            query: query,
-            variables: null,
-          })
-          .then((res) => res.data?.data?.lpRelayRecord);
+        if (txStatus === RecordStatus.pendingToConfirmRefund) {
+            const transferRecord = await this.queryRecord(transfer, transferId);
+            if (transferRecord) {
+                if (transferRecord.liquidate_withdrawn_sender === record.sender) {
+                    record.responseTxHash = transferRecord.liquidate_transaction_hash;
+                    record.result = RecordStatus.refunded;
+                    const updateData = {
+                        result: RecordStatus.refunded,
+                        responseTxHash: transferRecord.liquidate_transaction_hash,
+                        endTime: Number(transferRecord.liquidate_withdrawn_timestamp),
+                    };
 
-        if (relayRecord) {
-          const updateData = {
-            result: RecordStatus.success,
-            responseTxHash: relayRecord.transaction_hash,
-            endTime: Number(relayRecord.timestamp),
-            recvAmount: record.sendAmount,
-            recvToken: record.recvToken,
-          };
-
-          await this.aggregationService.updateHistoryRecord({
-            where: { id: record.id },
-            data: updateData,
-          });
-
-          this.logger.log(
-            `lpbridge new status id: ${record.id} relayed responseTxHash: ${relayRecord.transaction_hash}`
-          );
+                    await this.aggregationService.updateHistoryRecord({
+                        where: { id: record.id },
+                        data: updateData,
+                    });
+                    this.logger.log(
+                        `lpbridge refund id: ${record.id} refund responseTxHash: ${transferRecord.liquidate_transaction_hash}`
+                    );
+                    return;
+                } else if (transferRecord.fee !== record.fee) {
+                    const updateData = {
+                        fee: transferRecord.fee,
+                    };
+                    await this.aggregationService.updateHistoryRecord({
+                        where: { id: record.id },
+                        data: updateData,
+                    });
+                    this.logger.log(
+                        `lpbridge fee updated id: ${record.id} fee: ${record.fee} => ${transferRecord.fee}`
+                    );
+                }
+            }
         }
       }
     } catch (error) {
