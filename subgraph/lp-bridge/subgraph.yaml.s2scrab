@@ -3,12 +3,12 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: Sub2SubLpBridge
-    network: darwinia
+    name: LpBridge
+    network: crab
     source:
-      address: "0x25bD9707d42FBDEBB2a03D6F50ADD1F84dA18833"
-      abi: Sub2SubLpBridge
-      startBlock: 12065660
+      address: "0x0C2E72C10D2db4BD00960151B114d56E2a2daEc7"
+      abi: LpBridge
+      startBlock: 14243216
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -18,8 +18,8 @@ dataSources:
         - FeeUpdated
         - TransferRelayed
       abis:
-        - name: Sub2SubLpBridge
-          file: ./abis/Sub2SubLpBridge.json
+        - name: LpBridge
+          file: ./abis/LpBridge.json
       eventHandlers:
         - event: TokenLocked(uint64,bool,bool,uint256,bytes32,address,uint112,uint112,address)
           handler: handleTokenLocked
@@ -29,4 +29,4 @@ dataSources:
           handler: handleTransferRelayed
         - event: LiquidityWithdrawn(bytes32,address)
           handler: handleLiquidityWithdrawn
-      file: ./src/Sub2SubLpBridge.ts
+      file: ./src/LpBridge.ts

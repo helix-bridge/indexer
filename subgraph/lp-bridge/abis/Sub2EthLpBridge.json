@@ -143,6 +143,12 @@
       "inputs": [
         {
           "indexed": false,
+          "internalType": "uint64",
+          "name": "toChainId",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
           "internalType": "bool",
           "name": "isNative",
           "type": "bool"
@@ -182,12 +188,6 @@
           "internalType": "uint112",
           "name": "fee",
           "type": "uint112"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
         },
         {
           "indexed": false,
@@ -703,16 +703,6 @@
     {
       "inputs": [
         {
-          "internalType": "uint32",
-          "name": "remoteSpecVersion",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "remoteReceiveGasLimit",
-          "type": "uint256"
-        },
-        {
           "internalType": "uint256",
           "name": "nonce",
           "type": "uint256"
@@ -760,16 +750,6 @@
     },
     {
       "inputs": [
-        {
-          "internalType": "uint32",
-          "name": "remoteSpecVersion",
-          "type": "uint32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "remoteReceiveGasLimit",
-          "type": "uint256"
-        },
         {
           "internalType": "bytes32[]",
           "name": "transferIds",

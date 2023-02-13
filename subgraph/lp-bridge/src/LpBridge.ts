@@ -4,7 +4,7 @@ import {
     FeeUpdated,
     TransferRelayed,
     LiquidityWithdrawn
-} from "../generated/Sub2SubLpBridge/Sub2SubLpBridge"
+} from "../generated/LpBridge/LpBridge"
 import { LpTransferRecord, LpRelayRecord } from "../generated/schema"
 
 export function handleTokenLocked(event: TokenLocked): void {
