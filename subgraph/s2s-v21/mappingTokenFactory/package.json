@@ -1,16 +1,16 @@
 {
-  "name": "s2sMappingTokenFactory",
+  "name": "s2sissuing",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "create-darwinia-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ s2sMappingTokenFactory/darwinia",
-    "deploy-darwinia-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ s2sMappingTokenFactory/darwinia",
-    "create-crab-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ s2sMappingTokenFactory/crab",
-    "deploy-crab-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ s2sMappingTokenFactory/crab",
-    "create-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph create --node http://graph-node:8020/ s2sMappingTokenFactory/darwinia",
-    "remove-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph remove --node http://graph-node:8020/ s2sMappingTokenFactory/darwinia",
-    "deploy-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 s2sMappingTokenFactory/darwinia"
+    "create-darwinia-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ s2sissuing/darwinia",
+    "deploy-darwinia-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ s2sissuing/darwinia",
+    "create-crab-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ s2sissuing/crab",
+    "deploy-crab-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ s2sissuing/crab",
+    "create-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph create --node http://graph-node:8020/ s2sissuing/darwinia",
+    "remove-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph remove --node http://graph-node:8020/ s2sissuing/darwinia",
+    "deploy-darwinia-local": "cp subgraph.yaml.darwinia subgraph.yaml; graph deploy --node http://graph-node:8020/ --ipfs http://ipfs:5001 s2sissuing/darwinia"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.21.1",
