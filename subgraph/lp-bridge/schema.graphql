@@ -22,5 +22,6 @@ type LpRelayRecord @entity {
   relayer: Bytes!
   transaction_hash: Bytes!
   timestamp: BigInt!
+  canceled: Boolean!
 }
 

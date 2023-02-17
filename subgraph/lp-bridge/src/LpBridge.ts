@@ -3,7 +3,8 @@ import {
     TokenLocked,
     FeeUpdated,
     TransferRelayed,
-    LiquidityWithdrawn
+    LiquidityWithdrawn,
+    TransferCanceled
 } from "../generated/LpBridge/LpBridge"
 import { LpTransferRecord, LpRelayRecord } from "../generated/schema"
 
@@ -51,7 +52,7 @@ export function handleLiquidityWithdrawn(event: LiquidityWithdrawn): void {
 }
 
 export function handleTransferRelayed(event: TransferRelayed): void {
-let message_id = event.params.transferId.toHexString();
+  let message_id = event.params.transferId.toHexString();
   let entity = LpRelayRecord.load(message_id);
   if (entity == null) {
       entity = new LpRelayRecord(message_id);
@@ -59,6 +60,20 @@ let message_id = event.params.transferId.toHexString();
   entity.relayer = event.params.relayer;
   entity.timestamp = event.block.timestamp;
   entity.transaction_hash = event.transaction.hash;
+  entity.canceled = false;
+  entity.save();
+}
+
+export function handleTransferCanceled(event: TransferCanceled): void {
+  let message_id = event.params.transferId.toHexString();
+  let entity = LpRelayRecord.load(message_id);
+  if (entity == null) {
+      entity = new LpRelayRecord(message_id);
+  }
+  entity.relayer = event.params.sender;
+  entity.timestamp = event.block.timestamp;
+  entity.transaction_hash = event.transaction.hash;
+  entity.canceled = true;
   entity.save();
 }
 
