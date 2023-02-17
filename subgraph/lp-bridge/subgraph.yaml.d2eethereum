@@ -29,4 +29,6 @@ dataSources:
           handler: handleTransferRelayed
         - event: LiquidityWithdrawn(bytes32,address)
           handler: handleLiquidityWithdrawn
+        - event: TransferCanceled(bytes32,address)
+          handler: handleTransferCanceled
       file: ./src/LpBridge.ts
