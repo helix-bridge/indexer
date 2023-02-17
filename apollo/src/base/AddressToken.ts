@@ -16,8 +16,7 @@ export abstract class AddressToken {
   }
 
   public findInfoByOrigin(key: string, origin: string) {
-    return Object.values(this.addressToTokenInfo[key]).find(
-      (item: Token) => item.origin === origin
-    );
+    const tokenMap = this.addressToTokenInfo[key];
+    return Object.keys(tokenMap).find((k: string) => tokenMap[k].origin === origin);
   }
 }

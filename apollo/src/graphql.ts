@@ -19,7 +19,7 @@ export abstract class IQuery {
 
     abstract queryDailyStatistics(timepast: number, first?: Nullable<number>, from?: Nullable<string>, to?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>): Nullable<Nullable<DailyStatistics>[]> | Promise<Nullable<Nullable<DailyStatistics>[]>>;
 
-    abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, fromChains?: Nullable<Nullable<string>[]>, toChains?: Nullable<Nullable<string>[]>, row?: Nullable<number>, page?: Nullable<number>, results?: Nullable<Nullable<number>[]>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
+    abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, fromChains?: Nullable<Nullable<string>[]>, toChains?: Nullable<Nullable<string>[]>, bridges?: Nullable<Nullable<string>[]>, row?: Nullable<number>, page?: Nullable<number>, results?: Nullable<Nullable<number>[]>, recvTokenAddress?: Nullable<string>, order?: Nullable<string>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
 
     abstract queryGuardNeedSignature(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, guardAddress?: Nullable<string>, row?: Nullable<number>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
 }

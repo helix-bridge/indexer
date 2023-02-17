@@ -45,7 +45,7 @@ type HistoryRecords {
 type Query {
   historyRecordById(id: String): HistoryRecord
   queryDailyStatistics(timepast: Int!, first: Int, from: String, to: String, bridge: String, token: String): [DailyStatistics]
-  historyRecords(sender: String, recipient: String, fromChains: [String], toChains: [String], row: Int, page: Int, results: [Int]): HistoryRecords
+  historyRecords(sender: String, recipient: String, fromChains: [String], toChains: [String], bridges: [String], row: Int, page: Int, results: [Int], recvTokenAddress: String,  order: String): HistoryRecords
   queryGuardNeedSignature(fromChain: String, toChain: String, bridge: String, guardAddress: String, row: Int): HistoryRecords
 }
 

@@ -22,6 +22,7 @@ export interface PartnerT2 {
   chainId: number;
   chain: string;
   url: string; // record api endpoint
+  bridge: string;
 }
 
 export abstract class BaseTransferServiceT2 extends AddressToken {
