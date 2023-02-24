@@ -136,4 +136,29 @@ export class AggregationResolver {
       where,
     });
   }
+
+  @Query()
+  async queryRelayRecords(
+    @Args('fromChain') fromChain: string,
+    @Args('toChain') toChain: string,
+    @Args('bridge') bridge: string,
+    @Args('relayer') relayer: string,
+    @Args('row') row: number
+  ) {
+    const take = row || 16;
+    const baseFilters = { fromChain, toChain, bridge, relayer };
+    const filterWithdrawn = { endTxHash: '' };
+
+    const where = {
+      ...baseFilters,
+      ...filterWithdrawn,
+    };
+
+    return this.aggregationService.queryHistoryRecords({
+      skip: 0,
+      take,
+      where,
+    });
+  }
 }
+
