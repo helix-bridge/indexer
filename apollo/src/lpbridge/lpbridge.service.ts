@@ -167,7 +167,7 @@ export class LpbridgeService implements OnModuleInit {
         })
         .then((result) => result.records);
 
-      if (uncheckedRecords.length <= this.takeEachTime) {
+      if (uncheckedRecords.length < this.takeEachTime) {
         this.skip[index] = 0;
       } else {
         this.skip[index] += this.takeEachTime;
@@ -213,7 +213,7 @@ export class LpbridgeService implements OnModuleInit {
             }
         }
 
-        if (txStatus === RecordStatus.pendingToConfirmRefund) {
+        if (txStatus === RecordStatus.pendingToConfirmRefund || txStatus === RecordStatus.pending) {
             const transferRecord = await this.queryRecord(transfer, transferId);
             if (transferRecord) {
                 if (transferRecord.liquidate_withdrawn_sender === record.sender) {
