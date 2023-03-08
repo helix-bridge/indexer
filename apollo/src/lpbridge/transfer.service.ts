@@ -9,6 +9,8 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly darwiniaSub2SubLpEndpoint = this.configService.get<string>('DARWINIA_S2S_LP_ENDPOINT');
   private readonly ethereumSub2EthEndpoint = this.configService.get<string>('ETHEREUM_S2E_LP_ENDPOINT');
   private readonly darwiniaSub2EthLpEndpoint = this.configService.get<string>('DARWINIA_S2E_LP_ENDPOINT');
+  private readonly goerliArb2EthEndpoint = this.configService.get<string>('GOERLI_A2E_LN_ENDPOINT');
+  private readonly arbitrumArb2EthEndpoint = this.configService.get<string>('ARBITRUM_A2E_LN_ENDPOINT');
 
   formalChainTransfers: PartnerT2[] = [
     /*
@@ -39,9 +41,36 @@ export class TransferService extends BaseTransferServiceT2 {
     },
   ];
 
-  testChainTransfers: PartnerT2[] = [];
+  testChainTransfers: PartnerT2[] = [
+    {
+      chainId: 5,
+      chain: 'goerli',
+      url: this.goerliArb2EthEndpoint,
+      bridge: 'arb2ethln',
+    },
+    {
+      chainId: 421613,
+      chain: 'arbitrum-goerli',
+      url: this.arbitrumArb2EthEndpoint,
+      bridge: 'arb2ethln',
+    },
+  ];
 
   readonly addressToTokenInfo: { [key: string]: AddressTokenMap } = {
+    'arbitrum-goerli': {
+      '0xfbad806bdf9cec2943be281fb355da05068de925': {
+        token: 'RING',
+        decimals: 1e18,
+        origin: 'RING',
+      },
+    },
+    'goerli': {
+      '0x1836bafa3016dd5ce543d0f7199cb858ec69f41e': {
+        token: 'RING',
+        decimals: 1e18,
+        origin: 'RING',
+      }
+    },
     'crab-dvm': {
       '0x2d2b97ea380b0185e9fdf8271d1afb5d2bf18329': {
         token: 'WCRAB',

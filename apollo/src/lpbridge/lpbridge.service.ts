@@ -266,7 +266,7 @@ export class LpbridgeService implements OnModuleInit {
         }
       }
     } catch (error) {
-      this.logger.warn(`fetch cbridge status failed, error ${error}`);
+      this.logger.warn(`fetch lnbridge status failed, error ${error}`);
     }
   }
 }
