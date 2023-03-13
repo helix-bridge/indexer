@@ -6,7 +6,7 @@ type HistoryRecord {
   fromChain: String!
   toChain: String!
   bridge: String!
-  reason: String # result 的补充说明
+  reason: String
   nonce: BigInt!
   requestTxHash: String!
   responseTxHash: String
@@ -25,6 +25,8 @@ type HistoryRecord {
   sendTokenAddress: String
   recvTokenAddress: String
   guardSignatures: String
+  relayer: String
+  endTxHash: String
 }
 
 type DailyStatistics {
@@ -47,6 +49,7 @@ type Query {
   queryDailyStatistics(timepast: Int!, first: Int, from: String, to: String, bridge: String, token: String): [DailyStatistics]
   historyRecords(sender: String, recipient: String, fromChains: [String], toChains: [String], bridges: [String], row: Int, page: Int, results: [Int], recvTokenAddress: String,  order: String): HistoryRecords
   queryGuardNeedSignature(fromChain: String, toChain: String, bridge: String, guardAddress: String, row: Int): HistoryRecords
+  queryRelayRecords(fromChain: String, toChain: String, bridge: String, relayer: String, row: Int): HistoryRecords
 }
 
 type Mutation {

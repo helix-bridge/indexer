@@ -127,6 +127,7 @@ export class LpbridgeService implements OnModuleInit {
             reason: '',
             sendTokenAddress: record.token,
             recvTokenAddress: tokenAddress,
+            endTxHash: '',
           });
           latestNonce += 1;
         }
@@ -161,12 +162,12 @@ export class LpbridgeService implements OnModuleInit {
           where: {
             fromChain: transfer.chain,
             bridge: 'lpbridge-' + transfer.chain,
-            responseTxHash: '',
+            endTxHash: '',
           },
         })
         .then((result) => result.records);
 
-      if (uncheckedRecords.length <= this.takeEachTime) {
+      if (uncheckedRecords.length < this.takeEachTime) {
         this.skip[index] = 0;
       } else {
         this.skip[index] += this.takeEachTime;
@@ -182,7 +183,7 @@ export class LpbridgeService implements OnModuleInit {
 
         if (txStatus === RecordStatus.pending) {
             const toChain = this.getDestChain(Number(dstChainId), transfer.bridge);
-            const query = `query { lpRelayRecord(id: "${transferId}") { id, timestamp, transaction_hash, canceled }}`;
+            const query = `query { lpRelayRecord(id: "${transferId}") { id, relayer, timestamp, transaction_hash, canceled }}`;
             const relayRecord = await axios
             .post(toChain.url, {
                 query: query,
@@ -198,6 +199,7 @@ export class LpbridgeService implements OnModuleInit {
                     endTime: relayRecord.canceled ? 0 : Number(relayRecord.timestamp),
                     recvAmount: record.sendAmount,
                     recvToken: record.recvToken,
+                    relayer: relayRecord.relayer,
                 };
 
                 await this.aggregationService.updateHistoryRecord({
@@ -211,7 +213,7 @@ export class LpbridgeService implements OnModuleInit {
             }
         }
 
-        if (txStatus === RecordStatus.pendingToConfirmRefund) {
+        if (txStatus === RecordStatus.pendingToConfirmRefund || txStatus === RecordStatus.pending) {
             const transferRecord = await this.queryRecord(transfer, transferId);
             if (transferRecord) {
                 if (transferRecord.liquidate_withdrawn_sender === record.sender) {
@@ -221,6 +223,7 @@ export class LpbridgeService implements OnModuleInit {
                         result: RecordStatus.refunded,
                         responseTxHash: transferRecord.liquidate_transaction_hash,
                         endTime: Number(transferRecord.liquidate_withdrawn_timestamp),
+                        endTxHash: transferRecord.liquidate_transaction_hash,
                     };
 
                     await this.aggregationService.updateHistoryRecord({
@@ -244,10 +247,26 @@ export class LpbridgeService implements OnModuleInit {
                     );
                 }
             }
+        } else if (txStatus === RecordStatus.success) {
+            const transferRecord = await this.queryRecord(transfer, transferId);
+            if (transferRecord?.liquidate_transaction_hash) {
+                record.endTxHash = transferRecord.liquidate_transaction_hash;
+                const updateData = {
+                    endTxHash: transferRecord.liquidate_transaction_hash,
+                };
+                await this.aggregationService.updateHistoryRecord({
+                    where: { id: record.id },
+                    data: updateData,
+                });
+                this.logger.log(
+                    `lpbridge finished: ${record.id} endTxHash: ${transferRecord.liquidate_transaction_hash}`
+                );
+                return;
+            }
         }
       }
     } catch (error) {
-      this.logger.warn(`fetch cbridge status failed, error ${error}`);
+      this.logger.warn(`fetch lnbridge status failed, error ${error}`);
     }
   }
 }
