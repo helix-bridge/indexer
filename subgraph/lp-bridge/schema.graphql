@@ -23,5 +23,6 @@ type LpRelayRecord @entity {
   transaction_hash: Bytes!
   timestamp: BigInt!
   canceled: Boolean!
+  calceledId: Bytes!
 }
 

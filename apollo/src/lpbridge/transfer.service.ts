@@ -6,11 +6,19 @@ import { AddressTokenMap } from '../base/AddressToken';
 @Injectable()
 export class TransferService extends BaseTransferServiceT2 {
   private readonly crabSub2SubLpEndpoint = this.configService.get<string>('CRAB_S2S_LP_ENDPOINT');
-  private readonly darwiniaSub2SubLpEndpoint = this.configService.get<string>('DARWINIA_S2S_LP_ENDPOINT');
-  private readonly ethereumSub2EthEndpoint = this.configService.get<string>('ETHEREUM_S2E_LP_ENDPOINT');
-  private readonly darwiniaSub2EthLpEndpoint = this.configService.get<string>('DARWINIA_S2E_LP_ENDPOINT');
+  private readonly darwiniaSub2SubLpEndpoint = this.configService.get<string>(
+    'DARWINIA_S2S_LP_ENDPOINT'
+  );
+  private readonly ethereumSub2EthEndpoint = this.configService.get<string>(
+    'ETHEREUM_S2E_LP_ENDPOINT'
+  );
+  private readonly darwiniaSub2EthLpEndpoint = this.configService.get<string>(
+    'DARWINIA_S2E_LP_ENDPOINT'
+  );
   private readonly goerliArb2EthEndpoint = this.configService.get<string>('GOERLI_A2E_LN_ENDPOINT');
-  private readonly arbitrumArb2EthEndpoint = this.configService.get<string>('ARBITRUM_A2E_LN_ENDPOINT');
+  private readonly arbitrumArb2EthEndpoint = this.configService.get<string>(
+    'ARBITRUM_A2E_LN_ENDPOINT'
+  );
 
   formalChainTransfers: PartnerT2[] = [
     /*
@@ -64,12 +72,12 @@ export class TransferService extends BaseTransferServiceT2 {
         origin: 'RING',
       },
     },
-    'goerli': {
+    goerli: {
       '0x1836bafa3016dd5ce543d0f7199cb858ec69f41e': {
         token: 'RING',
         decimals: 1e18,
         origin: 'RING',
-      }
+      },
     },
     'crab-dvm': {
       '0x2d2b97ea380b0185e9fdf8271d1afb5d2bf18329': {
@@ -95,7 +103,7 @@ export class TransferService extends BaseTransferServiceT2 {
         origin: 'WRING',
       },
     },
-    'ethereum': {
+    ethereum: {
       '0x9469d013805bffb7d3debe5e7839237e535ec483': {
         token: 'RING',
         decimals: 1e18,

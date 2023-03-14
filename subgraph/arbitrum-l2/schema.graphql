@@ -1,0 +1,19 @@
+type L1ToL2TransferRecord @entity {
+  id: ID!
+  token: Bytes!
+  sender: Bytes!
+  receiver: Bytes!
+  amount: BigInt!
+  timestamp: BigInt!
+  transaction_hash: Bytes!
+  fee: BigInt
+}
+
+type L1ToL2RelayRecord @entity {
+  id: ID!
+  nonce: String!
+  transaction_hash: Bytes!
+  timestamp: BigInt!
+  failure: Boolean!
+}
+

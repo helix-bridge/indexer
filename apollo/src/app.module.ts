@@ -20,6 +20,7 @@ import { Sub2ethv2Module } from './sub2ethv2/sub2ethv2.module';
 import { WtokenModule } from './wtoken/wtoken.module';
 import { S2sv21Module } from './s2sv21/s2sv21.module';
 import { LpbridgeModule } from './lpbridge/lpbridge.module';
+import { L2arbitrumModule } from './l2arbitrum/l2arbitrum.module';
 
 const chainEnvFilePath = `.env.${process.env.NODE_ENV || 'prod'}`;
 
@@ -47,13 +48,13 @@ export class BigIntScalar extends BigInt {}
     Substrate2dvmModule,
     Substrate2parachainModule,
     CbridgeModule,
-    //S2sv2Module,
     StatisticModule,
     XcmModule,
     Sub2ethv2Module,
     LpbridgeModule,
     WtokenModule,
     S2sv21Module,
+    L2arbitrumModule,
   ],
   controllers: [AppController],
   providers: [AppService, BigIntScalar],

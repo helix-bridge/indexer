@@ -1,0 +1,24 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: L1ERC20Gateway
+    network: ethereum
+    source:
+      address: "0x715D99480b77A8d9D603638e593a539E21345FdF"
+      abi: L1ERC20Gateway
+      startBlock: 8624790
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - DepositInitiated
+      abis:
+        - name: L1ERC20Gateway
+          file: ./abis/L1ERC20Gateway.json
+      eventHandlers:
+        - event: DepositInitiated(address,indexed address,indexed address,indexed uint256,uint256)
+          handler: handleDepositInitiated
+      file: ./src/L1ERC20Gateway.ts

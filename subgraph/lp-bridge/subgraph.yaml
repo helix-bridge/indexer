@@ -3,30 +3,25 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: Sub2SubLpBridge
-    network: darwinia
+    name: LnArbitrumL1Issuing
+    network: ethereum
     source:
-      address: "0x25bD9707d42FBDEBB2a03D6F50ADD1F84dA18833"
-      abi: Sub2SubLpBridge
-      startBlock: 12065660
+      address: "0x3d33856dCf74f110690f5a2647C7dFb9BB5Ff2d0"
+      abi: LnArbitrumL1Issuing
+      startBlock: 8565285
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
-        - TokenLocked
-        - FeeUpdated
         - TransferRelayed
+        - TransferCanceled
       abis:
-        - name: Sub2SubLpBridge
-          file: ./abis/Sub2SubLpBridge.json
+        - name: LnArbitrumL1Issuing
+          file: ./abis/LnArbitrumL1Issuing.json
       eventHandlers:
-        - event: TokenLocked(uint64,bool,bool,uint256,bytes32,address,uint112,uint112,address)
-          handler: handleTokenLocked
-        - event: FeeUpdated(bytes32,uint256)
-          handler: handelFeeUpdated
         - event: TransferRelayed(bytes32,address)
           handler: handleTransferRelayed
-        - event: LiquidityWithdrawn(bytes32,address)
-          handler: handleLiquidityWithdrawn
-      file: ./src/Sub2SubLpBridge.ts
+        - event: TransferCanceled(bytes32,address)
+          handler: handleTransferCanceled
+      file: ./src/LpBridge.ts
