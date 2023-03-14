@@ -12,6 +12,13 @@
 # production
 /build
 
+# build
+**/build
+**/generated
+**/subgraph.yaml
+
+*.swp
+
 # misc
 .DS_Store
 .env.local
