@@ -6,22 +6,22 @@ const helixFlag = BigInt(204);
 
 // X1
 const parachainX1Assets = {
-    2004: 'PHA',
-    2012: 'CSM',
-}
+  2004: 'PHA',
+  2012: 'CSM',
+};
 
 // X2
 const parachainX2Assets = {
-    2000: {
-        'key': 'generalKey',
-        '0x0080': 'KAR',
-        '0x0081': 'aUSD',
-    },
-    2023: {
-        'key': 'palletInstance',
-        10: 'MOVR',
-    },
-}
+  2000: {
+    key: 'generalKey',
+    '0x0080': 'KAR',
+    '0x0081': 'aUSD',
+  },
+  2023: {
+    key: 'palletInstance',
+    10: 'MOVR',
+  },
+};
 
 export class EventHandler {
   private event: SubstrateEvent;
@@ -77,24 +77,24 @@ export class EventHandler {
   }
 
   private xcmSendMessageId(destChainId: string): string {
-      const [messageHash] = JSON.parse(this.data) as [string];
-      return thisChainId + '-' + destChainId + '-' + messageHash;
+    const [messageHash] = JSON.parse(this.data) as [string];
+    return thisChainId + '-' + destChainId + '-' + messageHash;
   }
 
   private xcmRecvMessageId(sourceChainId: string): string {
-      const [messageHash] = JSON.parse(this.data) as [string];
-      return sourceChainId + '-' + thisChainId + '-' + messageHash;
+    const [messageHash] = JSON.parse(this.data) as [string];
+    return sourceChainId + '-' + thisChainId + '-' + messageHash;
   }
 
   private xcmRecvParachainId(): string {
-      const extrinsicArgs = this.event.extrinsic?.extrinsic?.args?.toString();
+    const extrinsicArgs = this.event.extrinsic?.extrinsic?.args?.toString();
 
-      if (!extrinsicArgs) {
-          return;
-      }
-      const chainIds = JSON.parse(extrinsicArgs)?.horizontalMessages;
-      const sourceChainId = Object.keys(chainIds).find(id => chainIds[id].length > 0);
-      return sourceChainId;
+    if (!extrinsicArgs) {
+      return;
+    }
+    const chainIds = JSON.parse(extrinsicArgs)?.horizontalMessages;
+    const sourceChainId = Object.keys(chainIds).find((id) => chainIds[id].length > 0);
+    return sourceChainId;
   }
 
   public async save() {
@@ -114,7 +114,7 @@ export class EventHandler {
     const extrinsicArgs = this.event.extrinsic?.extrinsic?.args?.toString();
     // not substrate extrinsic, current not support ethereum tx
     if (!extrinsicArgs) {
-        return;
+      return;
     }
     const args = '[' + extrinsicArgs + ']';
     const [dest, beneficiary, assets, _fee] = JSON.parse(args);
@@ -122,7 +122,7 @@ export class EventHandler {
     const destChain = dest?.v1?.interior?.x1?.parachain;
     const amount = assets?.v1?.[0].fun?.fungible;
     if (!destChain || !amount) {
-        return;
+      return;
     }
 
     let index = 0;
@@ -139,11 +139,11 @@ export class EventHandler {
       index++;
     }
 
-    let flag = BigInt(amount) % BigInt(1000);
+    const flag = BigInt(amount) % BigInt(1000);
     if (flag !== helixFlag) {
-        return;
+      return;
     }
-    
+
     //asset
     const event = new XcmSentEvent(messageId + '-' + index);
     event.destChainId = destChain;
@@ -151,31 +151,31 @@ export class EventHandler {
     const asset = assets.v1?.[0].id?.concrete?.interior;
     // local asset
     if (asset) {
-        if (asset.here !== undefined) {
-            event.token = 'SDN';
+      if (asset.here !== undefined) {
+        event.token = 'SDN';
+      } else {
+        // X1
+        const parachainNativeToken = parachainX1Assets[asset.x1?.parachain];
+        if (parachainNativeToken) {
+          event.token = parachainNativeToken;
         } else {
-            // X1
-            const parachainNativeToken = parachainX1Assets[asset.x1?.parachain];
-            if (parachainNativeToken) {
-                event.token = parachainNativeToken
-            } else {
-                // X2
-                event.token = asset;
-                const parachainX2Chain = parachainX2Assets[asset.x2?.[0].parachain]
-                if (parachainX2Chain) {
-                    const parachainX2Token = parachainX2Chain[asset.x2?.[1][parachainX2Chain.key]]
-                    if (parachainX2Token) {
-                        event.token = parachainX2Token
-                    }
-                }
+          // X2
+          event.token = asset;
+          const parachainX2Chain = parachainX2Assets[asset.x2?.[0].parachain];
+          if (parachainX2Chain) {
+            const parachainX2Token = parachainX2Chain[asset.x2?.[1][parachainX2Chain.key]];
+            if (parachainX2Token) {
+              event.token = parachainX2Token;
             }
+          }
         }
+      }
     }
 
     // recipient
     let recipient = beneficiary.v1?.interior?.x1?.accountId32?.id;
     if (!recipient) {
-        recipient = beneficiary.v1?.interior?.x1?.accountKey20?.key;
+      recipient = beneficiary.v1?.interior?.x1?.accountKey20?.key;
     }
     event.recipient = recipient;
 
@@ -188,9 +188,9 @@ export class EventHandler {
 
   // save all the faild xcm message
   public async handleXcmMessageReceivedFailed() {
-    const sourceChainId =  this.xcmRecvParachainId();
+    const sourceChainId = this.xcmRecvParachainId();
     if (!sourceChainId) {
-        return;
+      return;
     }
 
     const messageId = this.xcmRecvMessageId(sourceChainId);
@@ -216,9 +216,9 @@ export class EventHandler {
   }
 
   public async handleXcmMessageReceivedSuccessed() {
-    const sourceChainId =  this.xcmRecvParachainId();
+    const sourceChainId = this.xcmRecvParachainId();
     if (!sourceChainId) {
-        return;
+      return;
     }
 
     const messageId = this.xcmRecvMessageId(sourceChainId);
@@ -228,39 +228,39 @@ export class EventHandler {
     let recipient: string;
 
     this.event?.extrinsic?.events.find((item, index, events) => {
-        if (item.event.index === this.event.event.index) {
-            let feeEvent = events[index-1];
-            if (feeEvent?.event?.method === 'Issued') {
-                const transferEvent = events[index-2];
-                if (transferEvent) {
-                    const [_feeCurrencyId, _feeAccount, fee] = JSON.parse(feeEvent.event.data.toString());
-                    const [_currencyId, account, amount] = JSON.parse(transferEvent.event.data.toString());
-                    totalAmount = BigInt(fee) + BigInt(amount);
-                    recipient = account;
-                    recvAmount = BigInt(amount);
-                }
-            // deposit
-            } else {
-                let transferEvent = events[index-1];
-                let totalEvent = events[index-2];
-                if (transferEvent.event.method !== 'Deposit') {
-                    transferEvent = events[index-2];
-                    totalEvent = events[index-3];
-                }
-                if (transferEvent && totalEvent) {
-                    const [account, amount] = JSON.parse(transferEvent.event.data.toString());
-                    const [_hostAccount, total] = JSON.parse(totalEvent.event.data.toString());
-                    totalAmount = BigInt(total);
-                    recipient = account;
-                    recvAmount = BigInt(amount);
-                }
-            }
+      if (item.event.index === this.event.event.index) {
+        const feeEvent = events[index - 1];
+        if (feeEvent?.event?.method === 'Issued') {
+          const transferEvent = events[index - 2];
+          if (transferEvent) {
+            const [_feeCurrencyId, _feeAccount, fee] = JSON.parse(feeEvent.event.data.toString());
+            const [_currencyId, account, amount] = JSON.parse(transferEvent.event.data.toString());
+            totalAmount = BigInt(fee) + BigInt(amount);
+            recipient = account;
+            recvAmount = BigInt(amount);
+          }
+          // deposit
+        } else {
+          let transferEvent = events[index - 1];
+          let totalEvent = events[index - 2];
+          if (transferEvent.event.method !== 'Deposit') {
+            transferEvent = events[index - 2];
+            totalEvent = events[index - 3];
+          }
+          if (transferEvent && totalEvent) {
+            const [account, amount] = JSON.parse(transferEvent.event.data.toString());
+            const [_hostAccount, total] = JSON.parse(totalEvent.event.data.toString());
+            totalAmount = BigInt(total);
+            recipient = account;
+            recvAmount = BigInt(amount);
+          }
         }
+      }
     });
 
-    let flag = totalAmount % BigInt(1000);
+    const flag = totalAmount % BigInt(1000);
     if (flag !== helixFlag) {
-        return;
+      return;
     }
 
     if (!recipient) {

@@ -4,11 +4,10 @@ import { Block, BridgeDispatchEvent, S2SEvent, Transfer } from '../types';
 import { AccountHandler } from './account';
 
 const FilterAddress: string[] = [
-    // darwinia s2s endpoint
-    "0xc876d0873e4060472334e297b2db200ca10cc806",
-    "0xf18d136b0ae173a1fc361e5367e3de6128c2ee5d",
+  // darwinia s2s endpoint
+  '0xc876d0873e4060472334e297b2db200ca10cc806',
+  '0xf18d136b0ae173a1fc361e5367e3de6128c2ee5d',
 ];
-
 
 export class EventHandler {
   private event: SubstrateEvent;
@@ -98,21 +97,25 @@ export class EventHandler {
     event.timestamp = this.timestamp;
     // the dispatch call result is err
     if (this.method === 'MessageDispatched' && result.ok === undefined) {
-        event.method = 'MessageDispatched(Err)'
+      event.method = 'MessageDispatched(Err)';
     }
     // the call is message_call, and reverted
     if (this.method === 'MessageDispatched') {
-        if (this.index > 1) {
-            const maybeEthereumExecuteEvent = this.event?.extrinsic?.events[this.index-2];
-            if (maybeEthereumExecuteEvent &&
-                maybeEthereumExecuteEvent.event.method === 'Executed' &&
-                maybeEthereumExecuteEvent.event.section === 'ethereum') {
-              const [_from, _to, _transactionHash, exitReason] = JSON.parse(maybeEthereumExecuteEvent.event.data.toString());
-              if (exitReason.revert) {
-                  event.method = 'MessageDispatched(Revert)'
-              }
+      if (this.index > 1) {
+        const maybeEthereumExecuteEvent = this.event?.extrinsic?.events[this.index - 2];
+        if (
+          maybeEthereumExecuteEvent &&
+          maybeEthereumExecuteEvent.event.method === 'Executed' &&
+          maybeEthereumExecuteEvent.event.section === 'ethereum'
+        ) {
+          const [_from, _to, _transactionHash, exitReason] = JSON.parse(
+            maybeEthereumExecuteEvent.event.data.toString()
+          );
+          if (exitReason.revert) {
+            event.method = 'MessageDispatched(Revert)';
           }
         }
+      }
     }
 
     await event.save();
@@ -171,14 +174,14 @@ export class EventHandler {
     if (!senderIsDvm && recipientIsDvm) {
       const recipientDvm = AccountHandler.truncateToDvmAddress(recipient);
       if (FilterAddress.includes(recipientDvm)) {
-          return;
+        return;
       }
 
       await this.handleTransfer('crab', 'crab-dvm', sender, recipientDvm, amount);
     } else if (senderIsDvm && !recipientIsDvm) {
       const senderDvm = AccountHandler.truncateToDvmAddress(sender);
       if (FilterAddress.includes(senderDvm)) {
-          return;
+        return;
       }
 
       // @see https://crab.subscan.io/extrinsic/11451549-0 治理或 evm 发出的交易可能没有extrinsics

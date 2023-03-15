@@ -27,26 +27,6 @@ export class TransferService extends BaseTransferServiceT1 {
         },
       ],
     },
-    {
-      source: {
-        chain: 'crab-dvm',
-        url: this.endpoint + '/crab',
-        feeToken: 'CRAB',
-      },
-      target: {
-        chain: 'crab-dvm',
-        url: this.endpoint + '/crab',
-        feeToken: 'CRAB',
-      },
-      isLock: true,
-      symbols: [
-        {
-          from: 'CRAB',
-          to: 'WCRAB',
-          address: '',
-        },
-      ],
-    },
   ];
 
   testChainTransfers: TransferT1[] = [];

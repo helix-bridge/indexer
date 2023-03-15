@@ -1,5 +1,12 @@
 import { SubstrateEvent } from '@subql/types';
-import { Block, BridgeDispatchEvent, TransferRecord, RefundTransferRecord, XcmSentEvent, XcmReceivedEvent } from '../types';
+import {
+  Block,
+  BridgeDispatchEvent,
+  TransferRecord,
+  RefundTransferRecord,
+  XcmSentEvent,
+  XcmReceivedEvent,
+} from '../types';
 import { AccountHandler } from './account';
 
 const thisChainId = '2105';
@@ -62,27 +69,25 @@ export class EventHandler {
   }
 
   private xcmSendMessageId(destChainId: string): string {
-      const [messageHash] = JSON.parse(this.data) as [string];
-      return thisChainId + '-' + destChainId + '-' + messageHash;
+    const [messageHash] = JSON.parse(this.data) as [string];
+    return thisChainId + '-' + destChainId + '-' + messageHash;
   }
 
   private xcmRecvMessageId(sourceChainId: string): string {
-      const [messageHash] = JSON.parse(this.data) as [string];
-      return sourceChainId + '-' + thisChainId + '-' + messageHash;
+    const [messageHash] = JSON.parse(this.data) as [string];
+    return sourceChainId + '-' + thisChainId + '-' + messageHash;
   }
 
   private xcmRecvParachainId(): string {
-      const extrinsicArgs = this.event.extrinsic?.extrinsic?.args?.toString();
+    const extrinsicArgs = this.event.extrinsic?.extrinsic?.args?.toString();
 
-      if (!extrinsicArgs) {
-          return;
-      }
-      const chainIds = JSON.parse(extrinsicArgs)?.horizontalMessages;
-      const sourceChainId = Object.keys(chainIds).find(id => chainIds[id].length > 0);
-      return sourceChainId;
+    if (!extrinsicArgs) {
+      return;
+    }
+    const chainIds = JSON.parse(extrinsicArgs)?.horizontalMessages;
+    const sourceChainId = Object.keys(chainIds).find((id) => chainIds[id].length > 0);
+    return sourceChainId;
   }
-
-
 
   public async save() {
     if (this.section === 'bridgeCrabDispatch') {
@@ -118,9 +123,9 @@ export class EventHandler {
     const balanceTransferEvent = this.event?.extrinsic?.events.find((item) => {
       if (item.event.method === 'Transfer') {
         const [_sender, _2, amount] = JSON.parse(item.event.data.toString());
-        let flag = BigInt(amount) % BigInt(1000);
+        const flag = BigInt(amount) % BigInt(1000);
         if (flag === helixFlag) {
-            return true;
+          return true;
         }
       }
       return false;
@@ -134,7 +139,7 @@ export class EventHandler {
     const [dest, beneficiary, _assets, _feeAssetItem] = JSON.parse(args);
     const destChainId = dest.v1?.interior?.x1?.parachain;
     if (!destChainId) {
-        return;
+      return;
     }
 
     let index = 0;
@@ -171,9 +176,9 @@ export class EventHandler {
 
   // save all the faild xcm message
   public async handleXcmMessageReceivedFailed() {
-    const sourceChainId =  this.xcmRecvParachainId();
+    const sourceChainId = this.xcmRecvParachainId();
     if (!sourceChainId) {
-        return;
+      return;
     }
 
     const messageId = this.xcmRecvMessageId(sourceChainId);
@@ -199,9 +204,9 @@ export class EventHandler {
   }
 
   public async handleXcmMessageReceivedSuccessed() {
-    const sourceChainId =  this.xcmRecvParachainId();
+    const sourceChainId = this.xcmRecvParachainId();
     if (!sourceChainId) {
-        return;
+      return;
     }
 
     const messageId = this.xcmRecvMessageId(sourceChainId);
@@ -211,19 +216,19 @@ export class EventHandler {
     let recipient: string;
 
     this.event?.extrinsic?.events.find((item, index, events) => {
-        if (item.event.index === this.event.event.index) {
-            const feeEvent = events[index-1];
-            const transferEvent = events[index-2];
-            const [_feeAccount, fee] = JSON.parse(feeEvent.event.data.toString());
-            const [account, amount] = JSON.parse(transferEvent.event.data.toString());
-            totalAmount = BigInt(fee) + BigInt(amount);
-            recipient = account;
-            recvAmount = BigInt(amount);
-        }
+      if (item.event.index === this.event.event.index) {
+        const feeEvent = events[index - 1];
+        const transferEvent = events[index - 2];
+        const [_feeAccount, fee] = JSON.parse(feeEvent.event.data.toString());
+        const [account, amount] = JSON.parse(transferEvent.event.data.toString());
+        totalAmount = BigInt(fee) + BigInt(amount);
+        recipient = account;
+        recvAmount = BigInt(amount);
+      }
     });
-    let flag = totalAmount % BigInt(1000);
+    const flag = totalAmount % BigInt(1000);
     if (flag !== helixFlag) {
-        return;
+      return;
     }
     if (!recipient) {
       return;
@@ -260,7 +265,7 @@ export class EventHandler {
     event.block = this.simpleBlock();
     event.timestamp = this.timestamp;
     if (this.method === 'MessageDispatched' && result.ok === undefined) {
-        event.method = 'MessageDispatched(Err)'
+      event.method = 'MessageDispatched(Err)';
     }
 
     await event.save();
@@ -291,31 +296,28 @@ export class EventHandler {
   }
 
   private async handleRemoteUnlockForFailure() {
-      const [refundNonce, failureNonce] = JSON.parse(this.data) as [
-          bigint,
-          bigint,
-      ];
-      const event = new RefundTransferRecord(this.s2sEventId(refundNonce));
-      event.sourceid = this.s2sEventId(failureNonce);
-      event.timestamp = this.timestamp;
-      event.transaction = this.extrinsicHash;
-      await event.save();
+    const [refundNonce, failureNonce] = JSON.parse(this.data) as [bigint, bigint];
+    const event = new RefundTransferRecord(this.s2sEventId(refundNonce));
+    event.sourceid = this.s2sEventId(failureNonce);
+    event.timestamp = this.timestamp;
+    event.transaction = this.extrinsicHash;
+    await event.save();
   }
 
   private async handleTokenIssuedForFailure() {
-      const [_laneId, failureNonce, _recipient, amount] = JSON.parse(this.data) as [
-          string,
-          bigint,
-          string,
-          string
-      ];
-      const event = await TransferRecord.get(this.s2sEventId(failureNonce));
-      if (event) {
-          event.withdrawtimestamp = this.timestamp;
-          event.withdrawamount = amount;
-          event.withdrawtransaction = this.extrinsicHash;
-          await event.save();
-      }
+    const [_laneId, failureNonce, _recipient, amount] = JSON.parse(this.data) as [
+      string,
+      bigint,
+      string,
+      string
+    ];
+    const event = await TransferRecord.get(this.s2sEventId(failureNonce));
+    if (event) {
+      event.withdrawtimestamp = this.timestamp;
+      event.withdrawamount = amount;
+      event.withdrawtransaction = this.extrinsicHash;
+      await event.save();
+    }
   }
 
   private simpleBlock(): Block {

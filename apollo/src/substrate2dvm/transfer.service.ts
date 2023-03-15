@@ -9,31 +9,6 @@ export class TransferService extends BaseTransferServiceT1 {
   formalChainTransfers: TransferT1[] = [
     {
       source: {
-        chain: 'crab',
-        url: this.endpoint + 'crab',
-        feeToken: 'CRAB',
-      },
-      target: {
-        chain: 'crab-dvm',
-        url: this.endpoint + 'crab',
-        feeToken: 'CRAB',
-      },
-      isLock: true,
-      symbols: [
-        {
-          from: 'CRAB',
-          to: 'CRAB',
-          address: 'balances',
-        },
-        {
-          from: 'CKTON',
-          to: 'CKTON',
-          address: 'kton',
-        },
-      ],
-    },
-    {
-      source: {
         chain: 'darwinia',
         url: this.endpoint + 'darwinia',
         feeToken: 'RING',

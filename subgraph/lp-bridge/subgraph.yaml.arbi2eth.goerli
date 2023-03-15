@@ -6,9 +6,9 @@ dataSources:
     name: LnArbitrumL1Issuing
     network: ethereum
     source:
-      address: "0xb3BF74703976BdD817bf2b82660D24A777111981"
+      address: "0x3d33856dCf74f110690f5a2647C7dFb9BB5Ff2d0"
       abi: LnArbitrumL1Issuing
-      startBlock: 16831423
+      startBlock: 8565285
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
