@@ -19,6 +19,8 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly arbitrumArb2EthEndpoint = this.configService.get<string>(
     'ARBITRUM_A2E_LN_ENDPOINT'
   );
+  private readonly ethereumArb2EthEndpoint = this.configService.get<string>('ETHEREUM_A2E_LN_ENDPOINT');
+  private readonly arbitrumMainArb2EthEndpoint = this.configService.get<string>('ARBITRUM_MAIN_A2E_LN_ENDPOINT');
 
   formalChainTransfers: PartnerT2[] = [
     /*
@@ -46,6 +48,18 @@ export class TransferService extends BaseTransferServiceT2 {
       chain: 'darwinia-dvm',
       url: this.darwiniaSub2EthLpEndpoint,
       bridge: 'sub2ethlp',
+    },
+    {
+      chainId: 42161,
+      chain: 'arbitrum',
+      url: this.arbitrumMainArb2EthEndpoint,
+      bridge: 'arb2ethln',
+    },
+    {
+      chainId: 1,
+      chain: 'ethereum',
+      url: this.ethereumArb2EthEndpoint,
+      bridge: 'arb2ethln',
     },
   ];
 
@@ -109,6 +123,13 @@ export class TransferService extends BaseTransferServiceT2 {
         decimals: 1e18,
         origin: 'WRING',
       },
+    },
+    arbitrum: {
+      '0x9e523234d36973f9e38642886197d023c88e307e': {
+        token: 'RING',
+        decimals: 1e18,
+        origin: 'WRING',
+      }
     },
   };
 

@@ -6,9 +6,9 @@ dataSources:
     name: LnArbitrumL2Backing
     network: arbitrum
     source:
-      address: "0xFBAD806Bdf9cEC2943be281FB355Da05068DE925"
+      address: "0x89AF830781A2C1d3580Db930bea11094F55AfEae"
       abi: LnArbitrumL2Backing
-      startBlock: 69983913
+      startBlock: 9285155
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
