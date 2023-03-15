@@ -1,12 +1,10 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { PartnerT2, RecordStatus } from '../base/TransferServiceT2';
+import { RecordStatus } from '../base/TransferServiceT2';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
-import { Token } from '../base/AddressToken';
 
 @Injectable()
 export class L2arbitrumService implements OnModuleInit {

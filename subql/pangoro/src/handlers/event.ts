@@ -81,7 +81,7 @@ export class EventHandler {
     event.block = this.simpleBlock();
     event.timestamp = this.timestamp;
     if (this.method === 'MessageDispatched' && result.ok === undefined) {
-        event.method = 'MessageDispatched(Err)'
+      event.method = 'MessageDispatched(Err)';
     }
 
     await event.save();

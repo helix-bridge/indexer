@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AddressTokenMap } from '../base/AddressToken';
 
 @Injectable()
 export class TransferService {
@@ -19,8 +18,8 @@ export class TransferService {
           decimals: 1e18,
           origin: 'RING',
           parter: '0x9e523234d36973f9e38642886197d023c88e307e',
-        }
-      }
+        },
+      },
     },
     l2Chain: {
       name: 'arbitrum',
@@ -31,7 +30,7 @@ export class TransferService {
           decimals: 1e18,
           origin: 'RING',
           parter: '0x9469d013805bffb7d3debe5e7839237e535ec483',
-        }
+        },
       },
     },
   };

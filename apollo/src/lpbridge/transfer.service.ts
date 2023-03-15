@@ -19,8 +19,12 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly arbitrumArb2EthEndpoint = this.configService.get<string>(
     'ARBITRUM_A2E_LN_ENDPOINT'
   );
-  private readonly ethereumArb2EthEndpoint = this.configService.get<string>('ETHEREUM_A2E_LN_ENDPOINT');
-  private readonly arbitrumMainArb2EthEndpoint = this.configService.get<string>('ARBITRUM_MAIN_A2E_LN_ENDPOINT');
+  private readonly ethereumArb2EthEndpoint = this.configService.get<string>(
+    'ETHEREUM_A2E_LN_ENDPOINT'
+  );
+  private readonly arbitrumMainArb2EthEndpoint = this.configService.get<string>(
+    'ARBITRUM_MAIN_A2E_LN_ENDPOINT'
+  );
 
   formalChainTransfers: PartnerT2[] = [
     /*
@@ -129,7 +133,7 @@ export class TransferService extends BaseTransferServiceT2 {
         token: 'RING',
         decimals: 1e18,
         origin: 'WRING',
-      }
+      },
     },
   };
 

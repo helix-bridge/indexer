@@ -53,7 +53,10 @@ export class EventHandler {
   }
 
   public async save() {
-    if (this.section === 'bridgePangoroDispatch' || this.section === 'bridgePangolinParachainDispatch') {
+    if (
+      this.section === 'bridgePangoroDispatch' ||
+      this.section === 'bridgePangolinParachainDispatch'
+    ) {
       await this.handleBridgeDispatchEvent();
     }
 
@@ -84,22 +87,26 @@ export class EventHandler {
     event.block = this.simpleBlock();
     event.timestamp = this.timestamp;
     if (this.method === 'MessageDispatched' && result.ok === undefined) {
-        event.method = 'MessageDispatched(Err)'
+      event.method = 'MessageDispatched(Err)';
     }
 
     // the call is message_call, and reverted
     if (this.method === 'MessageDispatched') {
-        if (this.index > 1) {
-            const maybeEthereumExecuteEvent = this.event?.extrinsic?.events[this.index-2];
-            if (maybeEthereumExecuteEvent &&
-                maybeEthereumExecuteEvent.event.method === 'Executed' &&
-                maybeEthereumExecuteEvent.event.section === 'ethereum') {
-              const [_from, _to, _transactionHash, exitReason] = JSON.parse(maybeEthereumExecuteEvent.event.data.toString());
-              if (exitReason.revert) {
-                  event.method = 'MessageDispatched(Revert)'
-              }
+      if (this.index > 1) {
+        const maybeEthereumExecuteEvent = this.event?.extrinsic?.events[this.index - 2];
+        if (
+          maybeEthereumExecuteEvent &&
+          maybeEthereumExecuteEvent.event.method === 'Executed' &&
+          maybeEthereumExecuteEvent.event.section === 'ethereum'
+        ) {
+          const [_from, _to, _transactionHash, exitReason] = JSON.parse(
+            maybeEthereumExecuteEvent.event.data.toString()
+          );
+          if (exitReason.revert) {
+            event.method = 'MessageDispatched(Revert)';
           }
         }
+      }
     }
     await event.save();
   }

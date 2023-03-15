@@ -83,7 +83,7 @@ export class EventHandler {
     event.block = this.simpleBlock();
     event.timestamp = this.timestamp;
     if (this.method === 'MessageDispatched' && result.ok === undefined) {
-        event.method = 'MessageDispatched(Err)'
+      event.method = 'MessageDispatched(Err)';
     }
 
     await event.save();
@@ -108,31 +108,28 @@ export class EventHandler {
   }
 
   private async handleRemoteUnlockForFailure() {
-      const [refundNonce, failureNonce] = JSON.parse(this.data) as [
-          bigint,
-          bigint,
-      ];
-      const event = new RefundTransferRecord(this.s2sEventId(refundNonce));
-      event.sourceid = this.s2sEventId(failureNonce);
-      event.timestamp = this.timestamp;
-      event.transaction = this.extrinsicHash;
-      await event.save();
+    const [refundNonce, failureNonce] = JSON.parse(this.data) as [bigint, bigint];
+    const event = new RefundTransferRecord(this.s2sEventId(refundNonce));
+    event.sourceid = this.s2sEventId(failureNonce);
+    event.timestamp = this.timestamp;
+    event.transaction = this.extrinsicHash;
+    await event.save();
   }
 
   private async handleTokenIssuedForFailure() {
-      const [_laneId, failureNonce, _recipient, amount] = JSON.parse(this.data) as [
-          string,
-          bigint,
-          string,
-          string
-      ];
-      const event = await TransferRecord.get(this.s2sEventId(failureNonce));
-      if (event) {
-          event.withdrawtimestamp = this.timestamp;
-          event.withdrawamount = amount;
-          event.withdrawtransaction = this.extrinsicHash;
-          await event.save();
-      }
+    const [_laneId, failureNonce, _recipient, amount] = JSON.parse(this.data) as [
+      string,
+      bigint,
+      string,
+      string
+    ];
+    const event = await TransferRecord.get(this.s2sEventId(failureNonce));
+    if (event) {
+      event.withdrawtimestamp = this.timestamp;
+      event.withdrawamount = amount;
+      event.withdrawtransaction = this.extrinsicHash;
+      await event.save();
+    }
   }
 
   private simpleBlock(): Block {
@@ -152,4 +149,3 @@ export class EventHandler {
     return `${laneId}0x${nonce.toString(16)}`;
   }
 }
-

@@ -105,9 +105,9 @@ export class LpbridgeService implements OnModuleInit {
               ? recvTokenInfo.token.substring(1)
               : recvTokenInfo.token;
 
-          var responseHash = '';
-          var result = RecordStatus.pending;
-          var endTime = 0;
+          const responseHash = '';
+          const result = RecordStatus.pending;
+          const endTime = 0;
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, transfer.chainId.toString(), record.remote_chainid, record.id),
             fromChain: transfer.chain,
