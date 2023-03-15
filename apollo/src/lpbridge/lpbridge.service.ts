@@ -31,7 +31,7 @@ export class LpbridgeService implements OnModuleInit {
   async onModuleInit() {
     this.transferService.transfers.forEach((item, index) => {
       this.taskService.addInterval(
-        `${item.chain}-lpbridge-fetch_history_data`,
+        `${item.chain}-${item.bridge}-lnbridge-fetch_history_data`,
         this.fetchSendDataInterval,
         async () => {
           if (this.fetchCache[index].isSyncingHistory) {
