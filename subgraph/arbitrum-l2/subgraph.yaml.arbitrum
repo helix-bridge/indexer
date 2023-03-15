@@ -4,7 +4,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: ArbRetryableTx
-    network: arbitrum
+    network: arbi
     source:
       address: "0x000000000000000000000000000000000000006E"
       abi: ArbRetryableTx

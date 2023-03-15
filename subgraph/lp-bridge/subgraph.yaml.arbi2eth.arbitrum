@@ -4,7 +4,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: LnArbitrumL2Backing
-    network: arbitrum
+    network: arbi
     source:
       address: "0xFBAD806Bdf9cEC2943be281FB355Da05068DE925"
       abi: LnArbitrumL2Backing
