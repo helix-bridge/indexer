@@ -241,18 +241,19 @@ export class EventHandler {
           }
           // deposit
         } else {
-          let transferEvent = events[index - 1];
-          let totalEvent = events[index - 2];
-          if (transferEvent.event.method !== 'Deposit') {
-            transferEvent = events[index - 2];
-            totalEvent = events[index - 3];
-          }
-          if (transferEvent && totalEvent) {
-            const [account, amount] = JSON.parse(transferEvent.event.data.toString());
-            const [_hostAccount, total] = JSON.parse(totalEvent.event.data.toString());
-            totalAmount = BigInt(total);
-            recipient = account;
-            recvAmount = BigInt(amount);
+          for (var offset = 1; offset < index; offset++) {
+            let transferEvent = events[index - offset];
+            let totalEvent = events[index - offset - 1];
+            if (transferEvent.event.method === 'Deposit') {
+              if (transferEvent && totalEvent) {
+                const [account, amount] = JSON.parse(transferEvent.event.data.toString());
+                const [_hostAccount, total] = JSON.parse(totalEvent.event.data.toString());
+                totalAmount = BigInt(total);
+                recipient = account;
+                recvAmount = BigInt(amount);
+              }
+              break;
+            }
           }
         }
       }
