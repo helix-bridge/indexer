@@ -15,12 +15,14 @@ export class TransferService extends BaseTransferServiceT2 {
 
   // this chainId is parachain id
   formalChainTransfers: PartnerT2[] = [
+    /*
     {
       chainId: 2105,
       chain: 'crab-parachain',
       url: this.crabParachainEndpoint,
       bridge: 'xcm',
     },
+    */
     {
       chainId: 2000,
       chain: 'karura',
