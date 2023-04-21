@@ -27,21 +27,6 @@ dataSources:
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: toCrabBacking
-            method: TokenLocked
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: toCrabBacking
-            method: TokenLockedConfirmed
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: toCrabBacking
-            method: TokenUnlocked
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
             module: bridgeCrabDispatch
             method: MessageVersionSpecMismatch
         - handler: handleEvent
@@ -49,18 +34,3 @@ dataSources:
           filter:
             module: bridgeCrabDispatch
             method: MessageDispatched
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: balances
-            method: Transfer
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: kton
-            method: Transfer
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: balances
-            method: Endowed

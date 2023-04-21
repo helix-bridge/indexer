@@ -1,9 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { SubstrateEvent } from '@subql/types';
 import {
   Block,
   BridgeDispatchEvent,
-  TransferRecord,
-  RefundTransferRecord,
   XcmSentEvent,
   XcmReceivedEvent,
 } from '../types';
@@ -12,7 +11,6 @@ import { AccountHandler } from './account';
 const thisChainId = '2105';
 const helixFlag = BigInt(204);
 
-//const kururaChainId = 2000;
 const moonriverChainId = 2023;
 
 export class EventHandler {
@@ -90,22 +88,10 @@ export class EventHandler {
   }
 
   public async save() {
-    if (this.section === 'bridgeCrabDispatch') {
+    // s2s darwinia<>crab dispatch event
+    if (this.section === 'bridgeDarwiniaDispatch') {
       await this.handleBridgeDispatchEvent();
     }
-
-    if (this.method === 'TokenBurnAndRemoteUnlocked') {
-      await this.handleBurnAndRemotedUnlocked();
-    }
-
-    if (this.method === 'RemoteUnlockForFailure') {
-      await this.handleRemoteUnlockForFailure();
-    }
-
-    if (this.method === 'TokenIssuedForFailure') {
-      await this.handleTokenIssuedForFailure();
-    }
-
     if (this.section === 'xcmpQueue') {
       if (this.method === 'XcmpMessageSent') {
         await this.handleXcmMessageSent();
@@ -115,6 +101,41 @@ export class EventHandler {
         await this.handleXcmMessageReceivedFailed();
       }
     }
+  }
+
+  public async handleBridgeDispatchEvent() {
+    const [_, [laneId, nonce], result] = JSON.parse(this.data);
+    const event = new BridgeDispatchEvent(this.s2sEventId(laneId, nonce));
+
+    event.index = this.index;
+    event.method = this.method;
+    event.data = this.data;
+    event.block = this.simpleBlock();
+    event.timestamp = this.timestamp;
+    // the dispatch call result is err
+    if (this.method === 'MessageDispatched' && result.ok === undefined) {
+      event.method = 'MessageDispatched(Err)';
+    }
+    // the call is message_call, and reverted
+    if (this.method === 'MessageDispatched') {
+      if (this.index > 1) {
+        const maybeEthereumExecuteEvent = this.event?.extrinsic?.events[this.index - 2];
+        if (
+          maybeEthereumExecuteEvent &&
+          maybeEthereumExecuteEvent.event.method === 'Executed' &&
+          maybeEthereumExecuteEvent.event.section === 'ethereum'
+        ) {
+          const [_from, _to, _transactionHash, exitReason] = JSON.parse(
+            maybeEthereumExecuteEvent.event.data.toString()
+          );
+          if (exitReason.revert) {
+            event.method = 'MessageDispatched(Revert)';
+          }
+        }
+      }
+    }
+
+    await event.save();
   }
 
   public async handleXcmMessageSent() {
@@ -174,35 +195,6 @@ export class EventHandler {
     await event.save();
   }
 
-  // save all the faild xcm message
-  public async handleXcmMessageReceivedFailed() {
-    const sourceChainId = this.xcmRecvParachainId();
-    if (!sourceChainId) {
-      return;
-    }
-
-    const messageId = this.xcmRecvMessageId(sourceChainId);
-    const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex;
-    let index = 0;
-    while (true) {
-      const event = await XcmReceivedEvent.get(messageId + '-' + index);
-      if (!event) {
-        break;
-      }
-      // if the same tx hash, don't save again
-      if (event.txHash === extrinsicHash) {
-        return;
-      }
-      index++;
-    }
-    const now = Math.floor(this.timestamp.getTime() / 1000);
-    const event = new XcmReceivedEvent(messageId + '-' + index);
-    event.txHash = extrinsicHash;
-    event.timestamp = now;
-    event.block = this.simpleBlock();
-    await event.save();
-  }
-
   public async handleXcmMessageReceivedSuccessed() {
     const sourceChainId = this.xcmRecvParachainId();
     if (!sourceChainId) {
@@ -255,69 +247,33 @@ export class EventHandler {
     await event.save();
   }
 
-  public async handleBridgeDispatchEvent() {
-    const [_, [laneId, nonce], result] = JSON.parse(this.data);
-    const event = new BridgeDispatchEvent(this.s2sEventIdWithLaneId(laneId, nonce));
+  // save all the faild xcm message
+  public async handleXcmMessageReceivedFailed() {
+    const sourceChainId = this.xcmRecvParachainId();
+    if (!sourceChainId) {
+      return;
+    }
 
-    event.index = this.index;
-    event.method = this.method;
-    event.data = this.data;
+    const messageId = this.xcmRecvMessageId(sourceChainId);
+    const extrinsicHash = this.blockNumber.toString() + '-' + this.extrinsicIndex;
+    let index = 0;
+    while (true) {
+      const event = await XcmReceivedEvent.get(messageId + '-' + index);
+      if (!event) {
+        break;
+      }
+      // if the same tx hash, don't save again
+      if (event.txHash === extrinsicHash) {
+        return;
+      }
+      index++;
+    }
+    const now = Math.floor(this.timestamp.getTime() / 1000);
+    const event = new XcmReceivedEvent(messageId + '-' + index);
+    event.txHash = extrinsicHash;
+    event.timestamp = now;
     event.block = this.simpleBlock();
-    event.timestamp = this.timestamp;
-    if (this.method === 'MessageDispatched' && result.ok === undefined) {
-      event.method = 'MessageDispatched(Err)';
-    }
-
     await event.save();
-  }
-
-  private async handleBurnAndRemotedUnlocked() {
-    // [lane_id, message_nonce, sender, recipient, amount]
-    const [_, nonce, from, to, value] = JSON.parse(this.data) as [
-      string,
-      bigint,
-      string,
-      string,
-      number
-    ];
-    const event = new TransferRecord(this.s2sEventId(nonce));
-    const sender = AccountHandler.formatAddress(from);
-    const receiver = AccountHandler.formatAddress(to);
-    const [_specVersion, _weight, _gasLimit, _value, fee, _recipient] = this.args;
-
-    event.transaction = this.extrinsicHash;
-    event.timestamp = this.timestamp;
-    event.sender = sender;
-    event.receiver = receiver;
-    event.amount = value.toString();
-    event.fee = fee;
-
-    await event.save();
-  }
-
-  private async handleRemoteUnlockForFailure() {
-    const [refundNonce, failureNonce] = JSON.parse(this.data) as [bigint, bigint];
-    const event = new RefundTransferRecord(this.s2sEventId(refundNonce));
-    event.sourceid = this.s2sEventId(failureNonce);
-    event.timestamp = this.timestamp;
-    event.transaction = this.extrinsicHash;
-    await event.save();
-  }
-
-  private async handleTokenIssuedForFailure() {
-    const [_laneId, failureNonce, _recipient, amount] = JSON.parse(this.data) as [
-      string,
-      bigint,
-      string,
-      string
-    ];
-    const event = await TransferRecord.get(this.s2sEventId(failureNonce));
-    if (event) {
-      event.withdrawtimestamp = this.timestamp;
-      event.withdrawamount = amount;
-      event.withdrawtransaction = this.extrinsicHash;
-      await event.save();
-    }
   }
 
   private simpleBlock(): Block {
@@ -329,11 +285,8 @@ export class EventHandler {
     };
   }
 
-  private s2sEventId(nonce: bigint): string {
-    return `0x${nonce.toString(16)}`;
-  }
-
-  private s2sEventIdWithLaneId(laneId: string, nonce: bigint): string {
+  private s2sEventId(laneId: string, nonce: bigint): string {
     return `${laneId}0x${nonce.toString(16)}`;
   }
 }
+

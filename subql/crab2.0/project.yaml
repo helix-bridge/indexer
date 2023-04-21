@@ -47,45 +47,15 @@ dataSources:
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: bridgeCrabParachainDispatch
-            method: MessageVersionSpecMismatch
+            module: xcmpQueue
+            method: Success
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: bridgeCrabParachainDispatch
-            method: MessageWeightMismatch
+            module: xcmpQueue
+            method: Fail
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: bridgeCrabParachainDispatch
-            method: MessageCallValidateFailed
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: bridgeCrabParachainDispatch
-            method: MessageDispatched
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: ethereum
-            method: DVMTransfer
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: balances
-            method: Transfer
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: kton
-            method: Transfer
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: toCrabParachainBacking
-            method: TokenLocked
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: toCrabParachainBacking
-            method: TokenLockedConfirmed
+            module: xcmpQueue
+            method: XcmpMessageSent

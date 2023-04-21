@@ -5,27 +5,6 @@ type Block @jsonField {
   extrinsicHash: String!
 }
 
-type TransferRecord @entity {
-  id: ID!
-  sender: String!
-  receiver: String!
-  amount: String!
-  timestamp: Date!
-  transaction: String!
-  fee: String
-
-  withdrawtimestamp: Date
-  withdrawamount: String
-  withdrawtransaction: String
-}
-
-type RefundTransferRecord @entity {
-  id: ID! # refund id
-  sourceid: String
-  timestamp: Date
-  transaction: String
-}
-
 type BridgeDispatchEvent @entity {
   id: ID!
 
@@ -36,7 +15,6 @@ type BridgeDispatchEvent @entity {
 
   block: Block
 }
-
 
 type XcmSentEvent @entity {
   id: ID! # messageHash + index
