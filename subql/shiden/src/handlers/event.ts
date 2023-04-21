@@ -116,7 +116,7 @@ export class EventHandler {
     if (!extrinsicArgs) {
       return;
     }
-    const args = '[' + extrinsicArgs + ']';
+    const args = ('[' + extrinsicArgs + ']').replace('Unlimited', '\"Unlimited\"');
     const [dest, beneficiary, assets, _fee] = JSON.parse(args);
 
     const destChain = dest?.v1?.interior?.x1?.parachain;

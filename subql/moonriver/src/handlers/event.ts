@@ -258,6 +258,9 @@ export class EventHandler {
           // deposit
         } else {
           feeEvent = events[index - 2];
+          if (feeEvent?.event.method !== 'Issued') {
+              return;
+          }
           const transferEvent = events[index - 3];
           const [_feeAccount, fee] = JSON.parse(feeEvent.event.data.toString());
           const [account, amount] = JSON.parse(transferEvent.event.data.toString());

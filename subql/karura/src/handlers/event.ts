@@ -226,11 +226,15 @@ export class EventHandler {
 
               const feeInfos = JSON.parse(depositHostEvent.event.data.toString());
               const transferInfos = JSON.parse(depositRecipientEvent.event.data.toString());
-              const fee = feeInfos.slice(-2)[1];
-              const [account, amount] = transferInfos.slice(-2);
-              totalAmount = BigInt(amount) + BigInt(fee);
-              recipient = AccountHandler.formatAddress(account);
-              recvAmount = BigInt(amount);
+              try {
+                  const fee = feeInfos.slice(-2)[1];
+                  const [account, amount] = transferInfos.slice(-2);
+                  totalAmount = BigInt(amount) + BigInt(fee);
+                  recipient = AccountHandler.formatAddress(account);
+                  recvAmount = BigInt(amount);
+              } catch(e) {
+                  return;
+              }
               break;
             }
           }
