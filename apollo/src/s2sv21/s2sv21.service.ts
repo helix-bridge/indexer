@@ -43,7 +43,10 @@ export class S2sv21Service extends BaseServiceT1 implements OnModuleInit {
   }
   // two directions must use the same laneId
   genID(transfer: TransferT1, id: string) {
-    const fullId = this.idAppendLaneId(id);
+    const nonce = id.substring(id.length - 16, id.length + 1);
+    const hexNonce = "0x" + Number(nonce).toString();
+
+    const fullId = this.idAppendLaneId(hexNonce);
     const isLock = transfer.isLock ? 'lock' : 'unlock';
     return `${transfer.source.chain}2${transfer.target.chain}-${this.baseConfigure.name}(${isLock})-${fullId}`;
   }
@@ -53,7 +56,7 @@ export class S2sv21Service extends BaseServiceT1 implements OnModuleInit {
   }
 
   private idAppendLaneId(id: string) {
-    return '0x00000000' + id;
+    return '0x64616362' + id;
   }
 
   private toUnixTime(time: string) {
