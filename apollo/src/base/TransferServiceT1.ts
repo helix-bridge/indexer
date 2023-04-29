@@ -233,7 +233,7 @@ export abstract class BaseServiceT1 {
                 responseTxHash: withdrawInfo.withdraw_transaction,
                 endTime: Number(withdrawInfo.withdraw_timestamp),
                 result: RecordStatus.refunded,
-                recvToken: node.sendToken,
+                //recvToken: node.sendToken,
               },
             });
           } else {
