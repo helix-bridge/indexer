@@ -9,13 +9,11 @@ import { AccountModule } from './account/account.module';
 import { AggregationModule } from './aggregation/aggregation.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { Substrate2dvmModule } from './substrate2dvm/substrate2dvm.module';
 import { TasksModule } from './tasks/tasks.module';
 import { CbridgeModule } from './cbridge/cbridge.module';
 import { StatisticModule } from './statistic/statistic.module';
 import { XcmModule } from './xcm/xcm.module';
 import { Sub2ethv2Module } from './sub2ethv2/sub2ethv2.module';
-import { WtokenModule } from './wtoken/wtoken.module';
 import { S2sv21Module } from './s2sv21/s2sv21.module';
 import { LpbridgeModule } from './lpbridge/lpbridge.module';
 import { L2arbitrumModule } from './l2arbitrum/l2arbitrum.module';
@@ -43,14 +41,12 @@ export class BigIntScalar extends BigInt {}
     ScheduleModule.forRoot(),
     TasksModule,
     AggregationModule,
-    Substrate2dvmModule,
     CbridgeModule,
     StatisticModule,
     XcmModule,
-    Sub2ethv2Module,
+    //Sub2ethv2Module,
     LpbridgeModule,
-    WtokenModule,
-    //S2sv21Module,
+    S2sv21Module,
     L2arbitrumModule,
   ],
   controllers: [AppController],

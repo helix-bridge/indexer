@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: Erc20Sub2SubBacking
-    network: crab
+    network: crab2
     source:
       address: "0xCF8923ebF4244cedC647936a0281dd10bDFCBF18"
       abi: Erc20Sub2SubBacking
-      startBlock: 12819139
+      startBlock: 339690
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

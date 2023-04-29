@@ -16,7 +16,7 @@ services:
       retries: 5
 
   subquery-node:
-    image: onfinality/subql-node:v1.0.0
+    image: onfinality/subql-node:v1.14.1
     depends_on:
       'postgres':
         condition: service_healthy
@@ -30,6 +30,7 @@ services:
     volumes:
       - ./:/app
     command:
+      - --disable-historical=true
       - -f=/app
       - --db-schema=app
     healthcheck:

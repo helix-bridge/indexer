@@ -1,5 +1,5 @@
 specVersion: 1.0.0
-name: darwinia
+name: crab
 version: 0.0.1
 runner:
   node:
@@ -13,54 +13,46 @@ repository: git@github.com:helix-bridge/indexer.git
 schema:
   file: ./schema.graphql
 network:
-  chainId: '0x729cb8f2cf428adcf81fe69610edda32c5711b2ff17de747e8604a3587021db8'
-  endpoint: wss://rpc.darwinia.network/
-  dictionary: https://api.subquery.network/sq/darwinia-network/darwinia-dictionary
-  chaintypes:
-    file: ./types.yaml
+  chainId: '0x86e49c195aeae7c5c4a86ced251f1a28c67b3c35d8289c387ede1776cdd88b24'
+  endpoint: wss://crab-rpc.darwinia.network
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 10020000
+    startBlock: 339891
     mapping:
       file: ./dist/index.js
       handlers:
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: toCrabBacking
-            method: TokenLocked
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: toCrabBacking
-            method: TokenLockedConfirmed
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: toCrabBacking
-            method: TokenUnlocked
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: bridgeCrabDispatch
+            module: bridgeDarwiniaDispatch
             method: MessageVersionSpecMismatch
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: bridgeCrabDispatch
+            module: bridgeDarwiniaDispatch
+            method: MessageWeightMismatch
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeDarwiniaDispatch
+            method: MessageCallValidateFailed
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeDarwiniaDispatch
             method: MessageDispatched
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: balances
-            method: Transfer
+            module: xcmpQueue
+            method: Success
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: kton
-            method: Transfer
+            module: xcmpQueue
+            method: Fail
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
-            module: balances
-            method: Endowed
+            module: xcmpQueue
+            method: XcmpMessageSent

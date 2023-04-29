@@ -1,0 +1,33 @@
+specVersion: 1.0.0
+name: darwinia
+version: 0.0.1
+runner:
+  node:
+    name: '@subql/node'
+    version: v1.14.1
+  query:
+    name: '@subql/query'
+    version: v1.7.0
+description: ''
+repository: git@github.com:helix-bridge/indexer.git
+schema:
+  file: ./schema.graphql
+network:
+  chainId: '0xf0b8924b12e8108550d28870bc03f7b45a947e1b2b9abf81bfb0b89ecb60570e'
+  endpoint: wss://rpc.darwinia.network/
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 27684
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeCrabDispatch
+            method: MessageVersionSpecMismatch
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: bridgeCrabDispatch
+            method: MessageDispatched

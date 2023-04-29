@@ -12,12 +12,6 @@ export class StatisticService implements OnModuleInit {
   private isWorking = false;
 
   private readonly bridges = [
-    { from: 'crab-dvm', to: 'darwinia', bridge: 'helix-s2s', token: 'xRING', decimals: 1e18 },
-    { from: 'darwinia', to: 'crab-dvm', bridge: 'helix-s2s', token: 'RING', decimals: 1e9 },
-    { from: 'crab-dvm', to: 'crab', bridge: 'helix-s2dvm', token: 'CRAB', decimals: 1e18 },
-    { from: 'crab', to: 'crab-dvm', bridge: 'helix-s2dvm', token: 'CRAB', decimals: 1e9 },
-    { from: 'crab', to: 'crab-parachain', bridge: 'helix-s2p', token: 'CRAB', decimals: 1e9 },
-    { from: 'crab-parachain', to: 'crab', bridge: 'helix-s2p', token: 'CRAB', decimals: 1e18 },
     { from: 'crab-dvm', to: 'heco', bridge: 'cBridge-crab-dvm', token: 'xRING', decimals: 1e18 },
     { from: 'heco', to: 'crab-dvm', bridge: 'cBridge-heco', token: 'RING', decimals: 1e18 },
     { from: 'crab-dvm', to: 'polygon', bridge: 'cBridge-crab-dvm', token: 'xRING', decimals: 1e18 },

@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: Erc20Sub2SubBacking
-    network: darwinia
+    network: darwinia2
     source:
       address: "0xF3c1444CD449bD66Ef6DA7CA6c3E7884840A3995"
       abi: Erc20Sub2SubBacking
-      startBlock: 11781180
+      startBlock: 27320
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
