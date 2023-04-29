@@ -43,12 +43,16 @@ export class S2sv21Service extends BaseServiceT1 implements OnModuleInit {
   }
   // two directions must use the same laneId
   genID(transfer: TransferT1, id: string) {
-    const nonce = id.substring(id.length - 16, id.length + 1);
-    const hexNonce = "0x" + Number(nonce).toString();
+    const fullId = this.transferIdToResultId(id);
 
-    const fullId = this.idAppendLaneId(hexNonce);
     const isLock = transfer.isLock ? 'lock' : 'unlock';
     return `${transfer.source.chain}2${transfer.target.chain}-${this.baseConfigure.name}(${isLock})-${fullId}`;
+  }
+
+  transferIdToResultId(id: string) {
+    const nonce = id.substring(id.length - 16, id.length + 1);
+    const hexNonce = "0x" + nonce.replace(/^0+/, '');
+    return this.idAppendLaneId(hexNonce);
   }
 
   getMessageNonceFromId(id: string) {
@@ -56,7 +60,11 @@ export class S2sv21Service extends BaseServiceT1 implements OnModuleInit {
   }
 
   private idAppendLaneId(id: string) {
-    return '0x64616362' + id;
+    const laneId = '0x64616362';
+    if (!id.startsWith(laneId)) {
+        return laneId + id;
+    }
+    return id;
   }
 
   private toUnixTime(time: string) {
@@ -65,7 +73,8 @@ export class S2sv21Service extends BaseServiceT1 implements OnModuleInit {
   }
 
   async queryTransfer(transfer: TransferT1, srcTransferId: string) {
-    const query = `query { transferRecord(id: "${srcTransferId}") {withdraw_timestamp, withdraw_transaction}}`;
+    const transferId = this.formatTransferId(srcTransferId);
+    const query = `query { transferRecord(id: "${transferId}") {withdraw_timestamp, withdraw_transaction}}`;
     return await axios
       .post(transfer.source.url, {
         query: query,
@@ -79,15 +88,18 @@ export class S2sv21Service extends BaseServiceT1 implements OnModuleInit {
   }
 
   formatTransferId(id: string): string {
-    return id;
+    return '0x200000000000000000000000000000000000064616362' + id.substring(2, id.length+1).padStart(16, '0');
   }
 
   async updateRecordStatus(uncheckedRecords: HistoryRecord[], ids: string, transfer: TransferT1) {
+    const resultIds = ids.split(',').map((item) => this.idAppendLaneId(item));
+    const formatedResultIds = resultIds.map((item) => `"${item}"`).join(',');
+
     const nodes = await axios
       .post<{ data: { bridgeDispatchEvents: { nodes: any[] } } }>(
         this.transferService.dispatchEndPoints[transfer.target.chain.split('-')[0]],
         {
-          query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block, timestamp }}}`,
+          query: `query { bridgeDispatchEvents (filter: {id: {in: [${formatedResultIds}]}}) { nodes {id, method, block, timestamp }}}`,
           variables: null,
         }
       )
@@ -118,16 +130,19 @@ export class S2sv21Service extends BaseServiceT1 implements OnModuleInit {
   }
 
   async fetchRefundResult(ids: string, transfer: TransferT1) {
+    const resultIds = ids.split(',').map((item) => this.transferIdToResultId(item));
+    const formatedResultIds = resultIds.map((item) => `"${item}"`).join(',');
+
     const refundResults = await axios
       .post<{ data: { bridgeDispatchEvents: { nodes: any[] } } }>(
         this.transferService.dispatchEndPoints[transfer.source.chain.split('-')[0]],
         {
-          query: `query { bridgeDispatchEvents (filter: {id: {in: [${ids}]}}) { nodes {id, method, block, timestamp }}}`,
+          query: `query { bridgeDispatchEvents (filter: {id: {in: [${formatedResultIds}]}}) { nodes {id, method, block, timestamp }}}`,
           variables: null,
         }
       )
       .then((res) => res.data?.data?.bridgeDispatchEvents?.nodes);
-
+    
     return [
       refundResults.find((r) => r.method === 'MessageDispatched') ?? null,
       refundResults.length,

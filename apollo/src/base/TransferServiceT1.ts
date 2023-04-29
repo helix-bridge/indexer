@@ -210,7 +210,7 @@ export abstract class BaseServiceT1 {
       }
       const ids = uncheckedRecords
         .filter((item) => item.reason === '' && item.result !== RecordStatus.pendingToConfirmRefund)
-        .map((item) => `"${last(item.id.split('-'))}"`)
+        .map((item) => `${last(item.id.split('-'))}`)
         .join(',');
 
       if (ids.length > 0) {
@@ -264,7 +264,7 @@ export abstract class BaseServiceT1 {
             continue;
           }
 
-          const refundIds = nodes.map((item) => `"${item.id}"`).join(',');
+          const refundIds = nodes.map((item) => `${item.id}`).join(',');
 
           const [successedResult, size] = await this.fetchRefundResult(refundIds, transfer);
           if (!successedResult) {
