@@ -13,14 +13,11 @@ repository: git@github.com:helix-bridge/indexer.git
 schema:
   file: ./schema.graphql
 network:
-  chainId: '0x729cb8f2cf428adcf81fe69610edda32c5711b2ff17de747e8604a3587021db8'
+  chainId: '0xf0b8924b12e8108550d28870bc03f7b45a947e1b2b9abf81bfb0b89ecb60570e'
   endpoint: wss://rpc.darwinia.network/
-  dictionary: https://api.subquery.network/sq/darwinia-network/darwinia-dictionary
-  chaintypes:
-    file: ./types.yaml
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 10020000
+    startBlock: 27684
     mapping:
       file: ./dist/index.js
       handlers:

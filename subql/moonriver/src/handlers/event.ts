@@ -132,6 +132,9 @@ export class EventHandler {
     const [sender, assets, _fee, dest] = JSON.parse(
       transferredMultiAssetsEvent.event.data.toString()
     );
+    if (!dest) {
+      return;
+    }
     const destChainId = dest.interior?.x2[0]?.parachain;
     // get evm transaction hash
     const evmExecuteEvent = this.event?.extrinsic?.events.find((item) => {
