@@ -5,15 +5,15 @@ import { AddressTokenMap } from '../base/AddressToken';
 
 @Injectable()
 export class TransferService extends BaseTransferServiceT2 {
-  private readonly crabSub2SubLpEndpoint = this.configService.get<string>('CRAB_S2S_LP_ENDPOINT');
-  private readonly darwiniaSub2SubLpEndpoint = this.configService.get<string>(
-    'DARWINIA_S2S_LP_ENDPOINT'
+  private readonly crabSub2SubLnEndpoint = this.configService.get<string>('CRAB_S2S_LN_ENDPOINT');
+  private readonly darwiniaSub2SubLnEndpoint = this.configService.get<string>(
+    'DARWINIA_S2S_LN_ENDPOINT'
   );
-  private readonly ethereumSub2EthEndpoint = this.configService.get<string>(
-    'ETHEREUM_S2E_LP_ENDPOINT'
+  private readonly ethereumSub2EthLnEndpoint = this.configService.get<string>(
+    'ETHEREUM_S2E_LN_ENDPOINT'
   );
-  private readonly darwiniaSub2EthLpEndpoint = this.configService.get<string>(
-    'DARWINIA_S2E_LP_ENDPOINT'
+  private readonly darwiniaSub2EthLnEndpoint = this.configService.get<string>(
+    'DARWINIA_S2E_LN_ENDPOINT'
   );
   private readonly goerliArb2EthEndpoint = this.configService.get<string>('GOERLI_A2E_LN_ENDPOINT');
   private readonly arbitrumArb2EthEndpoint = this.configService.get<string>(
@@ -31,30 +31,28 @@ export class TransferService extends BaseTransferServiceT2 {
     {
       chainId: 44,
       chain: 'crab-dvm',
-      url: this.crabSub2SubLpEndpoint,
+      url: this.crabSub2SubLnEndpoint,
       bridge: 'sub2sublp',
     },
     {
       chainId: 46,
       chain: 'darwinia-dvm',
-      url: this.darwiniaSub2SubLpEndpoint,
+      url: this.darwiniaSub2SubLnEndpoint,
       bridge: 'sub2sublp',
     },
     */
-    /*
     {
       chainId: 1,
       chain: 'ethereum',
-      url: this.ethereumSub2EthEndpoint,
+      url: this.ethereumSub2EthLnEndpoint,
       bridge: 'sub2ethlp',
     },
     {
       chainId: 46,
       chain: 'darwinia-dvm',
-      url: this.darwiniaSub2EthLpEndpoint,
+      url: this.darwiniaSub2EthLnEndpoint,
       bridge: 'sub2ethlp',
     },
-    */
     {
       chainId: 42161,
       chain: 'arbitrum',

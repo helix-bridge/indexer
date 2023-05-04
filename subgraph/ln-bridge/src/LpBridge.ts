@@ -6,13 +6,13 @@ import {
     LiquidityWithdrawn,
     TransferCanceled
 } from "../generated/LpBridge/LpBridge"
-import { LpTransferRecord, LpRelayRecord } from "../generated/schema"
+import { LnTransferRecord, LnRelayRecord } from "../generated/schema"
 
 export function handleTokenLocked(event: TokenLocked): void {
   let message_id = event.params.transferId.toHexString();
-  let entity = LpTransferRecord.load(message_id);
+  let entity = LnTransferRecord.load(message_id);
   if (entity == null) {
-      entity = new LpTransferRecord(message_id);
+      entity = new LnTransferRecord(message_id);
   }
 
   entity.sender = event.transaction.from;
@@ -31,7 +31,7 @@ export function handleTokenLocked(event: TokenLocked): void {
 
 export function handelFeeUpdated(event: FeeUpdated): void {
     let message_id = event.params.transferId.toHexString();
-    let entity = LpTransferRecord.load(message_id);
+    let entity = LnTransferRecord.load(message_id);
     if (entity == null) {
         return;
     }
@@ -41,7 +41,7 @@ export function handelFeeUpdated(event: FeeUpdated): void {
 
 export function handleLiquidityWithdrawn(event: LiquidityWithdrawn): void {
   let id = event.params.transferId.toHexString();
-  let entity = LpTransferRecord.load(id);
+  let entity = LnTransferRecord.load(id);
   if (entity == null) {
       return;
   }
@@ -53,9 +53,9 @@ export function handleLiquidityWithdrawn(event: LiquidityWithdrawn): void {
 
 export function handleTransferRelayed(event: TransferRelayed): void {
   let message_id = event.params.transferId.toHexString();
-  let entity = LpRelayRecord.load(message_id);
+  let entity = LnRelayRecord.load(message_id);
   if (entity == null) {
-      entity = new LpRelayRecord(message_id);
+      entity = new LnRelayRecord(message_id);
   }
   entity.relayer = event.params.relayer;
   entity.timestamp = event.block.timestamp;
@@ -66,9 +66,9 @@ export function handleTransferRelayed(event: TransferRelayed): void {
 
 export function handleTransferCanceled(event: TransferCanceled): void {
   let message_id = event.params.transferId.toHexString();
-  let entity = LpRelayRecord.load(message_id);
+  let entity = LnRelayRecord.load(message_id);
   if (entity == null) {
-      entity = new LpRelayRecord(message_id);
+      entity = new LnRelayRecord(message_id);
   }
   entity.relayer = event.params.sender;
   entity.timestamp = event.block.timestamp;

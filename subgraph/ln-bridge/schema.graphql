@@ -1,4 +1,4 @@
-type LpTransferRecord @entity {
+type LnTransferRecord @entity {
   id: ID!
   nonce: BigInt!
   remote_chainid: BigInt!
@@ -17,7 +17,7 @@ type LpTransferRecord @entity {
   liquidate_withdrawn_timestamp: BigInt
 }
 
-type LpRelayRecord @entity {
+type LnRelayRecord @entity {
   id: ID!
   relayer: Bytes!
   transaction_hash: Bytes!
