@@ -6,9 +6,9 @@ dataSources:
     name: Erc20Sub2EthMappingTokenFactory
     network: goerli
     source:
-      address: "0xfcAcf3d08275031e5Bd453Cf2509301290858984"
+      address: "0x2a5fE3Cd11c6eEf7e3CeA26553e2694f0B0A9f9e"
       abi: Erc20Sub2EthMappingTokenFactory
-      startBlock: 7644176
+      startBlock: 8894900
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

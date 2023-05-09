@@ -243,7 +243,7 @@ export abstract class BaseServiceT1 {
       }
 
       // query if all the refund tx confirmed or one of them confirmed successed
-      if (unrefunded.length > 0) {
+      if (unrefunded && unrefunded.length > 0) {
         // 1. query refund start tx on target chain
         // 2. query refund result tx on source chain
         const unrefundNodes = unrefunded.map((item) => {

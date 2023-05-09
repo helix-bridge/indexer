@@ -14,11 +14,11 @@ export class GuardService {
 
   private readonly guardConfig: GuardInfo[] = [
     {
-      fromChain: 'pangoro-dvm',
+      fromChain: 'pangolin-dvm',
       toChain: 'goerli',
       bridge: 'helix-sub2ethv2(lock)',
       chainId: 5,
-      contract: '0xB63846f957A97eC982b83Bb50957A519878196Ef',
+      contract: '0x8C986EC362A38cA4A6a3fd4188C5318c689A187d',
     },
     {
       fromChain: 'darwinia-dvm',

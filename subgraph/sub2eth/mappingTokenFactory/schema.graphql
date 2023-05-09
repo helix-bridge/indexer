@@ -16,7 +16,7 @@ type TransferRecord @entity {
 
 type RefundTransferRecord @entity {
   id: ID! # refund id
-  source_id: Bytes # original transfer id
+  source_id: String # original transfer id
   timestamp: BigInt
   transaction_hash: Bytes
 }

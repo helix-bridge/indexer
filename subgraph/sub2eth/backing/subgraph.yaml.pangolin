@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: Erc20Sub2EthBacking
-    network: pangoro
+    network: pangolin
     source:
-      address: "0xaafFbF487e9dA8429E2E9502d0907e5fD6b0C320"
+      address: "0xeAb1F01a8f4A2687023B159c2063639Adad5304E"
       abi: Erc20Sub2EthBacking
-      startBlock: 219965
+      startBlock: 576000
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
