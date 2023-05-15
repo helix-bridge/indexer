@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: InboundLane
-    network: darwinia
+    network: darwinia2
     source:
-      address: "0xf1B8a9F8436800499DB8186f2da2fb3e78Ff7c2B"
+      address: "0x1cE84Cc75847374Ae41B4c1070d5B42A06BB42E7"
       abi: InboundLane
-      startBlock: 10441053
+      startBlock: 44060
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
