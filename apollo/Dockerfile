@@ -12,4 +12,4 @@ EXPOSE 4002
 
 # CMD [ "node", "index.js" ]
 
-ENTRYPOINT /opt/indexer/apollo/scripts/entrypoint.sh test
+ENTRYPOINT /opt/indexer/apollo/scripts/entrypoint.sh
