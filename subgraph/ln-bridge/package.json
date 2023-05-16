@@ -1,0 +1,20 @@
+{
+  "name": "Bridge",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "create-crab-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ sub2subln/crab",
+    "deploy-crab-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ sub2subln/crab",
+    "create-darwinia-sub2sub-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ sub2subln/darwinia",
+    "deploy-darwinia-sub2sub-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ sub2subln/darwinia",
+    "create-darwinia-sub2eth-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ sub2ethln/darwinia",
+    "deploy-darwinia-sub2eth-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ sub2ethln/darwinia",
+    "create-ethereum-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ sub2ethln/ethereum",
+    "deploy-ethereum-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ sub2ethln/ethereum"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.21.1",
+    "@graphprotocol/graph-ts": "0.20.0"
+  }
+}

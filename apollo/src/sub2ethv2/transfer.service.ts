@@ -64,9 +64,9 @@ export class TransferService extends BaseTransferServiceT1 {
   testChainTransfers: TransferT1[] = [
     {
       source: {
-        chain: 'pangoro-dvm',
+        chain: 'pangolin-dvm',
         url: this.backingSubgraphUrl,
-        feeToken: 'ORING',
+        feeToken: 'PRING',
       },
       target: {
         chain: 'goerli',
@@ -76,9 +76,9 @@ export class TransferService extends BaseTransferServiceT1 {
       isLock: true,
       symbols: [
         {
-          from: 'WORING',
-          to: 'ORING',
-          address: '0x46f01081e800bf47e43e7baa6d98d45f6a0251e4',
+          from: 'WPRING',
+          to: 'PRING',
+          address: '0x3f3edbda6124462a09e071c5d90e072e0d5d4ed4',
         },
         {
           from: 'OKTON',
@@ -94,16 +94,16 @@ export class TransferService extends BaseTransferServiceT1 {
         feeToken: 'GoerliETH',
       },
       target: {
-        chain: 'pangoro-dvm',
+        chain: 'pangolin-dvm',
         url: this.backingSubgraphUrl,
-        feeToken: 'ORING',
+        feeToken: 'PRING',
       },
       isLock: false,
       symbols: [
         {
-          from: 'ORING',
-          to: 'WORING',
-          address: '0x046d07d53926318d1f06c2c2a0f26a4de83e26c4',
+          from: 'PRING',
+          to: 'WPRING',
+          address: '0xeb93165e3cdb354c977a182abf4fad3238e04319',
         },
         {
           from: 'OKTON',
@@ -115,7 +115,7 @@ export class TransferService extends BaseTransferServiceT1 {
   ];
 
   dispatchEndPoints = {
-    pangoro: this.inboundLaneSubgraph + '/pangoro',
+    pangolin: this.inboundLaneSubgraph + '/pangolin',
     goerli: this.inboundLaneSubgraph + '/goerli',
     darwinia: this.inboundLaneSubgraph + '/darwinia',
     ethereum: this.inboundLaneSubgraph + '/ethereum',

@@ -9,7 +9,7 @@ import { TransferService } from './transfer.service';
 import { Token } from '../base/AddressToken';
 
 @Injectable()
-export class LpbridgeService implements OnModuleInit {
+export class LnbridgeService implements OnModuleInit {
   private readonly logger = new Logger('lpbridge');
 
   private fetchCache = new Array(this.transferService.transfers.length)
@@ -75,13 +75,13 @@ export class LpbridgeService implements OnModuleInit {
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { lpTransferRecords(first: 10, orderBy: timestamp, orderDirection: asc, skip: ${latestNonce}) { id, sender, receiver, token, amount, transaction_hash, timestamp, fee, is_native, issuing_native, nonce, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp, remote_chainid } }`;
+      const query = `query { lnTransferRecords(first: 10, orderBy: timestamp, orderDirection: asc, skip: ${latestNonce}) { id, sender, receiver, token, amount, transaction_hash, timestamp, fee, is_native, issuing_native, nonce, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp, remote_chainid } }`;
       const records = await axios
         .post(transfer.url, {
           query: query,
           variables: null,
         })
-        .then((res) => res.data?.data?.lpTransferRecords);
+        .then((res) => res.data?.data?.lnTransferRecords);
 
       if (records && records.length > 0) {
         for (const record of records) {
@@ -147,13 +147,13 @@ export class LpbridgeService implements OnModuleInit {
   }
 
   async queryRecord(transfer: PartnerT2, id: string) {
-    const query = `query { lpTransferRecord(id: "${id}") { id, fee, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp } }`;
+    const query = `query { lnTransferRecord(id: "${id}") { id, fee, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp } }`;
     const record = await axios
       .post(transfer.url, {
         query: query,
         variables: null,
       })
-      .then((res) => res.data?.data?.lpTransferRecord);
+      .then((res) => res.data?.data?.lnTransferRecord);
     return record;
   }
 
@@ -187,13 +187,13 @@ export class LpbridgeService implements OnModuleInit {
 
         if (txStatus === RecordStatus.pending) {
           const toChain = this.getDestChain(Number(dstChainId), transfer.bridge);
-          const query = `query { lpRelayRecord(id: "${transferId}") { id, relayer, timestamp, transaction_hash, canceled }}`;
+          const query = `query { lnRelayRecord(id: "${transferId}") { id, relayer, timestamp, transaction_hash, canceled }}`;
           const relayRecord = await axios
             .post(toChain.url, {
               query: query,
               variables: null,
             })
-            .then((res) => res.data?.data?.lpRelayRecord);
+            .then((res) => res.data?.data?.lnRelayRecord);
 
           if (relayRecord) {
             txStatus = relayRecord.canceled

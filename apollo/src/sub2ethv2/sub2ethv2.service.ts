@@ -81,31 +81,53 @@ export class Sub2ethv2Service extends BaseServiceT1 implements OnModuleInit {
     if (id.length % 2 === 0) {
       return id;
     } else {
-      return `"0x0${id.substring(2)}"`;
+      return `0x${id.substring(2)}`;
     }
   }
 
+  idRemoveVersion(id: string) {
+    const nonce = id.substring(id.length - 16, id.length + 1);
+    const hexNonce = "0x" + nonce.replace(/^0+/, '');
+    return hexNonce;
+  }
+
+  idAddVersion(id: string) {
+      if (id.length == 19) {
+          return id;
+      }
+      return '0x2' + id.substring(2, id.length+1).padStart(16, '0');
+  }
+
   async updateRecordStatus(uncheckedRecords: HistoryRecord[], ids: string, transfer: TransferT1) {
+    const formatedResultIds = ids.split(',').map((item) => {
+        const rmvedVersionId = this.idRemoveVersion(item);
+        return `"${item}", "${rmvedVersionId}"`;
+    }).join(',');
     const nodes = await axios
       .post(this.transferService.dispatchEndPoints[transfer.target.chain.split('-')[0]], {
-        query: `query { messageDispatchedResults (where: {id_in: [${ids}]}) { id, token, transaction_hash, result, timestamp }}`,
+        query: `query { messageDispatchedResults (where: {id_in: [${formatedResultIds}]}) { id, token, transaction_hash, result, timestamp }}`,
         variables: null,
       })
       .then((res) => res.data?.data?.messageDispatchedResults);
 
     if (nodes && nodes.length > 0) {
       for (const node of nodes) {
+        if (node.result == null) {
+          continue
+        }
+
         const responseTxHash = node.result === Sub2EthStatus.success ? node.transaction_hash : '';
         const result = this.subStatus2RecordStatus(node.result);
-        const record = uncheckedRecords.find((r) => last(r.id.split('-')) === node.id) ?? null;
+        const versionedId = this.idAddVersion(node.id);
+        const record = uncheckedRecords.find((r) => last(r.id.split('-')) === versionedId) ?? null;
         if (!record || record.result === result) {
           continue;
         }
         this.logger.log(
-          `sub2eth v2 new status id: ${node.id} updated old: ${record.result} new: ${result} responseTxHash: ${responseTxHash}`
+          `sub2eth v2 new status id: ${node.id} updated old: ${record.result} new: ${result} ori: ${node.result} responseTxHash: ${responseTxHash}`
         );
         await this.aggregationService.updateHistoryRecord({
-          where: { id: this.genID(transfer, node.id) },
+          where: { id: this.genID(transfer, versionedId) },
           data: {
             recvTokenAddress: node.token,
             responseTxHash,
@@ -118,9 +140,13 @@ export class Sub2ethv2Service extends BaseServiceT1 implements OnModuleInit {
   }
 
   async fetchRefundResult(ids: string, transfer: TransferT1) {
+    const formatedResultIds = ids.split(',').map((item) => {
+        const rmvedVersionId = this.idRemoveVersion(item);
+        return `"${rmvedVersionId}"`;
+    }).join(',');
     const refundResults = await axios
       .post(this.transferService.dispatchEndPoints[transfer.source.chain.split('-')[0]], {
-        query: `query { messageDispatchedResults (where: {id_in: [${ids}]}) { id, token, transaction_hash, result, timestamp }}`,
+        query: `query { messageDispatchedResults (where: {id_in: [${formatedResultIds}]}) { id, token, transaction_hash, result, timestamp }}`,
         variables: null,
       })
       .then((res) => res.data?.data?.messageDispatchedResults);
