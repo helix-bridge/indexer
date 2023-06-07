@@ -1,0 +1,34 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Lnv2Backing
+    network: arbitrum
+    source:
+      address: "0xf661993DcDcb3FcbC13A2adeC20a9631A36E9C9E"
+      abi: Lnv2Backing
+      startBlock: 23523108
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - TokenLocked
+        - Refund
+        - LiquidityWithdrawn
+        - LnProviderUpdated
+      abis:
+        - name: Lnv2Backing
+          file: ./abis/LnArbitrumL2BackingV2.json
+
+      eventHandlers:
+        - event: TokenLocked(uint64,bytes32,bytes32,address,uint112,uint112,address)
+          handler: handleTokenLocked
+        - event: Refund(bytes32,uint64,address,uint112,address,address)
+          handler: handleRefund
+        - event: LiquidityWithdrawn(uint64,address,uint112)
+          handler: handleLiquidityWithdrawn
+        - event: LnProviderUpdated(address,uint64,uint112,uint112,uint8)
+          handler: handleLnProviderUpdated
+      file: ./src/Lnv2Backing.ts

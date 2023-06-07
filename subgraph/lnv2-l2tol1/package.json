@@ -1,0 +1,14 @@
+{
+  "name": "Bridge",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "create-ethereum-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ arb2ethlnv2/ethereum",
+    "deploy-ethereum-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ arb2ethlnv2/ethereum"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.21.1",
+    "@graphprotocol/graph-ts": "0.20.0"
+  }
+}

@@ -1,0 +1,38 @@
+type Lnv2TransferRecord @entity {
+  id: ID!
+  lastBlockHash: Bytes!
+  nonce: BigInt!
+  sender: Bytes!
+  receiver: Bytes!
+  token: Bytes!
+  amount: BigInt!
+  timestamp: BigInt!
+  transaction_hash: Bytes!
+  fee: BigInt
+  providerKey: BigInt!
+
+  liquidate_withdrawn_sender: Bytes
+  liquidate_transaction_hash: Bytes
+  liquidate_withdrawn_timestamp: BigInt
+}
+
+type Lnv2RelayRecord @entity {
+  id: ID!
+  relayer: Bytes
+  transaction_hash: Bytes!
+  timestamp: BigInt!
+  status: Int!
+  calceledId: Bytes
+}
+
+type Lnv2RelayUpdateRecord @entity {
+  id: ID!
+  updateType: Int!
+  relayer: Bytes!
+  transaction_hash: Bytes!
+  timestamp: BigInt!
+  providerKey: BigInt!
+  margin: BigInt
+  baseFee: BigInt
+  liquidityFeeRate: Int
+}

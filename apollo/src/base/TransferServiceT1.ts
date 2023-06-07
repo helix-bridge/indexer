@@ -13,6 +13,7 @@ export enum RecordStatus {
   success,
   refunded,
   pendingToConfirmRefund,
+  pendingRefundInit,
 }
 
 export interface PartnerT1 {
@@ -25,12 +26,14 @@ export interface PartnerSymbol {
   from: string;
   to: string;
   address: string;
+  toAddress: string;
 }
 
 export interface TransferT1 {
   source: PartnerT1;
   target: PartnerT1;
   isLock: boolean;
+  bridge: string;
   symbols: PartnerSymbol[];
 }
 

@@ -1,0 +1,30 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Lnv2Issuing
+    network: ethereum
+    source:
+      address: "0xCc74e7974cb626d11daFA5B5243E3ad6FAeb42C7"
+      abi: Lnv2Issuing
+      startBlock: 9107595
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - TransferRelayed
+        - CancelIssuingInited
+        - TransferCanceled
+      abis:
+        - name: Lnv2Issuing
+          file: ./abis/LnArbitrumL1IssuingV2.json
+      eventHandlers:
+        - event: TransferRelayed(bytes32,address)
+          handler: handleTransferRelayed
+        - event: CancelIssuingInited(bytes32,uint256)
+          handler: handleCancelIssuingInited
+        - event: TransferCanceled(bytes32,address)
+          handler: handleTransferCanceled
+      file: ./src/Lnv2Issuing.ts

@@ -160,4 +160,71 @@ export class AggregationResolver {
       where,
     });
   }
+
+  @Query()
+  async queryLnv20RelayInfos(
+    @Args('fromChain') fromChain: string,
+    @Args('toChain') toChain: string,
+    @Args('bridge') bridge: string,
+    @Args('row') row: number,
+    @Args('page') page: number,
+  ) {
+    const skip = row * page || 0;
+    const take = row || 10;
+    const baseFilters = { fromChain, toChain, bridge };
+
+    const where = {
+      ...baseFilters,
+    };
+
+    const records = await this.aggregationService.queryLnv20RelayInfos({
+      skip,
+      take,
+      where,
+    });
+    return records;
+  }
+
+  @Query()
+  async sortedLnv20RelayInfos(
+    @Args('fromChain') fromChain: string,
+    @Args('toChain') toChain: string,
+    @Args('bridge') bridge: string,
+    @Args('token') token: string,
+    @Args('row') row: number,
+    @Args('amount') amount: bigint,
+    @Args('decimals') decimals: bigint,
+  ) {
+    const take = row || 128;
+    const baseFilters = { fromChain, toChain, bridge };
+
+    const where = {
+      ...baseFilters,
+    };
+
+    const records = await this.aggregationService.queryLnv20RelayInfos({
+      skip: 0,
+      take,
+      where,
+    });
+    // w=P * 0.5 + max(R - S*0.001, 0) * 0.1 + max(1-T_0 * 0.001, 0)*0.1 + T_1 * 0.2
+    const validRecords = records.records.filter(record => BigInt(record.margin) > amount);
+    // query all pending txs
+    var sortedRelayers = [];
+    for (const record of validRecords) {
+      const point = await this.aggregationService.calculateLnv20RelayerPoint(
+        token,
+        amount,
+        decimals,
+        record,
+      );
+      if (point == null) {
+        continue;
+      }
+      sortedRelayers.push({record, point});
+      console.log(point);
+    }
+    return sortedRelayers.sort((l, r) => l.point - r.point).map((item, index, array) => item.record);
+  }
 }
+

@@ -44,12 +44,35 @@ type HistoryRecords {
   records: [HistoryRecord]
 }
 
+type Lnv20RelayInfo {
+  id: String!
+  fromChain: String!
+  toChain: String!
+  bridge: String!
+  nonce: BigInt!
+  relayer: String!
+  transaction_hash: String!
+  timestamp: Int!
+  providerKey: String!
+  margin: String
+  baseFee: String
+  liquidityFeeRate: Int
+  refundCount: Int
+}
+
+type Lnv20RelayInfos {
+  total: Int!
+  records: [Lnv20RelayInfo]
+}
+
 type Query {
   historyRecordById(id: String): HistoryRecord
   queryDailyStatistics(timepast: Int!, first: Int, from: String, to: String, bridge: String, token: String): [DailyStatistics]
   historyRecords(sender: String, recipient: String, fromChains: [String], toChains: [String], bridges: [String], row: Int, page: Int, results: [Int], recvTokenAddress: String,  order: String): HistoryRecords
   queryGuardNeedSignature(fromChain: String, toChain: String, bridge: String, guardAddress: String, row: Int): HistoryRecords
   queryRelayRecords(fromChain: String, toChain: String, bridge: String, relayer: String, row: Int): HistoryRecords
+  queryLnv20RelayInfos(fromChain: String, toChain: String, bridge: String, row: Int, page: Int): Lnv20RelayInfos
+  sortedLnv20RelayInfos(fromChain: String, toChain: String, bridge: String, row: Int, amount: BigInt, decimals: BigInt): [Lnv20RelayInfo]
 }
 
 type Mutation {

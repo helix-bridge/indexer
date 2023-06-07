@@ -24,6 +24,10 @@ export abstract class IQuery {
     abstract queryGuardNeedSignature(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, guardAddress?: Nullable<string>, row?: Nullable<number>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
 
     abstract queryRelayRecords(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, relayer?: Nullable<string>, row?: Nullable<number>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
+
+    abstract queryLnv20RelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<Lnv20RelayInfos> | Promise<Nullable<Lnv20RelayInfos>>;
+
+    abstract sortedLnv20RelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, row?: Nullable<number>, amount?: Nullable<BigInt>, decimals?: Nullable<BigInt>): Nullable<Nullable<Lnv20RelayInfo>[]> | Promise<Nullable<Nullable<Lnv20RelayInfo>[]>>;
 }
 
 export class HistoryRecord {
@@ -67,6 +71,27 @@ export class DailyStatistics {
 export class HistoryRecords {
     total: number;
     records?: Nullable<Nullable<HistoryRecord>[]>;
+}
+
+export class Lnv20RelayInfo {
+    id: string;
+    fromChain: string;
+    toChain: string;
+    bridge: string;
+    nonce: BigInt;
+    relayer: string;
+    transaction_hash: string;
+    timestamp: number;
+    providerKey: string;
+    margin?: Nullable<string>;
+    baseFee?: Nullable<string>;
+    liquidityFeeRate?: Nullable<number>;
+    refundCount?: Nullable<number>;
+}
+
+export class Lnv20RelayInfos {
+    total: number;
+    records?: Nullable<Nullable<Lnv20RelayInfo>[]>;
 }
 
 export abstract class IMutation {
