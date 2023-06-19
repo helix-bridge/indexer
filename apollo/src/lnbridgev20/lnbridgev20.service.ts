@@ -12,13 +12,6 @@ import {
   BridgeBaseConfigure,
 } from '../base/TransferServiceT1';
 
-export enum RelayStatus {
-  pending,
-  relayed,
-  cancelInit,
-  canceled,
-}
-
 export enum RelayUpdateType {
   PROVIDER_UPDATE,
   REFUND,
@@ -50,8 +43,8 @@ export class Lnbridgev20Service implements OnModuleInit {
     private transferService: TransferService
   ) {}
 
-  protected genID(transfer: TransferT1, transferId: string): string {
-    return `lnbridgev20-${transfer.bridge}-${transferId}`;
+  protected genID(transfer: TransferT1, providerKey: string, transferId: string): string {
+    return `lnbridgev20-${providerKey}-${transfer.bridge}-${transferId}`;
   }
 
   async onModuleInit() {
@@ -81,19 +74,6 @@ export class Lnbridgev20Service implements OnModuleInit {
     this.fetchCache[index].isSyncingHistory = false;
   }
 
-  protected toRecordStatus(status: number): number {
-    switch (status) {
-      case RelayStatus.pending:
-        return RecordStatus.pending;
-      case RelayStatus.relayed:
-        return RecordStatus.success;
-      case RelayStatus.cancelInit:
-        return RecordStatus.pendingToRefund;
-      case RelayStatus.canceled:
-        return RecordStatus.pendingToConfirmRefund;
-    }
-  }
-
   // fetch records from src chain
   // 1. tx sent but not refund, save and use it as refund params, fetch status from target chain
   // 2. tx sent and refunded, save it directly, don't fetch status from target chain
@@ -109,7 +89,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         });
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
-      const query = `query { lnv2TransferRecords(first: 10, orderBy: timestamp, orderDirection: asc, skip: ${latestNonce}) { id, lastBlockHash, sender, receiver, token, amount, transaction_hash, timestamp, fee, nonce, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp } }`;
+      const query = `query { lnv2TransferRecords(first: 10, orderBy: timestamp, orderDirection: asc, skip: ${latestNonce}) { id, providerKey, lastBlockHash, sender, receiver, token, amount, transaction_hash, timestamp, fee, nonce, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp } }`;
 
       const records = await axios
         .post(from.url, {
@@ -127,7 +107,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           const toToken = symbol.to;
 
           await this.aggregationService.createHistoryRecord({
-            id: this.genID(transfer, record.id),
+            id: this.genID(transfer, record.providerKey, record.id),
             fromChain: from.chain,
             toChain: to.chain,
             bridge: 'lnbridgev20',
@@ -207,13 +187,12 @@ export class Lnbridgev20Service implements OnModuleInit {
       for (const record of uncheckedRecords) {
         const recordSplitted = record.id.split('-');
         const transferId = last(recordSplitted);
-        const dstChainId = recordSplitted[2];
 
         // query from dest chain to get status relayed/pendingToConfirmRefund/pending
         let txStatus = record.result;
 
         if (txStatus === RecordStatus.pending) {
-          const query = `query { lnv2RelayRecord(id: "${transferId}") { id, relayer, timestamp, transaction_hash, status }}`;
+          const query = `query { lnv2RelayRecord(id: "${transferId}") { id, timestamp, transaction_hash, slasher }}`;
           const relayRecord = await axios
             .post(to.url, {
               query: query,
@@ -222,7 +201,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             .then((res) => res.data?.data?.lnv2RelayRecord);
 
           if (relayRecord) {
-            txStatus = this.toRecordStatus(relayRecord.status)
+            txStatus = relayRecord.slasher == "0x0000000000000000000000000000000000000000" ? RecordStatus.success : RecordStatus.pendingToConfirmRefund;
             const updateData = {
               result: txStatus,
               responseTxHash: txStatus != RecordStatus.success ? '' : relayRecord.transaction_hash,
@@ -244,7 +223,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           }
         }
 
-        if (txStatus === RecordStatus.pendingToConfirmRefund || txStatus === RecordStatus.pending) {
+        if (txStatus === RecordStatus.pendingToConfirmRefund) {
           const transferRecord = await this.queryRecord(transfer, transferId);
           if (transferRecord) {
             record.responseTxHash = transferRecord.liquidate_transaction_hash;

@@ -222,7 +222,6 @@ export class AggregationResolver {
         continue;
       }
       sortedRelayers.push({record, point});
-      console.log(point);
     }
     return sortedRelayers.sort((l, r) => l.point - r.point).map((item, index, array) => item.record);
   }
