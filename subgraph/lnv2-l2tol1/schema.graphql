@@ -18,11 +18,9 @@ type Lnv2TransferRecord @entity {
 
 type Lnv2RelayRecord @entity {
   id: ID!
-  relayer: Bytes
+  slasher: Bytes
   transaction_hash: Bytes!
   timestamp: BigInt!
-  status: Int!
-  calceledId: Bytes
 }
 
 type Lnv2RelayUpdateRecord @entity {

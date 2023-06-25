@@ -117,13 +117,7 @@
         {
           "indexed": false,
           "internalType": "address",
-          "name": "receiver",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "rewardReceiver",
+          "name": "slasher",
           "type": "address"
         }
       ],
@@ -216,6 +210,12 @@
         },
         {
           "indexed": false,
+          "internalType": "uint64",
+          "name": "providerKey",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
           "internalType": "bytes32",
           "name": "transferId",
           "type": "bytes32"
@@ -295,6 +295,19 @@
     },
     {
       "inputs": [],
+      "name": "INIT_SLASH_TRANSFER_ID",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "LIQUIDITY_FEE_RATE_BASE",
       "outputs": [
         {
@@ -327,30 +340,6 @@
           "internalType": "bytes32",
           "name": "",
           "type": "bytes32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint64",
-          "name": "providerKey",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint112",
-          "name": "amount",
-          "type": "uint112"
-        }
-      ],
-      "name": "fee",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -429,6 +418,67 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "providerKey",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "previousTransferId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "lastBlockHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint112",
+              "name": "amount",
+              "type": "uint112"
+            },
+            {
+              "internalType": "uint64",
+              "name": "nonce",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "timestamp",
+              "type": "uint64"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "receiver",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct LnBridgeHelper.TransferParameter",
+          "name": "param",
+          "type": "tuple"
+        }
+      ],
+      "name": "getTransferId",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
       "type": "function"
     },
     {
@@ -534,11 +584,6 @@
           "type": "address"
         },
         {
-          "internalType": "uint64",
-          "name": "nonce",
-          "type": "uint64"
-        },
-        {
           "components": [
             {
               "internalType": "uint112",
@@ -556,55 +601,17 @@
               "type": "uint8"
             }
           ],
-          "internalType": "struct LnBridgeBackingV2.LnProviderConfigure",
+          "internalType": "struct LnBridgeSource.LnProviderConfigure",
           "name": "config",
           "type": "tuple"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
+        },
         {
           "internalType": "bytes32",
           "name": "lastTransferId",
           "type": "bytes32"
-        },
-        {
-          "internalType": "uint64",
-          "name": "nonce",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint64",
-          "name": "providerKey",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint112",
-          "name": "amount",
-          "type": "uint112"
-        },
-        {
-          "internalType": "uint112",
-          "name": "expectedFee",
-          "type": "uint112"
-        },
-        {
-          "internalType": "uint112",
-          "name": "expectedMargin",
-          "type": "uint112"
-        },
-        {
-          "internalType": "address",
-          "name": "receiver",
-          "type": "address"
         }
       ],
-      "name": "lockAndRemoteIssuing",
-      "outputs": [],
-      "stateMutability": "payable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -624,7 +631,7 @@
         },
         {
           "internalType": "uint112",
-          "name": "amount",
+          "name": "amountWithFeeAndPenalty",
           "type": "uint112"
         },
         {
@@ -665,7 +672,7 @@
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "lastRefundTransferId",
+          "name": "latestSlashTransferId",
           "type": "bytes32"
         },
         {
@@ -675,12 +682,7 @@
         },
         {
           "internalType": "address",
-          "name": "receiver",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "rewardReceiver",
+          "name": "slasher",
           "type": "address"
         }
       ],
@@ -731,12 +733,12 @@
         },
         {
           "internalType": "uint112",
-          "name": "helixFee",
+          "name": "protocolFee",
           "type": "uint112"
         },
         {
           "internalType": "uint112",
-          "name": "fineFund",
+          "name": "penaltyLnCollateral",
           "type": "uint112"
         },
         {
@@ -757,7 +759,7 @@
     },
     {
       "inputs": [],
-      "name": "remoteIssuing",
+      "name": "remoteBridge",
       "outputs": [
         {
           "internalType": "address",
@@ -770,7 +772,7 @@
     },
     {
       "inputs": [],
-      "name": "remoteIssuingOnL2",
+      "name": "remoteBridgeAlias",
       "outputs": [
         {
           "internalType": "address",
@@ -821,11 +823,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_remoteIssuing",
+          "name": "_remoteBridge",
           "type": "address"
         }
       ],
-      "name": "setRemoteIssuing",
+      "name": "setRemoteBridge",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -834,11 +836,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_remoteIssuingOnL2",
+          "name": "_remoteBridgeAlias",
           "type": "address"
         }
       ],
-      "name": "setRemoteIssuingOnL2",
+      "name": "setRemoteBridgeAlias",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -897,12 +899,12 @@
         },
         {
           "internalType": "uint112",
-          "name": "helixFee",
+          "name": "protocolFee",
           "type": "uint112"
         },
         {
           "internalType": "uint112",
-          "name": "fineFund",
+          "name": "penaltyLnCollateral",
           "type": "uint112"
         },
         {
@@ -917,6 +919,75 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint64",
+          "name": "providerKey",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint112",
+          "name": "amount",
+          "type": "uint112"
+        }
+      ],
+      "name": "totalFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "providerKey",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "transferId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint112",
+              "name": "depositedMargin",
+              "type": "uint112"
+            },
+            {
+              "internalType": "uint112",
+              "name": "totalFee",
+              "type": "uint112"
+            }
+          ],
+          "internalType": "struct LnBridgeSource.Snapshot",
+          "name": "snapshot",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint112",
+          "name": "amount",
+          "type": "uint112"
+        },
+        {
+          "internalType": "address",
+          "name": "receiver",
+          "type": "address"
+        }
+      ],
+      "name": "transferAndLockMargin",
+      "outputs": [],
+      "stateMutability": "payable",
       "type": "function"
     },
     {
@@ -948,11 +1019,11 @@
         },
         {
           "internalType": "uint112",
-          "name": "_helixFee",
+          "name": "_protocolFee",
           "type": "uint112"
         }
       ],
-      "name": "updateHelixFee",
+      "name": "updateProtocolFee",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -961,7 +1032,7 @@
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "lastRefundTransferId",
+          "name": "latestSlashTransferId",
           "type": "bytes32"
         },
         {

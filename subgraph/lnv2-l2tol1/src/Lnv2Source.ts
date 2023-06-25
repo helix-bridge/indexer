@@ -4,7 +4,7 @@ import {
     Refund,
     LnProviderUpdated,
     LiquidityWithdrawn,
-} from "../generated/Lnv2Backing/Lnv2Backing"
+} from "../generated/Lnv2Source/Lnv2Source"
 import { Lnv2TransferRecord, Lnv2RelayUpdateRecord } from "../generated/schema"
 
 const PROVIDER_UPDATE = 0;
@@ -25,6 +25,7 @@ export function handleTokenLocked(event: TokenLocked): void {
   entity.transaction_hash = event.transaction.hash;
   entity.timestamp = event.block.timestamp;
   entity.fee = event.params.fee;
+  entity.providerKey = event.params.providerKey;
   entity.nonce = event.params.nonce;
   entity.lastBlockHash = event.params.lastBlockHash;
   entity.save();
@@ -36,7 +37,7 @@ export function handleRefund(event: Refund): void {
   if (entity == null) {
       return;
   }
-  entity.liquidate_withdrawn_sender = event.params.receiver;
+  entity.liquidate_withdrawn_sender = event.params.slasher;
   entity.liquidate_transaction_hash = event.transaction.hash;
   entity.liquidate_withdrawn_timestamp = event.block.timestamp;
   entity.save();

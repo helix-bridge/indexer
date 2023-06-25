@@ -4,25 +4,6 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "bytes32",
-          "name": "transferId",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "CancelIssuingInited",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
           "internalType": "uint8",
           "name": "version",
           "type": "uint8"
@@ -131,30 +112,11 @@
         {
           "indexed": false,
           "internalType": "address",
-          "name": "sender",
+          "name": "slasher",
           "type": "address"
         }
       ],
-      "name": "TransferCanceled",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "bytes32",
-          "name": "transferId",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "relayer",
-          "type": "address"
-        }
-      ],
-      "name": "TransferRelayed",
+      "name": "TransferFilled",
       "type": "event"
     },
     {
@@ -217,6 +179,19 @@
     },
     {
       "inputs": [],
+      "name": "INIT_SLASH_TRANSFER_ID",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "MIN_REFUND_TIMESTAMP",
       "outputs": [
         {
@@ -236,6 +211,49 @@
           "internalType": "bytes32",
           "name": "",
           "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "transferId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "_retrySlashAndRemoteRefund",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "message",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "fillTransfers",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "latestSlashTransferId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "slasher",
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -306,6 +324,67 @@
     {
       "inputs": [
         {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "providerKey",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "previousTransferId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "lastBlockHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint112",
+              "name": "amount",
+              "type": "uint112"
+            },
+            {
+              "internalType": "uint64",
+              "name": "nonce",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "timestamp",
+              "type": "uint64"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "receiver",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct LnBridgeHelper.TransferParameter",
+          "name": "param",
+          "type": "tuple"
+        }
+      ],
+      "name": "getTransferId",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "bytes32",
           "name": "role",
           "type": "bytes32"
@@ -361,44 +440,6 @@
     {
       "inputs": [
         {
-          "internalType": "bytes32",
-          "name": "lastTransferId",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "lastBlockHash",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "receiver",
-          "type": "address"
-        },
-        {
-          "internalType": "uint64",
-          "name": "nonce",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint112",
-          "name": "amount",
-          "type": "uint112"
-        }
-      ],
-      "name": "initCancelIssuing",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "address",
           "name": "_dao",
           "type": "address"
@@ -412,35 +453,6 @@
       "name": "initialize",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "name": "issuedMessages",
-      "outputs": [
-        {
-          "internalType": "uint64",
-          "name": "nonce",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint64",
-          "name": "lastRefundNonce",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint64",
-          "name": "refundStartTime",
-          "type": "uint64"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -464,65 +476,8 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "name": "refundReceiver",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "lastTransferId",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "lastBlockHash",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint64",
-          "name": "nonce",
-          "type": "uint64"
-        },
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "receiver",
-          "type": "address"
-        },
-        {
-          "internalType": "uint112",
-          "name": "amount",
-          "type": "uint112"
-        }
-      ],
-      "name": "relay",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
       "inputs": [],
-      "name": "remoteBacking",
+      "name": "remoteBridge",
       "outputs": [
         {
           "internalType": "address",
@@ -559,49 +514,6 @@
           "type": "bytes32"
         },
         {
-          "internalType": "bytes32",
-          "name": "lastRefundTransferId",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "transferId",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "maxSubmissionCost",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "maxGas",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "gasPriceBid",
-          "type": "uint256"
-        }
-      ],
-      "name": "requestCancelIssuing",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "lastRefundTransferId",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "lastTransferId",
-          "type": "bytes32"
-        },
-        {
           "internalType": "uint112",
           "name": "amount",
           "type": "uint112"
@@ -631,6 +543,34 @@
       "inputs": [
         {
           "internalType": "bytes32",
+          "name": "transferId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxSubmissionCost",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxGas",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "gasPriceBid",
+          "type": "uint256"
+        }
+      ],
+      "name": "retryRemoteRefund",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
           "name": "role",
           "type": "bytes32"
         },
@@ -649,13 +589,88 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_remoteBacking",
+          "name": "_remoteBridge",
           "type": "address"
         }
       ],
-      "name": "setRemoteBacking",
+      "name": "setRemoteBridge",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "providerKey",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "previousTransferId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "lastBlockHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint112",
+              "name": "amount",
+              "type": "uint112"
+            },
+            {
+              "internalType": "uint64",
+              "name": "nonce",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "timestamp",
+              "type": "uint64"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "receiver",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct LnBridgeHelper.TransferParameter",
+          "name": "params",
+          "type": "tuple"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "expectedTransferId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxSubmissionCost",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxGas",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "gasPriceBid",
+          "type": "uint256"
+        }
+      ],
+      "name": "slashAndRemoteRefund",
+      "outputs": [],
+      "stateMutability": "payable",
       "type": "function"
     },
     {
@@ -667,7 +682,7 @@
         },
         {
           "internalType": "bytes32",
-          "name": "lastRefundTransferId",
+          "name": "latestSlashTransferId",
           "type": "bytes32"
         },
         {
@@ -677,12 +692,7 @@
         },
         {
           "internalType": "address",
-          "name": "receiver",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "fundReceiver",
+          "name": "slasher",
           "type": "address"
         },
         {
@@ -708,11 +718,6 @@
           "internalType": "uint256",
           "name": "baseFee",
           "type": "uint256"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "lastRefundTransferId",
-          "type": "bytes32"
         },
         {
           "internalType": "bytes32",
@@ -758,6 +763,66 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "providerKey",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "previousTransferId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "lastBlockHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint112",
+              "name": "amount",
+              "type": "uint112"
+            },
+            {
+              "internalType": "uint64",
+              "name": "nonce",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "timestamp",
+              "type": "uint64"
+            },
+            {
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "receiver",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct LnBridgeHelper.TransferParameter",
+          "name": "params",
+          "type": "tuple"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "expectedTransferId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "transferAndReleaseMargin",
+      "outputs": [],
+      "stateMutability": "payable",
       "type": "function"
     },
     {

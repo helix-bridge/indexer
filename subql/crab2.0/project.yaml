@@ -4,10 +4,10 @@ version: 0.0.1
 runner:
   node:
     name: '@subql/node'
-    version: v1.14.1
+    version: v2.5.5
   query:
     name: '@subql/query'
-    version: v1.7.0
+    version: v2.0.0
 description: ''
 repository: git@github.com:helix-bridge/indexer.git
 schema:
