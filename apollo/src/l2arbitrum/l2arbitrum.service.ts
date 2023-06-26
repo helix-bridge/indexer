@@ -56,7 +56,7 @@ export class L2arbitrumService implements OnModuleInit {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
           fromChain: this.transferInfo.l1Chain.name,
           bridge: 'l2arbitrumbridge-' + this.transferInfo.l1Chain.name,
-        });
+        }, {nonce: 'desc'});
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
@@ -78,6 +78,8 @@ export class L2arbitrumService implements OnModuleInit {
           const recvTokenInfo = this.transferInfo.l2Chain.tokens[sendTokenInfo.parter];
           await this.aggregationService.createHistoryRecord({
             id: this.genID(record.id),
+            providerKey: 0,
+            lastBlockHash: '',
             fromChain: this.transferInfo.l1Chain.name,
             toChain: this.transferInfo.l2Chain.name,
             bridge: 'l2arbitrumbridge-' + this.transferInfo.l1Chain.name,

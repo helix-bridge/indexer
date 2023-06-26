@@ -86,7 +86,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
           fromChain: from.chain,
           bridge: 'lnbridgev20',
-        });
+        }, {nonce: 'desc'});
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
       const query = `query { lnv2TransferRecords(first: 10, orderBy: timestamp, orderDirection: asc, skip: ${latestNonce}) { id, providerKey, lastBlockHash, sender, receiver, token, amount, transaction_hash, timestamp, fee, nonce, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp } }`;
@@ -108,6 +108,8 @@ export class Lnbridgev20Service implements OnModuleInit {
 
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, record.providerKey, record.id),
+            providerKey: Number(record.providerKey),
+            lastBlockHash: record.lastBlockHash,
             fromChain: from.chain,
             toChain: to.chain,
             bridge: 'lnbridgev20',
@@ -126,7 +128,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             fee: record.fee,
             feeToken: fromToken,
             responseTxHash: '',
-            reason: record.lastBlockHash,// TODO, use this variable to save last block hash
+            reason: '',
             sendTokenAddress: record.token,
             recvTokenAddress: symbol.toAddress,
             endTxHash: '',

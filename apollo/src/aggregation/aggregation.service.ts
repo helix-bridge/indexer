@@ -143,11 +143,12 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
   }
 
   async queryHistoryRecordFirst(
-    historyRecordWhereInput: Prisma.HistoryRecordWhereInput
+    historyRecordWhereInput: Prisma.HistoryRecordWhereInput,
+    orderBy?: Prisma.Enumerable<Prisma.HistoryRecordOrderByWithRelationAndSearchRelevanceInput>
   ): Promise<HistoryRecord | null> {
     return this.historyRecord.findFirst({
       where: historyRecordWhereInput,
-      orderBy: { nonce: 'desc' },
+      orderBy,
     });
   }
 
@@ -214,7 +215,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
   async calculateLnv20RelayerPoint(
     token: string,
     amount: bigint,
-    decimals: bigint,
+    decimals: number,
     relayerInfo: Lnv20RelayInfo
   ): Promise<number | null> {
     const orderBy = { startTime: Prisma.SortOrder.desc };
@@ -243,14 +244,17 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       this.logger.warn(`margin not enough, margin ${relayerInfo.margin}, used ${marginUsed}, amount ${amount}, relayer ${relayerInfo.relayer}`);
       return null;
     }
-    const firstSuccess = await this.queryHistoryRecordFirst({
-        fromChain: relayerInfo.fromChain,
-        toChain: relayerInfo.toChain,
-        bridge: 'lnbridgev20',
-        relayer: relayerInfo.relayer,
-        sendTokenAddress: token,
-        result: 3,
-    });
+    const firstSuccess = await this.queryHistoryRecordFirst(
+        {
+            fromChain: relayerInfo.fromChain,
+            toChain: relayerInfo.toChain,
+            bridge: 'lnbridgev20',
+            relayer: relayerInfo.relayer,
+            sendTokenAddress: token,
+            result: 3,
+        },
+        { nonce: 'desc' },
+    );
     const F = BigInt(relayerInfo.baseFee) + BigInt(relayerInfo.liquidityFeeRate) * amount / BigInt(100000);
     const P = total;
     const R = relayerInfo.refundCount;
@@ -263,7 +267,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       T_0 = now - records[0].startTime;
     }
     const w = P * 0.5 + Math.max(R - S*0.001, 0) * 0.1 + Math.max(1-T_0 * 0.001, 0)*0.1 + T_1 * 0.2;
-    return Number(F / decimals) * w;
+    return Number(F / BigInt(10**decimals)) * w;
   }
 }
 

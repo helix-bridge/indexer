@@ -14,6 +14,8 @@ datasource db {
 
 model HistoryRecord {
   id String @id
+  providerKey BigInt
+  lastBlockHash String
   fromChain String
   toChain String
   bridge String

@@ -71,7 +71,7 @@ export class LnbridgeService implements OnModuleInit {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
           fromChain: transfer.chain,
           bridge: 'lpbridge-' + transfer.chain,
-        });
+        }, {nonce: 'desc'});
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
@@ -110,6 +110,8 @@ export class LnbridgeService implements OnModuleInit {
           const endTime = 0;
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, transfer.chainId.toString(), record.remote_chainid, record.id),
+            providerKey: 0,
+            lastBlockHash: '',
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: 'lpbridge-' + transfer.chain,

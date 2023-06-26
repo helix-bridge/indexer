@@ -57,7 +57,7 @@ export class XcmService implements OnModuleInit {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
           fromChain: transfer.chain,
           bridge: 'xcm-' + transfer.chain,
-        });
+        }, {nonce: 'desc'});
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
@@ -81,6 +81,8 @@ export class XcmService implements OnModuleInit {
 
           await this.aggregationService.createHistoryRecord({
             id: this.genID(record.id),
+            providerKey: 0,
+            lastBlockHash: '',
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: 'xcm-' + transfer.chain,

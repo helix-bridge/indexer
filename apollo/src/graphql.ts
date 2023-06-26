@@ -17,6 +17,8 @@ export abstract class IQuery {
 
     abstract historyRecordById(id?: Nullable<string>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
 
+    abstract firstHistoryRecord(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, results?: Nullable<Nullable<number>[]>, providerKey?: Nullable<number>, order?: Nullable<string>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
+
     abstract queryDailyStatistics(timepast: number, first?: Nullable<number>, from?: Nullable<string>, to?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>): Nullable<Nullable<DailyStatistics>[]> | Promise<Nullable<Nullable<DailyStatistics>[]>>;
 
     abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, fromChains?: Nullable<Nullable<string>[]>, toChains?: Nullable<Nullable<string>[]>, bridges?: Nullable<Nullable<string>[]>, row?: Nullable<number>, page?: Nullable<number>, results?: Nullable<Nullable<number>[]>, recvTokenAddress?: Nullable<string>, order?: Nullable<string>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
@@ -27,11 +29,13 @@ export abstract class IQuery {
 
     abstract queryLnv20RelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<Lnv20RelayInfos> | Promise<Nullable<Lnv20RelayInfos>>;
 
-    abstract sortedLnv20RelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, row?: Nullable<number>, amount?: Nullable<BigInt>, decimals?: Nullable<BigInt>): Nullable<Nullable<Lnv20RelayInfo>[]> | Promise<Nullable<Nullable<Lnv20RelayInfo>[]>>;
+    abstract sortedLnv20RelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, row?: Nullable<number>, amount?: Nullable<string>, decimals?: Nullable<number>): Nullable<Nullable<Lnv20RelayInfo>[]> | Promise<Nullable<Nullable<Lnv20RelayInfo>[]>>;
 }
 
 export class HistoryRecord {
     id: string;
+    providerKey?: Nullable<BigInt>;
+    lastBlockHash: string;
     fromChain: string;
     toChain: string;
     bridge: string;
