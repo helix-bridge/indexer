@@ -329,7 +329,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           });
         }
         latestNonce += 1;
-        this.fetchCache[index].latestNonce = latestNonce;
+        this.fetchCache[index].latestRelayerInfoNonce = latestNonce;
         this.logger.log(`update lnv20 relay info, id ${id}, type ${record.updateType}, margin ${record.margin}, basefee ${record.baseFee}, liquidityFee ${record.liquidityFeeRate}`);
       }
     } catch (error) {
