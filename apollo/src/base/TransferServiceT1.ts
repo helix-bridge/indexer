@@ -118,11 +118,14 @@ export abstract class BaseServiceT1 {
     const isLock = transfer.isLock ? 'lock' : 'unlock';
     try {
       if (latestNonce === -1) {
-        const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
-          fromChain: from.chain,
-          toChain: to.chain,
-          bridge: `helix-${this.baseConfigure.name}(${isLock})`,
-        }, {nonce: 'desc'});
+        const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
+          {
+            fromChain: from.chain,
+            toChain: to.chain,
+            bridge: `helix-${this.baseConfigure.name}(${isLock})`,
+          },
+          { nonce: 'desc' }
+        );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 

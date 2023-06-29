@@ -21,22 +21,26 @@ export class AggregationResolver {
     @Args('bridge') bridge: string,
     @Args('results') results: number[],
     @Args('providerKey') providerKey: number,
-    @Args('order') order: string,
+    @Args('order') order: string
   ) {
     const orderCondition = order?.split('_');
-    const orderBy = orderCondition && orderCondition.length == 2
-      ? { [orderCondition[0]]: orderCondition[1] }
-      : { startTime: Prisma.SortOrder.desc };
+    const orderBy =
+      orderCondition && orderCondition.length == 2
+        ? { [orderCondition[0]]: orderCondition[1] }
+        : { startTime: Prisma.SortOrder.desc };
     const resultCondition = results && results.length ? { result: { in: results } } : {};
-    return this.aggregationService.queryHistoryRecordFirst({
-      AND: {
+    return this.aggregationService.queryHistoryRecordFirst(
+      {
+        AND: {
           fromChain: fromChain,
           toChain: toChain,
           bridge: bridge,
           providerKey: providerKey,
           ...resultCondition,
-      }
-    }, orderBy);
+        },
+      },
+      orderBy
+    );
   }
 
   @Query()
@@ -51,14 +55,14 @@ export class AggregationResolver {
     @Args('results') results: number[],
     @Args('recvTokenAddress') recvTokenAddress: string,
     @Args('order') order: string,
-    @Args('providerKey') providerKey: number
   ) {
     const orderCondition = order?.split('_');
     const skip = row * page || 0;
     const take = row || 10;
-    const orderBy = orderCondition && orderCondition.length == 2
-      ? { [orderCondition[0]]: orderCondition[1] }
-      : { startTime: Prisma.SortOrder.desc };
+    const orderBy =
+      orderCondition && orderCondition.length == 2
+        ? { [orderCondition[0]]: orderCondition[1] }
+        : { startTime: Prisma.SortOrder.desc };
     const isValid = (item) =>
       !Object.values(item).some((value) => isUndefined(value) || isNull(value) || value === '');
 
@@ -71,8 +75,6 @@ export class AggregationResolver {
     const bridgeCondition = bridges && bridges.length ? { bridge: { in: bridges } } : {};
     const recvTokenCondition =
       recvTokenAddress && recvTokenAddress.length ? { recvTokenAddress: recvTokenAddress } : {};
-    const providerKeyCondition =
-      providerKey ? { providerKey: providerKey }: {};
     const chainConditions = {
       AND: {
         ...resultCondition,
@@ -196,7 +198,7 @@ export class AggregationResolver {
     @Args('toChain') toChain: string,
     @Args('bridge') bridge: string,
     @Args('row') row: number,
-    @Args('page') page: number,
+    @Args('page') page: number
   ) {
     const skip = row * page || 0;
     const take = row || 10;
@@ -222,7 +224,7 @@ export class AggregationResolver {
     @Args('token') token: string,
     @Args('row') row: number,
     @Args('amount') amount: string,
-    @Args('decimals') decimals: number,
+    @Args('decimals') decimals: number
   ) {
     const take = row || 128;
     const baseFilters = { fromChain, toChain, bridge };
@@ -237,7 +239,7 @@ export class AggregationResolver {
       where,
     });
     // w=P * 0.5 + max(R - S*0.001, 0) * 0.1 + max(1-T_0 * 0.001, 0)*0.1 + T_1 * 0.2
-    const validRecords = records.records.filter(record => BigInt(record.margin) > BigInt(amount));
+    const validRecords = records.records.filter((record) => BigInt(record.margin) > BigInt(amount));
     // query all pending txs
     var sortedRelayers = [];
     for (const record of validRecords) {
@@ -245,14 +247,15 @@ export class AggregationResolver {
         token,
         BigInt(amount),
         decimals,
-        record,
+        record
       );
       if (point == null) {
         continue;
       }
-      sortedRelayers.push({record, point});
+      sortedRelayers.push({ record, point });
     }
-    return sortedRelayers.sort((l, r) => l.point - r.point).map((item, index, array) => item.record);
+    return sortedRelayers
+      .sort((l, r) => l.point - r.point)
+      .map((item) => item.record);
   }
 }
-

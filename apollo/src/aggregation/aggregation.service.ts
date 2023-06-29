@@ -241,21 +241,25 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     }
     // margin not enough, todo add finefund
     if (BigInt(relayerInfo.margin) < marginUsed + amount) {
-      this.logger.warn(`margin not enough, margin ${relayerInfo.margin}, used ${marginUsed}, amount ${amount}, relayer ${relayerInfo.relayer}`);
+      this.logger.warn(
+        `margin not enough, margin ${relayerInfo.margin}, used ${marginUsed}, amount ${amount}, relayer ${relayerInfo.relayer}`
+      );
       return null;
     }
     const firstSuccess = await this.queryHistoryRecordFirst(
-        {
-            fromChain: relayerInfo.fromChain,
-            toChain: relayerInfo.toChain,
-            bridge: 'lnbridgev20',
-            relayer: relayerInfo.relayer,
-            sendTokenAddress: token,
-            result: 3,
-        },
-        { nonce: 'desc' },
+      {
+        fromChain: relayerInfo.fromChain,
+        toChain: relayerInfo.toChain,
+        bridge: 'lnbridgev20',
+        relayer: relayerInfo.relayer,
+        sendTokenAddress: token,
+        result: 3,
+      },
+      { nonce: 'desc' }
     );
-    const F = BigInt(relayerInfo.baseFee) + BigInt(relayerInfo.liquidityFeeRate) * amount / BigInt(100000);
+    const F =
+      BigInt(relayerInfo.baseFee) +
+      (BigInt(relayerInfo.liquidityFeeRate) * amount) / BigInt(100000);
     const P = total;
     const R = relayerInfo.refundCount;
     const now = Date.now() / 1000;
@@ -266,8 +270,8 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       S = Number(records[0].messageNonce);
       T_0 = now - records[0].startTime;
     }
-    const w = P * 0.5 + Math.max(R - S*0.001, 0) * 0.1 + Math.max(1-T_0 * 0.001, 0)*0.1 + T_1 * 0.2;
-    return Number(F / BigInt(10**decimals)) * w;
+    const w =
+      P * 0.5 + Math.max(R - S * 0.001, 0) * 0.1 + Math.max(1 - T_0 * 0.001, 0) * 0.1 + T_1 * 0.2;
+    return Number(F / BigInt(10 ** decimals)) * w;
   }
 }
-

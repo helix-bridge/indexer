@@ -51,7 +51,7 @@ export class S2sv21Service extends BaseServiceT1 implements OnModuleInit {
 
   transferIdToResultId(id: string) {
     const nonce = id.substring(id.length - 16, id.length + 1);
-    const hexNonce = "0x" + nonce.replace(/^0+/, '');
+    const hexNonce = '0x' + nonce.replace(/^0+/, '');
     return this.idAppendLaneId(hexNonce);
   }
 
@@ -62,7 +62,7 @@ export class S2sv21Service extends BaseServiceT1 implements OnModuleInit {
   private idAppendLaneId(id: string) {
     const laneId = '0x64616362';
     if (!id.startsWith(laneId)) {
-        return laneId + id;
+      return laneId + id;
     }
     return id;
   }
@@ -88,7 +88,10 @@ export class S2sv21Service extends BaseServiceT1 implements OnModuleInit {
   }
 
   formatTransferId(id: string): string {
-    return '0x200000000000000000000000000000000000064616362' + id.substring(2, id.length+1).padStart(16, '0');
+    return (
+      '0x200000000000000000000000000000000000064616362' +
+      id.substring(2, id.length + 1).padStart(16, '0')
+    );
   }
 
   async updateRecordStatus(uncheckedRecords: HistoryRecord[], ids: string, transfer: TransferT1) {
@@ -142,7 +145,7 @@ export class S2sv21Service extends BaseServiceT1 implements OnModuleInit {
         }
       )
       .then((res) => res.data?.data?.bridgeDispatchEvents?.nodes);
-    
+
     return [
       refundResults.find((r) => r.method === 'MessageDispatched') ?? null,
       refundResults.length,

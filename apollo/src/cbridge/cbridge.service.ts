@@ -94,10 +94,13 @@ export class CbridgeService implements OnModuleInit {
     let latestNonce = this.fetchCache[index].latestNonce;
     try {
       if (latestNonce === -1) {
-        const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
-          fromChain: transfer.chain,
-          bridge: 'cBridge-' + transfer.chain,
-        }, {nonce: 'desc'});
+        const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
+          {
+            fromChain: transfer.chain,
+            bridge: 'cBridge-' + transfer.chain,
+          },
+          { nonce: 'desc' }
+        );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
