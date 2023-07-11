@@ -64,6 +64,6 @@ model Lnv20RelayInfo {
   margin String
   baseFee String
   liquidityFeeRate Int
-  refundCount Int
+  slashCount Int
 }
 

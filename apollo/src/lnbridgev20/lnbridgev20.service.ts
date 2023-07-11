@@ -14,7 +14,7 @@ import {
 
 export enum RelayUpdateType {
   PROVIDER_UPDATE,
-  REFUND,
+  SLASH,
   WITHDRAW,
 }
 
@@ -80,8 +80,8 @@ export class Lnbridgev20Service implements OnModuleInit {
   }
 
   // fetch records from src chain
-  // 1. tx sent but not refund, save and use it as refund params, fetch status from target chain
-  // 2. tx sent and refunded, save it directly, don't fetch status from target chain
+  // 1. tx sent but not slash, save and use it as slash params, fetch status from target chain
+  // 2. tx sent and slashed, save it directly, don't fetch status from target chain
   async fetchRecords(transfer: TransferT1, index: number) {
     // the nonce of cBridge message is not increased
     let latestNonce = this.fetchCache[index].latestNonce;
@@ -156,7 +156,7 @@ export class Lnbridgev20Service implements OnModuleInit {
     }
   }
 
-  // fetch refund status from source chain
+  // fetch slash status from source chain
   async queryRecord(transfer: TransferT1, id: string) {
     const query = `query { lnv2TransferRecord(id: "${id}") { id, fee, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp } }`;
     const record = await axios
@@ -168,7 +168,7 @@ export class Lnbridgev20Service implements OnModuleInit {
     return record;
   }
 
-  // fetch status from target chain and source chain(refund result)
+  // fetch status from target chain and source chain(slash result)
   // 1. relayed, finished
   // 2. cancel inited, save timestamp to check if users can cancel tx or ln can relay msg
   // 3. cancel request sent, save status and fetch status from src chain
@@ -215,7 +215,7 @@ export class Lnbridgev20Service implements OnModuleInit {
               result: RecordStatus.success,
               responseTxHash: relayRecord.transaction_hash,
               endTxHash: relayRecord.transaction_hash,
-              endTime: Number(relayRecord.timestamp), // we use this time to check refund time
+              endTime: Number(relayRecord.timestamp), // we use this time to check slash time
               recvAmount: record.sendAmount,
               recvToken: record.recvToken,
               relayer: relayRecord.relayer,
@@ -285,7 +285,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             margin: record.margin,
             baseFee: record.baseFee,
             liquidityFeeRate: Number(record.liquidityFeeRate),
-            refundCount: 0,
+            slashCount: 0,
           });
         } else {
           // else update
@@ -295,7 +295,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             margin: relayerInfo.margin,
             baseFee: relayerInfo.baseFee,
             liquidityFeeRate: relayerInfo.liquidityFeeRate,
-            refundCount: relayerInfo.refundCount,
+            slashCount: relayerInfo.slashCount,
           };
           if (record.updateType == RelayUpdateType.PROVIDER_UPDATE) {
             updateData.margin = record.margin;
@@ -303,9 +303,9 @@ export class Lnbridgev20Service implements OnModuleInit {
             updateData.liquidityFeeRate = Number(record.liquidityFeeRate);
           } else if (record.updateType == RelayUpdateType.WITHDRAW) {
             updateData.margin = record.margin;
-          } else if (record.updateType == RelayUpdateType.REFUND) {
+          } else if (record.updateType == RelayUpdateType.SLASH) {
             updateData.margin = record.margin;
-            updateData.refundCount = relayerInfo.refundCount + 1;
+            updateData.slashCount = relayerInfo.slashCount + 1;
           }
           await this.aggregationService.updateLnv20RelayInfo({
             where: { id: id },

@@ -88,7 +88,7 @@ export class Lnv20RelayInfo {
     margin?: Nullable<string>;
     baseFee?: Nullable<string>;
     liquidityFeeRate?: Nullable<number>;
-    refundCount?: Nullable<number>;
+    slashCount?: Nullable<number>;
 }
 
 export class Lnv20RelayInfos {

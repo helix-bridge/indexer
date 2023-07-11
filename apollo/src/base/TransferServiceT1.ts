@@ -13,7 +13,6 @@ export enum RecordStatus {
   success,
   refunded,
   pendingToConfirmRefund,
-  pendingRefundInit,
 }
 
 export interface PartnerT1 {
