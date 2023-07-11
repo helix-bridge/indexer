@@ -53,10 +53,13 @@ export class L2arbitrumService implements OnModuleInit {
     let latestNonce = this.fetchCache.latestNonce;
     try {
       if (latestNonce === -1) {
-        const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
-          fromChain: this.transferInfo.l1Chain.name,
-          bridge: 'l2arbitrumbridge-' + this.transferInfo.l1Chain.name,
-        });
+        const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
+          {
+            fromChain: this.transferInfo.l1Chain.name,
+            bridge: 'l2arbitrumbridge-' + this.transferInfo.l1Chain.name,
+          },
+          { nonce: 'desc' }
+        );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 

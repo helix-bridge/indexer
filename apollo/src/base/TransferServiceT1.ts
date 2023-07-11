@@ -25,12 +25,14 @@ export interface PartnerSymbol {
   from: string;
   to: string;
   address: string;
+  toAddress: string;
 }
 
 export interface TransferT1 {
   source: PartnerT1;
   target: PartnerT1;
   isLock: boolean;
+  bridge: string;
   symbols: PartnerSymbol[];
 }
 
@@ -115,11 +117,14 @@ export abstract class BaseServiceT1 {
     const isLock = transfer.isLock ? 'lock' : 'unlock';
     try {
       if (latestNonce === -1) {
-        const firstRecord = await this.aggregationService.queryHistoryRecordFirst({
-          fromChain: from.chain,
-          toChain: to.chain,
-          bridge: `helix-${this.baseConfigure.name}(${isLock})`,
-        });
+        const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
+          {
+            fromChain: from.chain,
+            toChain: to.chain,
+            bridge: `helix-${this.baseConfigure.name}(${isLock})`,
+          },
+          { nonce: 'desc' }
+        );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 

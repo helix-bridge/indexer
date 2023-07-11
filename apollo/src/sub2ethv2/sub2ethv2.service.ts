@@ -87,22 +87,25 @@ export class Sub2ethv2Service extends BaseServiceT1 implements OnModuleInit {
 
   idRemoveVersion(id: string) {
     const nonce = id.substring(id.length - 16, id.length + 1);
-    const hexNonce = "0x" + nonce.replace(/^0+/, '');
+    const hexNonce = '0x' + nonce.replace(/^0+/, '');
     return hexNonce;
   }
 
   idAddVersion(id: string) {
-      if (id.length == 19) {
-          return id;
-      }
-      return '0x2' + id.substring(2, id.length+1).padStart(16, '0');
+    if (id.length == 19) {
+      return id;
+    }
+    return '0x2' + id.substring(2, id.length + 1).padStart(16, '0');
   }
 
   async updateRecordStatus(uncheckedRecords: HistoryRecord[], ids: string, transfer: TransferT1) {
-    const formatedResultIds = ids.split(',').map((item) => {
+    const formatedResultIds = ids
+      .split(',')
+      .map((item) => {
         const rmvedVersionId = this.idRemoveVersion(item);
         return `"${item}", "${rmvedVersionId}"`;
-    }).join(',');
+      })
+      .join(',');
     const nodes = await axios
       .post(this.transferService.dispatchEndPoints[transfer.target.chain.split('-')[0]], {
         query: `query { messageDispatchedResults (where: {id_in: [${formatedResultIds}]}) { id, token, transaction_hash, result, timestamp }}`,
@@ -113,7 +116,7 @@ export class Sub2ethv2Service extends BaseServiceT1 implements OnModuleInit {
     if (nodes && nodes.length > 0) {
       for (const node of nodes) {
         if (node.result == null) {
-          continue
+          continue;
         }
 
         const responseTxHash = node.result === Sub2EthStatus.success ? node.transaction_hash : '';
@@ -140,10 +143,13 @@ export class Sub2ethv2Service extends BaseServiceT1 implements OnModuleInit {
   }
 
   async fetchRefundResult(ids: string, transfer: TransferT1) {
-    const formatedResultIds = ids.split(',').map((item) => {
+    const formatedResultIds = ids
+      .split(',')
+      .map((item) => {
         const rmvedVersionId = this.idRemoveVersion(item);
         return `"${rmvedVersionId}"`;
-    }).join(',');
+      })
+      .join(',');
     const refundResults = await axios
       .post(this.transferService.dispatchEndPoints[transfer.source.chain.split('-')[0]], {
         query: `query { messageDispatchedResults (where: {id_in: [${formatedResultIds}]}) { id, token, transaction_hash, result, timestamp }}`,

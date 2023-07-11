@@ -25,7 +25,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "init:db": "npx prisma migrate dev --name init",
-    "generate:prisma": "npx prisma generate --schema ./prisma/schema.prisma"
+    "generate:prisma": "npx prisma generate --schema ./prisma/schema.prisma",
+    "generate:schema": "ts-node generate-typings.ts && cp src/graphql.schema.ts src/graphql.ts"
   },
   "dependencies": {
     "@nestjs/apollo": "^10.0.9",

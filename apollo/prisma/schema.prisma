@@ -50,3 +50,20 @@ model DailyStatistics {
   dailyCount BigInt?
   @@unique([fromChain, toChain, bridge, timestamp, token], name: "daily_statistics_id")
 }
+
+model Lnv20RelayInfo {
+  id String @id
+  fromChain String
+  toChain String
+  bridge String
+  nonce BigInt
+  relayer String
+  sendToken String
+  transaction_hash String
+  timestamp Int
+  margin String
+  baseFee String
+  liquidityFeeRate Int
+  slashCount Int
+}
+
