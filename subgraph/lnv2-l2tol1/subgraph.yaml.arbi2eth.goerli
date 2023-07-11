@@ -3,12 +3,12 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: Lnv2Target
+    name: LnOppositeBridgeTarget
     network: goerli
     source:
-      address: "0xa5DE45d3eaabA9766B8494170F7E80fd41277a0B"
-      abi: Lnv2Target
-      startBlock: 9187481
+      address: "0x3B1A953bFa72Af4ae3494b08e453BFF30a06A550"
+      abi: LnOppositeBridgeTarget
+      startBlock: 9325440
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -16,9 +16,9 @@ dataSources:
       entities:
         - TransferFilled
       abis:
-        - name: Lnv2Target
-          file: ./abis/LnArbitrumBridgeOnL1.json
+        - name: LnOppositeBridgeTarget
+          file: ./abis/LnOppositeBridgeTarget.json
       eventHandlers:
         - event: TransferFilled(bytes32,address)
           handler: handleTransferFilled
-      file: ./src/Lnv2Target.ts
+      file: ./src/LnOppositeBridgeTarget.ts

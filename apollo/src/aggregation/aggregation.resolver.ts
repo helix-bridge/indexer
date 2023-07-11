@@ -20,7 +20,8 @@ export class AggregationResolver {
     @Args('toChain') toChain: string,
     @Args('bridge') bridge: string,
     @Args('results') results: number[],
-    @Args('providerKey') providerKey: number,
+    @Args('provider') provider: string,
+    @Args('token') token: string,
     @Args('order') order: string
   ) {
     const orderCondition = order?.split('_');
@@ -35,7 +36,8 @@ export class AggregationResolver {
           fromChain: fromChain,
           toChain: toChain,
           bridge: bridge,
-          providerKey: providerKey,
+          relayer: provider,
+          sendTokenAddress: token,
           ...resultCondition,
         },
       },

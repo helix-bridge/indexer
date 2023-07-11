@@ -17,7 +17,7 @@ export abstract class IQuery {
 
     abstract historyRecordById(id?: Nullable<string>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
 
-    abstract firstHistoryRecord(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, results?: Nullable<Nullable<number>[]>, providerKey?: Nullable<number>, order?: Nullable<string>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
+    abstract firstHistoryRecord(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, results?: Nullable<Nullable<number>[]>, relayer?: Nullable<string>, token?: Nullable<string>, order?: Nullable<string>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
 
     abstract queryDailyStatistics(timepast: number, first?: Nullable<number>, from?: Nullable<string>, to?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>): Nullable<Nullable<DailyStatistics>[]> | Promise<Nullable<Nullable<DailyStatistics>[]>>;
 
@@ -34,8 +34,6 @@ export abstract class IQuery {
 
 export class HistoryRecord {
     id: string;
-    providerKey?: Nullable<BigInt>;
-    lastBlockHash: string;
     fromChain: string;
     toChain: string;
     bridge: string;
@@ -79,14 +77,14 @@ export class HistoryRecords {
 
 export class Lnv20RelayInfo {
     id: string;
+    nonce: BigInt;
     fromChain: string;
     toChain: string;
     bridge: string;
-    nonce: BigInt;
     relayer: string;
+    sendToken?: Nullable<string>;
     transaction_hash: string;
     timestamp: number;
-    providerKey: string;
     margin?: Nullable<string>;
     baseFee?: Nullable<string>;
     liquidityFeeRate?: Nullable<number>;

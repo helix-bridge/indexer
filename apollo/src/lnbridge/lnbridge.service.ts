@@ -113,8 +113,6 @@ export class LnbridgeService implements OnModuleInit {
           const endTime = 0;
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, transfer.chainId.toString(), record.remote_chainid, record.id),
-            providerKey: 0,
-            lastBlockHash: '',
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: 'lpbridge-' + transfer.chain,

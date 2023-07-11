@@ -156,8 +156,6 @@ export abstract class BaseServiceT1 {
             record.is_native && symbol.to.indexOf('W') === 0 ? symbol.to.substring(1) : symbol.to;
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, record.id),
-            providerKey: 0,
-            lastBlockHash: '',
             sendAmount: record.amount,
             recvAmount: record.amount,
             bridge: `helix-${this.baseConfigure.name}(${isLock})`,

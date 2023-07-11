@@ -84,8 +84,6 @@ export class XcmService implements OnModuleInit {
 
           await this.aggregationService.createHistoryRecord({
             id: this.genID(record.id),
-            providerKey: 0,
-            lastBlockHash: '',
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: 'xcm-' + transfer.chain,

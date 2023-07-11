@@ -48,8 +48,8 @@ export class Lnbridgev20Service implements OnModuleInit {
     private transferService: TransferService
   ) {}
 
-  protected genID(transfer: TransferT1, providerKey: string, transferId: string): string {
-    return `lnbridgev20-${providerKey}-${transfer.bridge}-${transferId}`;
+  protected genID(transfer: TransferT1, transferId: string): string {
+    return `lnbridgev20-${transfer.bridge}-${transferId}`;
   }
 
   async onModuleInit() {
@@ -97,7 +97,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
-      const query = `query { lnv2TransferRecords(first: 10, orderBy: timestamp, orderDirection: asc, skip: ${latestNonce}) { id, providerKey, lastBlockHash, sender, receiver, token, amount, transaction_hash, timestamp, fee, nonce, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp } }`;
+      const query = `query { lnv2TransferRecords(first: 10, orderBy: timestamp, orderDirection: asc, skip: ${latestNonce}) { id, provider, sender, receiver, token, amount, transaction_hash, timestamp, fee, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp } }`;
 
       const records = await axios
         .post(from.url, {
@@ -115,13 +115,12 @@ export class Lnbridgev20Service implements OnModuleInit {
           const toToken = symbol.to;
 
           await this.aggregationService.createHistoryRecord({
-            id: this.genID(transfer, record.providerKey, record.id),
-            providerKey: Number(record.providerKey),
-            lastBlockHash: record.lastBlockHash,
+            id: this.genID(transfer, record.id),
+            relayer: record.provider,
             fromChain: from.chain,
             toChain: to.chain,
             bridge: 'lnbridgev20',
-            messageNonce: record.nonce,
+            messageNonce: '',
             nonce: latestNonce + 1,
             requestTxHash: record.transaction_hash,
             sender: record.sender,
@@ -211,14 +210,11 @@ export class Lnbridgev20Service implements OnModuleInit {
             .then((res) => res.data?.data?.lnv2RelayRecord);
 
           if (relayRecord) {
-            txStatus =
-              relayRecord.slasher == '0x0000000000000000000000000000000000000000'
-                ? RecordStatus.success
-                : RecordStatus.pendingToConfirmRefund;
+            txStatus = RecordStatus.success
             const updateData = {
-              result: txStatus,
-              responseTxHash: txStatus != RecordStatus.success ? '' : relayRecord.transaction_hash,
-              endTxHash: txStatus != RecordStatus.success ? '' : relayRecord.transaction_hash,
+              result: RecordStatus.success,
+              responseTxHash: relayRecord.transaction_hash,
+              endTxHash: relayRecord.transaction_hash,
               endTime: Number(relayRecord.timestamp), // we use this time to check refund time
               recvAmount: record.sendAmount,
               recvToken: record.recvToken,
@@ -235,38 +231,15 @@ export class Lnbridgev20Service implements OnModuleInit {
             );
           }
         }
-
-        if (txStatus === RecordStatus.pendingToConfirmRefund) {
-          const transferRecord = await this.queryRecord(transfer, transferId);
-          if (transferRecord) {
-            record.responseTxHash = transferRecord.liquidate_transaction_hash;
-            record.result = RecordStatus.refunded;
-            const updateData = {
-              result: RecordStatus.refunded,
-              responseTxHash: transferRecord.liquidate_transaction_hash,
-              endTime: Number(transferRecord.liquidate_withdrawn_timestamp),
-              endTxHash: transferRecord.liquidate_transaction_hash,
-            };
-
-            await this.aggregationService.updateHistoryRecord({
-              where: { id: record.id },
-              data: updateData,
-            });
-            this.logger.log(
-              `lnv2bridge refund id: ${record.id} refund responseTxHash: ${transferRecord.liquidate_transaction_hash}`
-            );
-            return;
-          }
-        }
       }
     } catch (error) {
       this.logger.warn(`fetch lnv20bridge status failed, error ${error}`);
     }
   }
 
-  private genRelayInfoID(transfer: TransferT1, providerKey: number): string {
+  private genRelayInfoID(transfer: TransferT1, provider: string, token: string): string {
     const { source: from, target: to } = transfer;
-    return 'lnv20-' + from.chain + '-' + to.chain + '-' + providerKey;
+    return 'lnv20-' + from.chain + '-' + to.chain + '-' + provider + '-' + token;
   }
 
   async fetchRelayInfo(transfer: TransferT1, index: number) {
@@ -281,7 +254,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         });
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
-      const query = `query { lnv2RelayUpdateRecords(first: 10, orderBy: timestamp, orderDirection: asc, skip: ${latestNonce}) { id, updateType, relayer, transaction_hash, timestamp, providerKey, margin, baseFee, liquidityFeeRate } }`;
+      const query = `query { lnv2RelayUpdateRecords(first: 10, orderBy: timestamp, orderDirection: asc, skip: ${latestNonce}) { id, updateType, provider, transaction_hash, timestamp, token, margin, baseFee, liquidityFeeRate } }`;
 
       const records = await axios
         .post(from.url, {
@@ -293,7 +266,7 @@ export class Lnbridgev20Service implements OnModuleInit {
       // query nonce big then latestNonce
       for (const record of records) {
         // query by relayer
-        const id = this.genRelayInfoID(transfer, record.providerKey);
+        const id = this.genRelayInfoID(transfer, record.provider, record.token);
         const relayerInfo = await this.aggregationService.queryLnv20RelayInfoById({
           id: id,
         });
@@ -305,10 +278,10 @@ export class Lnbridgev20Service implements OnModuleInit {
             toChain: to.chain,
             bridge: 'lnbridgev20',
             nonce: latestNonce,
-            relayer: record.relayer,
+            relayer: record.provider,
+            sendToken: record.token,
             transaction_hash: record.transaction_hash,
             timestamp: Number(record.timestamp),
-            providerKey: record.providerKey,
             margin: record.margin,
             baseFee: record.baseFee,
             liquidityFeeRate: Number(record.liquidityFeeRate),

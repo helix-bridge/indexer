@@ -14,8 +14,6 @@ datasource db {
 
 model HistoryRecord {
   id String @id
-  providerKey BigInt
-  lastBlockHash String
   fromChain String
   toChain String
   bridge String
@@ -60,9 +58,9 @@ model Lnv20RelayInfo {
   bridge String
   nonce BigInt
   relayer String
+  sendToken String
   transaction_hash String
   timestamp Int
-  providerKey String
   margin String
   baseFee String
   liquidityFeeRate Int

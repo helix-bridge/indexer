@@ -133,8 +133,6 @@ export class CbridgeService implements OnModuleInit {
 
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, toChain.chainId.toString(), record.id),
-            providerKey: 0,
-            lastBlockHash: '',
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: 'cBridge-' + transfer.chain,
