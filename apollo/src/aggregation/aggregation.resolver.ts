@@ -56,7 +56,7 @@ export class AggregationResolver {
     @Args('page') page: number,
     @Args('results') results: number[],
     @Args('recvTokenAddress') recvTokenAddress: string,
-    @Args('order') order: string,
+    @Args('order') order: string
   ) {
     const orderCondition = order?.split('_');
     const skip = row * page || 0;
@@ -256,8 +256,6 @@ export class AggregationResolver {
       }
       sortedRelayers.push({ record, point });
     }
-    return sortedRelayers
-      .sort((l, r) => l.point - r.point)
-      .map((item) => item.record);
+    return sortedRelayers.sort((l, r) => l.point - r.point).map((item) => item.record);
   }
 }

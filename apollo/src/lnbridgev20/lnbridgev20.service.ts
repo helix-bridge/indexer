@@ -210,7 +210,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             .then((res) => res.data?.data?.lnv2RelayRecord);
 
           if (relayRecord) {
-            txStatus = RecordStatus.success
+            txStatus = RecordStatus.success;
             const updateData = {
               result: RecordStatus.success,
               responseTxHash: relayRecord.transaction_hash,
