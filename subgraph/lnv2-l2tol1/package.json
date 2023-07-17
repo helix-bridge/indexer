@@ -4,8 +4,10 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "create-ethereum-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ arb2ethlnv2/ethereum",
-    "deploy-ethereum-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ arb2ethlnv2/ethereum"
+    "create-ethereum-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ lnv2target/ethereum",
+    "deploy-ethereum-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ lnv2target/ethereum",
+    "create-arbitrum-remote": "graph create --node https://thegraph.darwinia.network/helix/deploy/ lnv2source/arbitrum",
+    "deploy-arbitrum-remote": "graph deploy --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://thegraph.darwinia.network/helix/ipfs/ lnv2source/arbitrum"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.21.1",

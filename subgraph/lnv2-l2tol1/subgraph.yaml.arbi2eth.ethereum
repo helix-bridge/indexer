@@ -1,0 +1,24 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: LnOppositeBridgeTarget
+    network: ethereum
+    source:
+      address: "0xeAb1F01a8f4A2687023B159c2063639Adad5304E"
+      abi: LnOppositeBridgeTarget
+      startBlock: 17674868
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - TransferFilled
+      abis:
+        - name: LnOppositeBridgeTarget
+          file: ./abis/LnOppositeBridgeTarget.json
+      eventHandlers:
+        - event: TransferFilled(bytes32,address)
+          handler: handleTransferFilled
+      file: ./src/LnOppositeBridgeTarget.ts
