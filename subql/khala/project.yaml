@@ -17,7 +17,7 @@ schema:
 
 network:
   chainId: '0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d'
-  endpoint: wss://public-rpc.pinknode.io/khala
+  endpoint: wss://khala-api.phala.network/ws
   chaintypes:
     file: ./types.yaml
 
