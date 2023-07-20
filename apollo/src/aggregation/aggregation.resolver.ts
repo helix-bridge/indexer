@@ -229,7 +229,8 @@ export class AggregationResolver {
     @Args('decimals') decimals: number
   ) {
     const take = row || 128;
-    const baseFilters = { fromChain, toChain, bridge };
+    const sendToken = token.toLowerCase();
+    const baseFilters = { fromChain, toChain, sendToken, bridge };
 
     const where = {
       ...baseFilters,
