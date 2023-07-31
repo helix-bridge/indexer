@@ -78,6 +78,7 @@ export class HistoryRecords {
 export class Lnv20RelayInfo {
     id: string;
     nonce: BigInt;
+    targetNonce?: Nullable<BigInt>;
     fromChain: string;
     toChain: string;
     bridge: string;
@@ -89,6 +90,8 @@ export class Lnv20RelayInfo {
     baseFee?: Nullable<string>;
     liquidityFeeRate?: Nullable<number>;
     slashCount?: Nullable<number>;
+    withdrawNonce?: Nullable<BigInt>;
+    lastTransferId?: Nullable<string>;
 }
 
 export class Lnv20RelayInfos {

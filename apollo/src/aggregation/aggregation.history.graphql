@@ -47,6 +47,7 @@ type HistoryRecords {
 type Lnv20RelayInfo {
   id: String!
   nonce: BigInt!
+  targetNonce: BigInt
   fromChain: String!
   toChain: String!
   bridge: String!
@@ -58,6 +59,8 @@ type Lnv20RelayInfo {
   baseFee: String
   liquidityFeeRate: Int
   slashCount: Int
+  withdrawNonce: BigInt
+  lastTransferId: String
 }
 
 type Lnv20RelayInfos {

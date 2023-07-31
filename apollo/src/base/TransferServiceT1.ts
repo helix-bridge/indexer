@@ -26,6 +26,7 @@ export interface PartnerSymbol {
   to: string;
   address: string;
   toAddress: string;
+  protocolFee: number;
 }
 
 export interface TransferT1 {
