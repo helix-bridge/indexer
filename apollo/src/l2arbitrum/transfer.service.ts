@@ -35,32 +35,7 @@ export class TransferService {
     },
   };
 
-  public testChainTransfers = {
-    l1Chain: {
-      name: 'goerli',
-      url: this.goerliEthEndpoint,
-      tokens: {
-        '0x1836bafa3016dd5ce543d0f7199cb858ec69f41e': {
-          token: 'RING',
-          decimals: 1e18,
-          origin: 'RING',
-          parter: '0xfbad806bdf9cec2943be281fb355da05068de925',
-        },
-      },
-    },
-    l2Chain: {
-      name: 'arbitrum-goerli',
-      url: this.arbitrumGoerliEndpoint,
-      tokens: {
-        '0xfbad806bdf9cec2943be281fb355da05068de925': {
-          token: 'RING',
-          decimals: 1e18,
-          origin: 'RING',
-          parter: '0x1836bafa3016dd5ce543d0f7199cb858ec69f41e',
-        },
-      },
-    },
-  };
+  public testChainTransfers = null;
 
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
 
