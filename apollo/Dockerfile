@@ -10,6 +10,8 @@ WORKDIR /opt/indexer/apollo
 
 EXPOSE 4002
 
+ENV VERSION_MODE prod
+
 # CMD [ "node", "index.js" ]
 
-ENTRYPOINT /opt/indexer/apollo/scripts/entrypoint.sh
+ENTRYPOINT /opt/indexer/apollo/scripts/entrypoint.sh ${VERSION_MODE}
