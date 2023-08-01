@@ -360,7 +360,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             transaction_hash: record.transaction_hash,
             timestamp: Number(record.timestamp),
             margin: '0',
-            baseFee: (Number(record.baseFee) + symbol.protocolFee).toString(),
+            baseFee: (BigInt(record.baseFee) + BigInt(symbol.protocolFee)).toString(),
             liquidityFeeRate: Number(record.liquidityFeeRate),
             slashCount: 0,
             targetNonce: 0,
@@ -371,11 +371,11 @@ export class Lnbridgev20Service implements OnModuleInit {
           const updateData = {
             timestamp: Number(record.timestamp),
             nonce: latestNonce + 1,
-            baseFee: relayerInfo.baseFee,
+            baseFee: BigInt(relayerInfo.baseFee).toString(),
             liquidityFeeRate: relayerInfo.liquidityFeeRate,
           };
           if (record.updateType == RelayUpdateType.PROVIDER_UPDATE) {
-            updateData.baseFee = (Number(record.baseFee) + symbol.protocolFee).toString();
+            updateData.baseFee = (BigInt(record.baseFee) + BigInt(symbol.protocolFee)).toString();
             updateData.liquidityFeeRate = Number(record.liquidityFeeRate);
           }
           await this.aggregationService.updateLnv20RelayInfo({
@@ -439,7 +439,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             transaction_hash: record.transaction_hash,
             timestamp: Number(record.timestamp),
             margin: record.margin,
-            baseFee: (Number(record.baseFee) + symbol.protocolFee).toString(),
+            baseFee: (BigInt(record.baseFee) + BigInt(symbol.protocolFee)).toString(),
             liquidityFeeRate: Number(record.liquidityFeeRate),
             slashCount: 0,
             withdrawNonce: 0,
@@ -452,13 +452,13 @@ export class Lnbridgev20Service implements OnModuleInit {
             timestamp: Number(record.timestamp),
             nonce: latestNonce + 1,
             margin: relayerInfo.margin,
-            baseFee: relayerInfo.baseFee,
+            baseFee: BigInt(relayerInfo.baseFee).toString(),
             liquidityFeeRate: relayerInfo.liquidityFeeRate,
             slashCount: relayerInfo.slashCount,
           };
           if (record.updateType == RelayUpdateType.PROVIDER_UPDATE) {
             updateData.margin = record.margin;
-            updateData.baseFee = (Number(record.baseFee) + symbol.protocolFee).toString();
+            updateData.baseFee = (BigInt(record.baseFee) + BigInt(symbol.protocolFee)).toString();
             updateData.liquidityFeeRate = Number(record.liquidityFeeRate);
           } else if (record.updateType == RelayUpdateType.WITHDRAW) {
             updateData.margin = record.margin;

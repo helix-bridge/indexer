@@ -38,7 +38,7 @@ export class TransferService extends BaseTransferServiceT1 {
           to: 'RING',
           address: '0x9e523234d36973f9e38642886197d023c88e307e',
           toAddress: '0x9469d013805bffb7d3debe5e7839237e535ec483',
-          protocolFee: 100,
+          protocolFee: 300000000000000000000,
         },
       ],
     },
