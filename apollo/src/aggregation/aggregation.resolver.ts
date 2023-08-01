@@ -229,7 +229,7 @@ export class AggregationResolver {
     @Args('decimals') decimals: number
   ) {
     const take = row || 128;
-    const sendToken = token.toLowerCase();
+    const sendToken = token?.toLowerCase();
     const baseFilters = { fromChain, toChain, sendToken, bridge };
 
     const where = {
@@ -241,15 +241,14 @@ export class AggregationResolver {
       take,
       where,
     });
-    const amountWithDecimals = BigInt(amount) * BigInt(Math.pow(10, decimals));
     // w=P * 0.5 + max(R - S*0.001, 0) * 0.1 + max(1-T_0 * 0.001, 0)*0.1 + T_1 * 0.2
-    const validRecords = records.records.filter((record) => BigInt(record.margin) > amountWithDecimals);
+    const validRecords = records.records.filter((record) => BigInt(record.margin) > BigInt(amount));
     // query all pending txs
     var sortedRelayers = [];
     for (const record of validRecords) {
       const point = await this.aggregationService.calculateLnv20RelayerPoint(
         token,
-        amountWithDecimals,
+        BigInt(amount),
         decimals,
         record
       );
