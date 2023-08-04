@@ -74,7 +74,6 @@ export class TransferService extends BaseTransferServiceT1 {
           toAddress: '0xd35cceead182dcee0f148ebac9447da2c4d449c4',
           protocolFee: 1000000,
         },
-
       ],
     },
     {
@@ -97,6 +96,13 @@ export class TransferService extends BaseTransferServiceT1 {
           address: '0x1836bafa3016dd5ce543d0f7199cb858ec69f41e',
           toAddress: '0xfbad806bdf9cec2943be281fb355da05068de925',
           protocolFee: 1500000000000000000,
+        },
+        {
+          from: 'USDC',
+          to: 'USDC',
+          address: '0xd35cceead182dcee0f148ebac9447da2c4d449c4',
+          toAddress: '0xea70a40df1432a1b38b916a51fb81a4cc805a963',
+          protocolFee: 1000000,
         },
       ],
     },
