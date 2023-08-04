@@ -134,6 +134,30 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     }
   }
 
+  async updateConfirmedBlock(params: {
+    where: Prisma.HistoryRecordWhereUniqueInput;
+    block: string;
+  }) {
+    const { where, block } = params;
+    try {
+      const record = await this.historyRecord.findUnique({
+        where,
+      });
+      // tx has been redeemed
+      if (record.responseTxHash !== '') {
+        return;
+      }
+      await this.historyRecord.update({
+        where,
+        data: {
+          confirmedBlocks: block,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(`update confirmed block failed ${where}, ${block}, ${error}`);
+    }
+  }
+
   async queryHistoryRecordById(
     historyRecordWhereUniqueInput: Prisma.HistoryRecordWhereUniqueInput
   ): Promise<HistoryRecord | null> {

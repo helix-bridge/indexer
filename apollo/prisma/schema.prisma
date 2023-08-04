@@ -38,6 +38,7 @@ model HistoryRecord {
   guardSignatures String?
   relayer String?
   endTxHash String?
+  confirmedBlocks String?
 }
 
 model DailyStatistics {

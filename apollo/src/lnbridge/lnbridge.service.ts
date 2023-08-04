@@ -135,6 +135,7 @@ export class LnbridgeService implements OnModuleInit {
             sendTokenAddress: record.token,
             recvTokenAddress: tokenAddress,
             endTxHash: '',
+            confirmedBlocks: '',
           });
           latestNonce += 1;
         }

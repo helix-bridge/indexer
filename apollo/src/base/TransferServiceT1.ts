@@ -177,6 +177,7 @@ export abstract class BaseServiceT1 {
             recvToken: toToken,
             sendTokenAddress: record.token,
             guardSignatures: null,
+            confirmedBlocks: '',
           });
           latestNonce += 1;
         }

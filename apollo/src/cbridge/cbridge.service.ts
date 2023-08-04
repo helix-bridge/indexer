@@ -154,6 +154,7 @@ export class CbridgeService implements OnModuleInit {
             reason: '',
             sendTokenAddress: record.token,
             recvTokenAddress: tokenAddress,
+            confirmedBlocks: '',
           });
           latestNonce += 1;
         }

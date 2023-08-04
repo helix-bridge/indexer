@@ -58,6 +58,7 @@ export class HistoryRecord {
     guardSignatures?: Nullable<string>;
     relayer?: Nullable<string>;
     endTxHash?: Nullable<string>;
+    confirmedBlocks?: Nullable<string>;
 }
 
 export class DailyStatistics {
@@ -101,6 +102,8 @@ export class Lnv20RelayInfos {
 
 export abstract class IMutation {
     abstract addGuardSignature(id?: Nullable<string>, dataHash?: Nullable<string>, signature?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
+
+    abstract updateConfirmedBlock(id?: Nullable<string>, block?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 }
 
 export type BigInt = any;

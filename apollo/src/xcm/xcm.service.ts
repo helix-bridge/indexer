@@ -104,6 +104,7 @@ export class XcmService implements OnModuleInit {
             responseTxHash: '',
             reason: '',
             sendTokenAddress: record.token,
+            confirmedBlocks: '',
           });
           latestNonce += 1;
         }

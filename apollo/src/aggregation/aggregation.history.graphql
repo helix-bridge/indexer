@@ -27,6 +27,7 @@ type HistoryRecord {
   guardSignatures: String
   relayer: String
   endTxHash: String
+  confirmedBlocks: String
 }
 
 type DailyStatistics {
@@ -81,5 +82,6 @@ type Query {
 
 type Mutation {
   addGuardSignature(id: String, dataHash: String, signature: String): String
+  updateConfirmedBlock(id: String, block: String): String
 }
 

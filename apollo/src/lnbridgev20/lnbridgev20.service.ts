@@ -151,6 +151,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             sendTokenAddress: record.token,
             recvTokenAddress: symbol.toAddress,
             endTxHash: '',
+            confirmedBlocks: '',
           });
           const providerId = this.genRelayInfoID(transfer, record.provider, record.token);
           await this.aggregationService.updateLnv20RelayInfo({

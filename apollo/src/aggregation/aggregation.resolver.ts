@@ -143,6 +143,17 @@ export class AggregationResolver {
     });
   }
 
+  @Mutation()
+  async updateConfirmedBlock(
+    @Args('id') id: string,
+    @Args('block') block: string 
+  ) {
+    await this.aggregationService.updateConfirmedBlock({
+      where: { id: id },
+      block: block,
+    });
+  }
+
   @Query()
   async queryGuardNeedSignature(
     @Args('fromChain') fromChain: string,
