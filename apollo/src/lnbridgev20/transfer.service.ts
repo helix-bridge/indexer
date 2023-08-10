@@ -138,7 +138,14 @@ export class TransferService extends BaseTransferServiceT1 {
           to: 'USDC',
           address: '0xd35cceead182dcee0f148ebac9447da2c4d449c4',
           toAddress: '0x0faf6df7054946141266420b43783387a78d82a9',
-          protocolFee: 1000000,
+          protocolFee: 1500000,
+        },
+        {
+          from: 'ETH',
+          to: 'zkETH',
+          address: '0x0000000000000000000000000000000000000000',
+          toAddress: '0x0000000000000000000000000000000000000000',
+          protocolFee: 100000000000000,
         }
       ],
     },

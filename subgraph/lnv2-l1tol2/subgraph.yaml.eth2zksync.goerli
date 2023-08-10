@@ -6,9 +6,9 @@ dataSources:
     name: LnDefaultBridgeSource
     network: goerli
     source:
-      address: "0xEe054E798EAf000D0F36484e4994214344474F2C"
+      address: "0xBE4a32f37d11e8227444837DFb3c634d189ccEDc"
       abi: LnDefaultBridgeSource
-      startBlock: 9492176
+      startBlock: 9493471
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
