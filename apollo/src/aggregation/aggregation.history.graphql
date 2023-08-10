@@ -27,6 +27,7 @@ type HistoryRecord {
   guardSignatures: String
   relayer: String
   endTxHash: String
+  confirmedBlocks: String
 }
 
 type DailyStatistics {
@@ -47,6 +48,7 @@ type HistoryRecords {
 type Lnv20RelayInfo {
   id: String!
   nonce: BigInt!
+  targetNonce: BigInt
   fromChain: String!
   toChain: String!
   bridge: String!
@@ -58,6 +60,8 @@ type Lnv20RelayInfo {
   baseFee: String
   liquidityFeeRate: Int
   slashCount: Int
+  withdrawNonce: BigInt
+  lastTransferId: String
 }
 
 type Lnv20RelayInfos {
@@ -78,5 +82,6 @@ type Query {
 
 type Mutation {
   addGuardSignature(id: String, dataHash: String, signature: String): String
+  updateConfirmedBlock(id: String, block: String): String
 }
 

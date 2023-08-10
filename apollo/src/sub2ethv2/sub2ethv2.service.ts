@@ -127,7 +127,7 @@ export class Sub2ethv2Service extends BaseServiceT1 implements OnModuleInit {
           continue;
         }
         this.logger.log(
-          `sub2eth v2 new status id: ${node.id} updated old: ${record.result} new: ${result} ori: ${node.result} responseTxHash: ${responseTxHash}`
+          `sub2eth v2 new status id: ${node.id} updated old: ${record.result} new: ${result} ori: ${node.result} responseTxHash: ${responseTxHash}, timestamp ${node.timestamp}`
         );
         await this.aggregationService.updateHistoryRecord({
           where: { id: this.genID(transfer, versionedId) },

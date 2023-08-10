@@ -38,6 +38,7 @@ model HistoryRecord {
   guardSignatures String?
   relayer String?
   endTxHash String?
+  confirmedBlocks String?
 }
 
 model DailyStatistics {
@@ -57,6 +58,8 @@ model Lnv20RelayInfo {
   toChain String
   bridge String
   nonce BigInt
+  targetNonce BigInt
+  withdrawNonce BigInt
   relayer String
   sendToken String
   transaction_hash String
@@ -65,5 +68,6 @@ model Lnv20RelayInfo {
   baseFee String
   liquidityFeeRate Int
   slashCount Int
+  lastTransferId String
 }
 

@@ -49,20 +49,7 @@ export class TransferService extends BaseTransferServiceT2 {
     },
   ];
 
-  testChainTransfers: PartnerT2[] = [
-    {
-      chainId: 5,
-      chain: 'goerli',
-      url: this.goerliArb2EthEndpoint,
-      bridge: 'arb2ethln',
-    },
-    {
-      chainId: 421613,
-      chain: 'arbitrum-goerli',
-      url: this.arbitrumArb2EthEndpoint,
-      bridge: 'arb2ethln',
-    },
-  ];
+  testChainTransfers: PartnerT2[] = [];
 
   readonly addressToTokenInfo: { [key: string]: AddressTokenMap } = {
     'arbitrum-goerli': {

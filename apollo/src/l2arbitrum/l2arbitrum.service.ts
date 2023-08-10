@@ -103,6 +103,7 @@ export class L2arbitrumService implements OnModuleInit {
             sendTokenAddress: record.token,
             recvTokenAddress: sendTokenInfo.parter,
             endTxHash: '',
+            confirmedBlocks: '',
           });
           latestNonce += 1;
         }

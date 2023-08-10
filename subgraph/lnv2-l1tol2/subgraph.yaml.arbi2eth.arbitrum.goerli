@@ -1,0 +1,32 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: LnDefaultBridgeTarget
+    network: arbigoerli
+    source:
+      address: "0x4112c9d474951246fBC2B4D868D247e714698aE1"
+      abi: LnDefaultBridgeTarget
+      startBlock: 32017350
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - TransferFilled
+        - Slash
+        - handleMarginUpdated
+      abis:
+        - name: LnDefaultBridgeTarget
+          file: ./abis/LnDefaultBridgeTarget.json
+
+      eventHandlers:
+        - event: TransferFilled(address,bytes32)
+          handler: handleTransferFilled
+        - event: Slash(bytes32,address,address,uint256,address)
+          handler: handleSlash
+        - event: MarginUpdated(address,address,uint256,uint64)
+          handler: handleMarginUpdated
+
+      file: ./src/LnDefaultBridgeTarget.ts

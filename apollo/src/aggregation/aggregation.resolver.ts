@@ -143,6 +143,17 @@ export class AggregationResolver {
     });
   }
 
+  @Mutation()
+  async updateConfirmedBlock(
+    @Args('id') id: string,
+    @Args('block') block: string 
+  ) {
+    await this.aggregationService.updateConfirmedBlock({
+      where: { id: id },
+      block: block,
+    });
+  }
+
   @Query()
   async queryGuardNeedSignature(
     @Args('fromChain') fromChain: string,
@@ -229,7 +240,7 @@ export class AggregationResolver {
     @Args('decimals') decimals: number
   ) {
     const take = row || 128;
-    const sendToken = token.toLowerCase();
+    const sendToken = token?.toLowerCase();
     const baseFilters = { fromChain, toChain, sendToken, bridge };
 
     const where = {
