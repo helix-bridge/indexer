@@ -132,6 +132,13 @@ export class TransferService extends BaseTransferServiceT1 {
           address: '0x1836bafa3016dd5ce543d0f7199cb858ec69f41e',
           toAddress: '0x61c31a1fa4a8d765e63d4285f368aa2f4d912dbb',
           protocolFee: 1500000000000000000,
+        },
+        {
+          from: 'USDC',
+          to: 'USDC',
+          address: '0xd35cceead182dcee0f148ebac9447da2c4d449c4',
+          toAddress: '0x0faf6df7054946141266420b43783387a78d82a9',
+          protocolFee: 1000000,
         }
       ],
     },
