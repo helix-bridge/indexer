@@ -1,0 +1,29 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: LnDefaultBridgeSource
+    network: goerli
+    source:
+      address: "0xEe054E798EAf000D0F36484e4994214344474F2C"
+      abi: LnDefaultBridgeSource
+      startBlock: 9492176
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - TransferFilled
+        - TokenLocked
+      abis:
+        - name: LnDefaultBridgeSource
+          file: ./abis/LnDefaultBridgeSource.json
+      eventHandlers:
+        - event: TokenLocked(bytes32,address,address,uint112,uint112,address)
+          handler: handleTokenLocked
+        - event: LnProviderUpdated(address,address,uint112,uint8)
+          handler: handleLnProviderUpdated
+
+      file: ./src/LnDefaultBridgeSource.ts
+

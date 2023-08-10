@@ -16,6 +16,12 @@ export class TransferService extends BaseTransferServiceT1 {
   private readonly arbitrumEth2ArbLnv2Endpoint = this.configService.get<string>(
     'ARBITRUM_E2A_LNV2_ENDPOINT'
   );
+  private readonly ethereumEth2ZkLnv2Endpoint = this.configService.get<string>(
+    'ETHEREUM_ETH2ZK_LNV2_ENDPOINT'
+  );
+  private readonly zkSyncEth2ZkLnv2Endpoint = this.configService.get<string>(
+    'ZKSYNC_ETH2ZK_LNV2_ENDPOINT'
+  );
 
   formalChainTransfers: TransferT1[] = [
     {
@@ -104,6 +110,29 @@ export class TransferService extends BaseTransferServiceT1 {
           toAddress: '0xea70a40df1432a1b38b916a51fb81a4cc805a963',
           protocolFee: 1000000,
         },
+      ],
+    },
+    {
+      source: {
+        chain: 'goerli',
+        url: this.ethereumEth2ZkLnv2Endpoint,
+        feeToken: '',
+      },
+      target: {
+        chain: 'zksync-goerli',
+        url: this.zkSyncEth2ZkLnv2Endpoint,
+        feeToken: '',
+      },
+      isLock: false,
+      bridge: 'eth2zkLnv20',
+      symbols: [
+        {
+          from: 'RING',
+          to: 'RING',
+          address: '0x1836bafa3016dd5ce543d0f7199cb858ec69f41e',
+          toAddress: '0x61c31a1fa4a8d765e63d4285f368aa2f4d912dbb',
+          protocolFee: 1500000000000000000,
+        }
       ],
     },
   ];
