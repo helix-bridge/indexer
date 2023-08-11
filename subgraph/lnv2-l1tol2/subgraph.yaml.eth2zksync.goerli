@@ -6,9 +6,9 @@ dataSources:
     name: LnDefaultBridgeSource
     network: goerli
     source:
-      address: "0xBE4a32f37d11e8227444837DFb3c634d189ccEDc"
+      address: "0xc05ca63DAB6b48bcd82320d29Ad44BD6A3C21160"
       abi: LnDefaultBridgeSource
-      startBlock: 9493471
+      startBlock: 9498759
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -20,7 +20,7 @@ dataSources:
         - name: LnDefaultBridgeSource
           file: ./abis/LnDefaultBridgeSource.json
       eventHandlers:
-        - event: TokenLocked(bytes32,address,address,uint112,uint112,address)
+        - event: TokenLocked(bytes32,address,address,uint112,uint112,uint64,address)
           handler: handleTokenLocked
         - event: LnProviderUpdated(address,address,uint112,uint8)
           handler: handleLnProviderUpdated

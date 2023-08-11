@@ -6,9 +6,9 @@ dataSources:
     name: LnDefaultBridgeTarget
     network: zkgoerli
     source:
-      address: "0xC9933868e268802262D8DFeB374D72FB01b952e7"
+      address: "0xe0be4a2b4B0846fB088F720D3D0DFE725b9c91ee"
       abi: LnDefaultBridgeTarget
-      startBlock: 10469616
+      startBlock: 10492173
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

@@ -109,7 +109,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
-      const query = `query { lnv2TransferRecords(first: 10, orderBy: timestamp, orderDirection: asc, skip: ${latestNonce}) { id, provider, sender, receiver, token, amount, transaction_hash, timestamp, fee, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp } }`;
+      const query = `query { lnv2TransferRecords(first: 10, orderBy: messageNonce, orderDirection: asc, skip: ${latestNonce}) { id, messageNonce, provider, sender, receiver, token, amount, transaction_hash, timestamp, fee, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp } }`;
 
       const records = await axios
         .post(from.url, {
@@ -132,7 +132,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             fromChain: from.chain,
             toChain: to.chain,
             bridge: this.bridgeName(transfer),
-            messageNonce: '',
+            messageNonce: record.messageNonce.toString(),
             nonce: latestNonce + 1,
             requestTxHash: record.transaction_hash,
             sender: record.sender,
