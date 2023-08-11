@@ -103,6 +103,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
           {
             fromChain: from.chain,
+            toChain: to.chain,
             bridge: this.bridgeName(transfer),
           },
           { nonce: 'desc' }
@@ -199,6 +200,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           take: this.baseConfigure.takeEachTime,
           where: {
             fromChain: from.chain,
+            toChain: to.chain,
             bridge: this.bridgeName(transfer),
             endTxHash: '',
           },

@@ -20,7 +20,7 @@ dataSources:
         - name: LnDefaultBridgeSource
           file: ./abis/LnDefaultBridgeSource.json
       eventHandlers:
-        - event: TokenLocked(bytes32,address,address,uint112,uint112,address)
+        - event: TokenLocked(bytes32,address,address,uint112,uint112,uint64,address)
           handler: handleTokenLocked
         - event: LnProviderUpdated(address,address,uint112,uint8)
           handler: handleLnProviderUpdated
