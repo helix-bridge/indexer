@@ -367,7 +367,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             liquidityFeeRate: Number(record.liquidityFeeRate),
             slashCount: 0,
             targetNonce: 0,
-            lastTransferId: '0x00000000000000000000000000000000',
+            lastTransferId: '0x0000000000000000000000000000000000000000000000000000000000000000',
           });
         } else {
           // else update
@@ -447,7 +447,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             slashCount: 0,
             withdrawNonce: 0,
             targetNonce: 0,
-            lastTransferId: '0x00000000000000000000000000000000',
+            lastTransferId: '0x0000000000000000000000000000000000000000000000000000000000000000',
           });
         } else {
           // else update
