@@ -431,6 +431,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         }
         if (!relayerInfo) {
           // if not exist create
+          const margin = record.margin === null ? '0' : record.margin;
           await this.aggregationService.createLnv20RelayInfo({
             id: id,
             fromChain: from.chain,
@@ -441,7 +442,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             sendToken: record.token,
             transaction_hash: record.transaction_hash,
             timestamp: Number(record.timestamp),
-            margin: record.margin,
+            margin: margin,
             baseFee: (BigInt(record.baseFee) + BigInt(symbol.protocolFee)).toString(),
             liquidityFeeRate: Number(record.liquidityFeeRate),
             slashCount: 0,

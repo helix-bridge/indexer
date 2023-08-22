@@ -28,6 +28,18 @@ export class TransferService extends BaseTransferServiceT1 {
   private readonly ethereumZk2EthLnv2Endpoint = this.configService.get<string>(
     'ETHEREUM_ZK2ETH_LNV2_ENDPOINT'
   );
+  private readonly lineaLinea2EthLnv2Endpoint = this.configService.get<string>(
+    'LINEA_LINEA2ETH_LNV2_ENDPOINT'
+  );
+  private readonly ethereumLinea2EthLnv2Endpoint = this.configService.get<string>(
+    'ETHEREUM_LINEA2ETH_LNV2_ENDPOINT'
+  );
+  private readonly lineaEth2LineaLnv2Endpoint = this.configService.get<string>(
+    'LINEA_ETH2LINEA_LNV2_ENDPOINT'
+  );
+  private readonly ethereumEth2LineaLnv2Endpoint = this.configService.get<string>(
+    'ETHEREUM_ETH2LINEA_LNV2_ENDPOINT'
+  );
 
   formalChainTransfers: TransferT1[] = [
     {
@@ -185,6 +197,66 @@ export class TransferService extends BaseTransferServiceT1 {
         },
         {
           from: 'zkETH',
+          to: 'ETH',
+          address: '0x0000000000000000000000000000000000000000',
+          toAddress: '0x0000000000000000000000000000000000000000',
+          protocolFee: 100000000000000,
+        }
+      ]
+    },
+    {
+      source: {
+        chain: 'linea-goerli',
+        url: this.lineaLinea2EthLnv2Endpoint,
+        feeToken: '',
+      },
+      target: {
+        chain: 'goerli',
+        url: this.ethereumLinea2EthLnv2Endpoint,
+        feeToken: '',
+      },
+      isLock: true,
+      bridge: 'linea2ethLnv20',
+      symbols: [
+        {
+          from: 'USDC',
+          to: 'USDC',
+          address: '0xb4257f31750961c8e536f5cfcbb3079437700416',
+          toAddress: '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
+          protocolFee: 1500000,
+        },
+        {
+          from: 'lineaETH',
+          to: 'ETH',
+          address: '0x0000000000000000000000000000000000000000',
+          toAddress: '0x0000000000000000000000000000000000000000',
+          protocolFee: 100000000000000,
+        }
+      ]
+    },
+    {
+      source: {
+        chain: 'goerli',
+        url: this.ethereumEth2LineaLnv2Endpoint,
+        feeToken: '',
+      },
+      target: {
+        chain: 'linea-goerli',
+        url: this.lineaEth2LineaLnv2Endpoint,
+        feeToken: '',
+      },
+      isLock: false,
+      bridge: 'eth2lineaLnv20',
+      symbols: [
+        {
+          from: 'USDC',
+          to: 'USDC',
+          address: '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
+          toAddress: '0xb4257f31750961c8e536f5cfcbb3079437700416',
+          protocolFee: 1500000,
+        },
+        {
+          from: 'lineaETH',
           to: 'ETH',
           address: '0x0000000000000000000000000000000000000000',
           toAddress: '0x0000000000000000000000000000000000000000',
