@@ -16,6 +16,18 @@ export class TransferService extends BaseTransferServiceT1 {
   private readonly arbitrumEth2ArbLnv2Endpoint = this.configService.get<string>(
     'ARBITRUM_E2A_LNV2_ENDPOINT'
   );
+  private readonly ethereumEth2ZkLnv2Endpoint = this.configService.get<string>(
+    'ETHEREUM_ETH2ZK_LNV2_ENDPOINT'
+  );
+  private readonly zkSyncEth2ZkLnv2Endpoint = this.configService.get<string>(
+    'ZKSYNC_ETH2ZK_LNV2_ENDPOINT'
+  );
+  private readonly zkSyncZk2EthLnv2Endpoint = this.configService.get<string>(
+    'ZKSYNC_ZK2ETH_LNV2_ENDPOINT'
+  );
+  private readonly ethereumZk2EthLnv2Endpoint = this.configService.get<string>(
+    'ETHEREUM_ZK2ETH_LNV2_ENDPOINT'
+  );
 
   formalChainTransfers: TransferT1[] = [
     {
@@ -106,6 +118,80 @@ export class TransferService extends BaseTransferServiceT1 {
         },
       ],
     },
+    {
+      source: {
+        chain: 'goerli',
+        url: this.ethereumEth2ZkLnv2Endpoint,
+        feeToken: '',
+      },
+      target: {
+        chain: 'zksync-goerli',
+        url: this.zkSyncEth2ZkLnv2Endpoint,
+        feeToken: '',
+      },
+      isLock: false,
+      bridge: 'eth2zkLnv20',
+      symbols: [
+        {
+          from: 'RING',
+          to: 'RING',
+          address: '0x1836bafa3016dd5ce543d0f7199cb858ec69f41e',
+          toAddress: '0x61c31a1fa4a8d765e63d4285f368aa2f4d912dbb',
+          protocolFee: 1500000000000000000,
+        },
+        {
+          from: 'USDC',
+          to: 'USDC',
+          address: '0xd35cceead182dcee0f148ebac9447da2c4d449c4',
+          toAddress: '0x0faf6df7054946141266420b43783387a78d82a9',
+          protocolFee: 1500000,
+        },
+        {
+          from: 'ETH',
+          to: 'zkETH',
+          address: '0x0000000000000000000000000000000000000000',
+          toAddress: '0x0000000000000000000000000000000000000000',
+          protocolFee: 100000000000000,
+        }
+      ],
+    },
+    {
+      source: {
+        chain: 'zksync-goerli',
+        url: this.zkSyncZk2EthLnv2Endpoint,
+        feeToken: '',
+      },
+      target: {
+        chain: 'goerli',
+        url: this.ethereumZk2EthLnv2Endpoint,
+        feeToken: '',
+      },
+      isLock: true,
+      bridge: 'zk2ethLnv20',
+      symbols: [
+        {
+          from: 'RING',
+          to: 'RING',
+          address: '0x61c31a1fa4a8d765e63d4285f368aa2f4d912dbb',
+          toAddress: '0x1836bafa3016dd5ce543d0f7199cb858ec69f41e',
+          protocolFee: 1500000000000000000,
+        },
+        {
+          from: 'USDC',
+          to: 'USDC',
+          address: '0x0faf6df7054946141266420b43783387a78d82a9',
+          toAddress: '0xd35cceead182dcee0f148ebac9447da2c4d449c4',
+          protocolFee: 1500000,
+        },
+        {
+          from: 'zkETH',
+          to: 'ETH',
+          address: '0x0000000000000000000000000000000000000000',
+          toAddress: '0x0000000000000000000000000000000000000000',
+          protocolFee: 100000000000000,
+        }
+      ]
+    }
   ];
 
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';

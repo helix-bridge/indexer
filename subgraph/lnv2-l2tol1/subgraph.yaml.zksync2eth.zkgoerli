@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: LnOppositeBridgeSource
-    network: arbi
+    network: zkgoerli
     source:
-      address: "0xD1B10B114f1975d8BCc6cb6FC43519160e2AA978"
+      address: "0x9422E7883d1F9Dd2E0f5926D585115542D6C71dA"
       abi: LnOppositeBridgeSource
-      startBlock: 110645940
+      startBlock: 10492013
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

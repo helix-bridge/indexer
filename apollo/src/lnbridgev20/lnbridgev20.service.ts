@@ -103,13 +103,14 @@ export class Lnbridgev20Service implements OnModuleInit {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
           {
             fromChain: from.chain,
+            toChain: to.chain,
             bridge: this.bridgeName(transfer),
           },
           { nonce: 'desc' }
         );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
-      const query = `query { lnv2TransferRecords(first: 10, orderBy: timestamp, orderDirection: asc, skip: ${latestNonce}) { id, provider, sender, receiver, token, amount, transaction_hash, timestamp, fee, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp } }`;
+      const query = `query { lnv2TransferRecords(first: 10, orderBy: messageNonce, orderDirection: asc, skip: ${latestNonce}) { id, messageNonce, provider, sender, receiver, token, amount, transaction_hash, timestamp, fee, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp } }`;
 
       const records = await axios
         .post(from.url, {
@@ -132,7 +133,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             fromChain: from.chain,
             toChain: to.chain,
             bridge: this.bridgeName(transfer),
-            messageNonce: '',
+            messageNonce: record.messageNonce.toString(),
             nonce: latestNonce + 1,
             requestTxHash: record.transaction_hash,
             sender: record.sender,
@@ -199,6 +200,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           take: this.baseConfigure.takeEachTime,
           where: {
             fromChain: from.chain,
+            toChain: to.chain,
             bridge: this.bridgeName(transfer),
             endTxHash: '',
           },
@@ -365,7 +367,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             liquidityFeeRate: Number(record.liquidityFeeRate),
             slashCount: 0,
             targetNonce: 0,
-            lastTransferId: '0x00000000000000000000000000000000',
+            lastTransferId: '0x0000000000000000000000000000000000000000000000000000000000000000',
           });
         } else {
           // else update
@@ -445,7 +447,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             slashCount: 0,
             withdrawNonce: 0,
             targetNonce: 0,
-            lastTransferId: '0x00000000000000000000000000000000',
+            lastTransferId: '0x0000000000000000000000000000000000000000000000000000000000000000',
           });
         } else {
           // else update

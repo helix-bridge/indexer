@@ -6,12 +6,18 @@ type Lnv2TransferRecord @entity {
   token: Bytes!
   amount: BigInt!
   timestamp: BigInt!
+  messageNonce: BigInt!
   transaction_hash: Bytes!
   fee: BigInt
 
   liquidate_withdrawn_sender: Bytes
   liquidate_transaction_hash: Bytes
   liquidate_withdrawn_timestamp: BigInt
+}
+
+type Lnv2TransferRecordCounter @entity {
+  id: ID!
+  count: BigInt!
 }
 
 type Lnv2RelayRecord @entity {
