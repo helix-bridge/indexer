@@ -23,7 +23,7 @@ dataSources:
           file: ./abis/LnOppositeBridgeSource.json
 
       eventHandlers:
-        - event: TokenLocked(bytes32,address,address,uint112,uint112,address)
+        - event: TokenLocked(bytes32,address,address,uint112,uint112,uint64,address)
           handler: handleTokenLocked
         - event: Slash(bytes32,address,address,uint112,address)
           handler: handleSlash
