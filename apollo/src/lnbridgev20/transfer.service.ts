@@ -256,8 +256,8 @@ export class TransferService extends BaseTransferServiceT1 {
           protocolFee: 1500000,
         },
         {
-          from: 'lineaETH',
-          to: 'ETH',
+          from: 'ETH',
+          to: 'lineaETH',
           address: '0x0000000000000000000000000000000000000000',
           toAddress: '0x0000000000000000000000000000000000000000',
           protocolFee: 100000000000000,
