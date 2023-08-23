@@ -137,7 +137,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             fromChain: from.chain,
             toChain: to.chain,
             bridge: this.bridgeName(transfer),
-            messageNonce: this.formatSortedMessageNonce(record.messageNonce),
+            messageNonce: this.formatSortedMessageNonce(Number(record.messageNonce)),
             nonce: latestNonce + 1,
             requestTxHash: record.transaction_hash,
             sender: record.sender,
