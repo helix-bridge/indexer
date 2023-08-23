@@ -91,6 +91,10 @@ export class Lnbridgev20Service implements OnModuleInit {
       return 'lnbridgev20-' + direction;
   }
 
+  private formatSortedMessageNonce(nonce: number): string {
+      return (100000000 + nonce).toString();
+  }
+
   // fetch records from src chain
   // 1. tx sent but not slash, save and use it as slash params, fetch status from target chain
   // 2. tx sent and slashed, save it directly, don't fetch status from target chain
@@ -133,7 +137,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             fromChain: from.chain,
             toChain: to.chain,
             bridge: this.bridgeName(transfer),
-            messageNonce: record.messageNonce.toString(),
+            messageNonce: this.formatSortedMessageNonce(record.messageNonce),
             nonce: latestNonce + 1,
             requestTxHash: record.transaction_hash,
             sender: record.sender,
