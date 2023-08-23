@@ -300,6 +300,9 @@ export class Lnbridgev20Service implements OnModuleInit {
             updateData.slashCount = relayerInfo.slashCount + 1;
           } else {
             updateData.withdrawNonce = Number(record.withdrawNonce);
+            if (updateData.withdrawNonce < relayerInfo.withdrawNonce) {
+                updateData.withdrawNonce = relayerInfo.withdrawNonce;
+            }
           }
           await this.aggregationService.updateLnv20RelayInfo({
             where: { id: id },
@@ -308,7 +311,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           latestNonce += 1;
           this.fetchCache[index].latestRelayerInfoTargetNonce = latestNonce;
           this.logger.log(
-              `update lnv20 relay margin, id ${id}, margin ${record.margin}, withdrawNonce ${record.withdrawNonce}`
+              `update lnv20 relay margin, id ${id}, margin ${record.margin}, withdrawNonce ${updateData.withdrawNonce}`
           );
         }
       }
