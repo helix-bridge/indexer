@@ -220,7 +220,7 @@ export class TransferService extends BaseTransferServiceT1 {
       symbols: [
         {
           from: 'USDC',
-          to: 'USDC',
+          to: 'USD//C',
           address: '0xb4257f31750961c8e536f5cfcbb3079437700416',
           toAddress: '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
           protocolFee: 1500000,
@@ -249,7 +249,7 @@ export class TransferService extends BaseTransferServiceT1 {
       bridge: 'eth2lineaLnv20',
       symbols: [
         {
-          from: 'USDC',
+          from: 'USD//C',
           to: 'USDC',
           address: '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
           toAddress: '0xb4257f31750961c8e536f5cfcbb3079437700416',
