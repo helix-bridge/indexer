@@ -159,7 +159,7 @@ export class TransferService extends BaseTransferServiceT1 {
           protocolFee: 1500000,
         },
         {
-          from: 'ETH',
+          from: 'GoerliETH',
           to: 'zkETH',
           address: '0x0000000000000000000000000000000000000000',
           toAddress: '0x0000000000000000000000000000000000000000',
@@ -197,7 +197,7 @@ export class TransferService extends BaseTransferServiceT1 {
         },
         {
           from: 'zkETH',
-          to: 'ETH',
+          to: 'GoerliETH',
           address: '0x0000000000000000000000000000000000000000',
           toAddress: '0x0000000000000000000000000000000000000000',
           protocolFee: 100000000000000,
@@ -227,7 +227,7 @@ export class TransferService extends BaseTransferServiceT1 {
         },
         {
           from: 'lineaETH',
-          to: 'ETH',
+          to: 'GoerliETH',
           address: '0x0000000000000000000000000000000000000000',
           toAddress: '0x0000000000000000000000000000000000000000',
           protocolFee: 100000000000000,
@@ -256,7 +256,7 @@ export class TransferService extends BaseTransferServiceT1 {
           protocolFee: 1500000,
         },
         {
-          from: 'ETH',
+          from: 'GoerliETH',
           to: 'lineaETH',
           address: '0x0000000000000000000000000000000000000000',
           toAddress: '0x0000000000000000000000000000000000000000',
