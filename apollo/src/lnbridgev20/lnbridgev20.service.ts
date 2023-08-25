@@ -302,7 +302,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           };
           if (record.updateType == RelayUpdateType.SLASH) {
             updateData.slashCount = relayerInfo.slashCount + 1;
-          } else {
+          } else if (record.updateType == RelayUpdateType.WITHDRAW) {
             updateData.withdrawNonce = Number(record.withdrawNonce);
             if (updateData.withdrawNonce < relayerInfo.withdrawNonce) {
                 updateData.withdrawNonce = relayerInfo.withdrawNonce;
@@ -336,7 +336,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         });
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
-      const query = `query { lnv2RelayUpdateRecords(first: 10, orderBy: timestamp, orderDirection: asc, skip: ${latestNonce}) { id, updateType, provider, transaction_hash, timestamp, token, baseFee, liquidityFeeRate } }`;
+      const query = `query { lnv2RelayUpdateRecords(first: 10, orderBy: timestamp, orderDirection: asc, where: {updateType: 0}, skip: ${latestNonce}) { id, updateType, provider, transaction_hash, timestamp, token, baseFee, liquidityFeeRate } }`;
 
       const records = await axios
         .post(from.url, {
