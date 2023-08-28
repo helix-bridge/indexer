@@ -19,6 +19,7 @@ export enum RelayUpdateType {
 }
 
 export interface FetchCacheRelayInfo extends FetchCacheInfo {
+  confirmedNonce: string;
   latestRelayerInfoNonce: number;
   latestRelayerInfoTargetNonce: number;
 }
@@ -26,6 +27,7 @@ export interface FetchCacheRelayInfo extends FetchCacheInfo {
 @Injectable()
 export class Lnbridgev20Service implements OnModuleInit {
   private readonly logger = new Logger('lnbridgev2.0');
+  private readonly reorgTime = 900;
   baseConfigure: BridgeBaseConfigure = {
     name: 'lnBridgeV20',
     fetchHistoryDataFirst: 10,
@@ -37,6 +39,7 @@ export class Lnbridgev20Service implements OnModuleInit {
     .fill('')
     .map((_) => ({
       latestNonce: -1,
+      confirmedNonce: "0",
       latestRelayerInfoNonce: -1,
       latestRelayerInfoTargetNonce: -1,
       isSyncingHistory: false,
@@ -79,6 +82,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         await this.fetchFeeInfoFromSource(item, index);
         await this.fetchMarginInfoFromTarget(item, index);
     }
+    await this.repairReorg(item, index);
     // from source chain
     await this.fetchRecords(item, index);
     // from target chain
@@ -93,6 +97,104 @@ export class Lnbridgev20Service implements OnModuleInit {
 
   private formatSortedMessageNonce(nonce: number): string {
       return (100000000 + nonce).toString();
+  }
+
+  async updateLastTransferId(transfer: TransferT1) {
+      const { source: from, target: to } = transfer;
+      // query the last transfer
+      const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
+          {
+            fromChain: from.chain,
+            toChain: to.chain,
+            bridge: this.bridgeName(transfer),
+          },
+          { nonce: 'desc' }
+        );
+      const providerId = this.genRelayInfoID(transfer, firstRecord.relayer, firstRecord.sendTokenAddress);
+      const recordSplitted = firstRecord.id.split('-');
+      const transferId = last(recordSplitted);
+      await this.aggregationService.updateLnv20RelayInfo({
+          where: { id: providerId },
+          data: {lastTransferId: transferId},
+      });
+  }
+
+  // pending long time and not refreshed
+  async repairReorg(transfer: TransferT1, index: number) {
+      const { source: from, target: to } = transfer;
+      // query the first pending tx
+      const firstPendingRecord = await this.aggregationService.queryHistoryRecordFirst(
+        {
+          AND: {
+              fromChain: from.chain,
+              toChain: to.chain,
+              bridge: this.bridgeName(transfer),
+              result: RecordStatus.pending,
+              messageNonce: { gt: this.fetchCache[index].confirmedNonce },
+          },
+        },
+        { nonce: 'asc' }
+      );
+      // the same tx hash, but different id
+      if (firstPendingRecord) {
+          if (firstPendingRecord.startTime + this.reorgTime < Date.now() / 1000) {
+              const query = `query { lnv2TransferRecords(where: {transaction_hash: \"${firstPendingRecord.requestTxHash}\"}) { id, messageNonce, provider, sender, receiver, token, amount, transaction_hash, timestamp, fee, liquidate_withdrawn_sender, liquidate_transaction_hash, liquidate_withdrawn_timestamp } }`;
+
+              const records = await axios
+              .post(from.url, {
+                  query: query,
+                  variables: null,
+              })
+              .then((res) => res.data?.data?.lnv2TransferRecords);
+
+              if (records && records.length == 1) {
+                  const record = records[0];
+                  const newId = this.genID(transfer, record.id);
+                  if (newId === firstPendingRecord.id) {
+                    return;
+                  }
+                  this.logger.log(
+                      `tx reorged, from ${from.chain}, to ${to.chain}, txHash ${record.transaction_hash}, oldId ${firstPendingRecord.id}, newId ${newId}`
+                  );
+                  // delete reorged tx
+                  await this.aggregationService.deleteHistoryRecord({
+                      id: firstPendingRecord.id
+                  });
+                  this.fetchCache[index].confirmedNonce = firstPendingRecord.messageNonce;
+
+                  // add correct tx
+                  await this.aggregationService.createHistoryRecord({
+                      id: this.genID(transfer, record.id),
+                      relayer: record.provider,
+                      fromChain: from.chain,
+                      toChain: to.chain,
+                      bridge: this.bridgeName(transfer),
+                      messageNonce: this.formatSortedMessageNonce(Number(record.messageNonce)),
+                      nonce: firstPendingRecord.nonce,
+                      requestTxHash: record.transaction_hash,
+                      sender: record.sender,
+                      recipient: record.receiver,
+                      sendToken: firstPendingRecord.sendToken,
+                      recvToken: firstPendingRecord.recvToken,
+                      sendAmount: record.amount,
+                      recvAmount: '0',
+                      startTime: Number(record.timestamp),
+                      endTime: 0,
+                      result: 0,
+                      fee: record.fee,
+                      feeToken: firstPendingRecord.feeToken,
+                      responseTxHash: '',
+                      reason: '',
+                      sendTokenAddress: record.token,
+                      recvTokenAddress: firstPendingRecord.recvTokenAddress,
+                      endTxHash: '',
+                      confirmedBlocks: '',
+                  });
+                  // update last id
+                  await this.updateLastTransferId(transfer);
+              }
+          }
+      }
   }
 
   // fetch records from src chain
@@ -242,7 +344,7 @@ export class Lnbridgev20Service implements OnModuleInit {
               endTime: Number(relayRecord.timestamp), // we use this time to check slash time
               recvAmount: record.sendAmount,
               recvToken: record.recvToken,
-              relayer: relayRecord.slasher,
+              relayer: relayRecord.slasher ? relayRecord.slasher : record.relayer,
             };
 
             await this.aggregationService.updateHistoryRecord({
