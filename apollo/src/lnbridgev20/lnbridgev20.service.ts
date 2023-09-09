@@ -145,7 +145,10 @@ export class Lnbridgev20Service implements OnModuleInit {
                   query: query,
                   variables: null,
               })
-              .then((res) => res.data?.data?.lnv2TransferRecords);
+              .then((res) => res.data?.data?.lnv2TransferRecords)
+              .catch((err) => {
+                  this.logger.warn(`repair:query transfer records failed err ${err}`);
+              });
 
               if (records && records.length == 1) {
                   const record = records[0];
@@ -223,7 +226,10 @@ export class Lnbridgev20Service implements OnModuleInit {
           query: query,
           variables: null,
         })
-        .then((res) => res.data?.data?.lnv2TransferRecords);
+        .then((res) => res.data?.data?.lnv2TransferRecords)
+        .catch((err) => {
+            this.logger.warn(`query transfer records failed err ${err}`);
+        });
       if (records && records.length > 0) {
         for (const record of records) {
           const symbol = symbols.find((item) => item.address === record.token) ?? null;
@@ -289,7 +295,10 @@ export class Lnbridgev20Service implements OnModuleInit {
         query: query,
         variables: null,
       })
-      .then((res) => res.data?.data?.lnv2TransferRecord);
+      .then((res) => res.data?.data?.lnv2TransferRecord)
+      .catch((err) => {
+          this.logger.warn(`query transfer record failed err ${err}`);
+      });
     return record;
   }
 
@@ -333,7 +342,10 @@ export class Lnbridgev20Service implements OnModuleInit {
               query: query,
               variables: null,
             })
-            .then((res) => res.data?.data?.lnv2RelayRecord);
+            .then((res) => res.data?.data?.lnv2RelayRecord)
+            .catch((err) => {
+                this.logger.warn(`query relay record failed err ${err}`);
+            });
 
           if (relayRecord) {
             txStatus = RecordStatus.success;
@@ -386,7 +398,10 @@ export class Lnbridgev20Service implements OnModuleInit {
           query: query,
           variables: null,
         })
-        .then((res) => res.data?.data?.lnv2RelayUpdateRecords);
+        .then((res) => res.data?.data?.lnv2RelayUpdateRecords)
+        .catch((err) => {
+            this.logger.warn(`query margin update failed err ${err}`);
+        });
 
       if (records && records.length > 0) {
         const record = records[0];
@@ -445,7 +460,10 @@ export class Lnbridgev20Service implements OnModuleInit {
           query: query,
           variables: null,
         })
-        .then((res) => res.data?.data?.lnv2RelayUpdateRecords);
+        .then((res) => res.data?.data?.lnv2RelayUpdateRecords)
+        .catch((err) => {
+            this.logger.warn(`query fee update failed err ${err}`);
+        });
 
       // query nonce big then latestNonce
       for (const record of records) {
@@ -525,7 +543,10 @@ export class Lnbridgev20Service implements OnModuleInit {
           query: query,
           variables: null,
         })
-        .then((res) => res.data?.data?.lnv2RelayUpdateRecords);
+        .then((res) => res.data?.data?.lnv2RelayUpdateRecords)
+        .catch((err) => {
+            this.logger.warn(`query relay update record failed err ${err}`);
+        });
 
       // query nonce big then latestNonce
       for (const record of records) {
