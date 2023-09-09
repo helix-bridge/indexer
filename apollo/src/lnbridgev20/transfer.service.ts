@@ -28,6 +28,36 @@ export class TransferService extends BaseTransferServiceT1 {
   private readonly ethereumZk2EthLnv2Endpoint = this.configService.get<string>(
     'ETHEREUM_ZK2ETH_LNV2_ENDPOINT'
   );
+  private readonly lineaLinea2EthLnv2Endpoint = this.configService.get<string>(
+    'LINEA_LINEA2ETH_LNV2_ENDPOINT'
+  );
+  private readonly ethereumLinea2EthLnv2Endpoint = this.configService.get<string>(
+    'ETHEREUM_LINEA2ETH_LNV2_ENDPOINT'
+  );
+  private readonly lineaEth2LineaLnv2Endpoint = this.configService.get<string>(
+    'LINEA_ETH2LINEA_LNV2_ENDPOINT'
+  );
+  private readonly ethereumEth2LineaLnv2Endpoint = this.configService.get<string>(
+    'ETHEREUM_ETH2LINEA_LNV2_ENDPOINT'
+  );
+  private readonly arbitrumArb2LineaLnv2Endpoint = this.configService.get<string>(
+    'ARBITRUM_ARB2LINEA_LNV2_ENDPOINT'
+  );
+  private readonly lineaArb2LineaLnv2Endpoint = this.configService.get<string>(
+    'LINEA_ARB2LINEA_LNV2_ENDPOINT'
+  );
+  private readonly arbitrumArb2ZkLnv2Endpoint = this.configService.get<string>(
+    'ARBITRUM_ARB2ZK_LNV2_ENDPOINT'
+  );
+  private readonly zksyncArb2ZkLnv2Endpoint = this.configService.get<string>(
+    'ZKSYNC_ARB2ZK_LNV2_ENDPOINT'
+  );
+  private readonly zksyncZk2LineaLnv2Endpoint = this.configService.get<string>(
+    'ZKSYNC_ZK2LINEA_LNV2_ENDPOINT'
+  );
+  private readonly lineaZk2LineaLnv2Endpoint = this.configService.get<string>(
+    'LINEA_ZK2LINEA_LNV2_ENDPOINT'
+  );
 
   formalChainTransfers: TransferT1[] = [
     {
@@ -147,7 +177,7 @@ export class TransferService extends BaseTransferServiceT1 {
           protocolFee: 1500000,
         },
         {
-          from: 'ETH',
+          from: 'GoerliETH',
           to: 'zkETH',
           address: '0x0000000000000000000000000000000000000000',
           toAddress: '0x0000000000000000000000000000000000000000',
@@ -185,11 +215,209 @@ export class TransferService extends BaseTransferServiceT1 {
         },
         {
           from: 'zkETH',
-          to: 'ETH',
+          to: 'GoerliETH',
           address: '0x0000000000000000000000000000000000000000',
           toAddress: '0x0000000000000000000000000000000000000000',
           protocolFee: 100000000000000,
         }
+      ]
+    },
+    {
+      source: {
+        chain: 'linea-goerli',
+        url: this.lineaLinea2EthLnv2Endpoint,
+        feeToken: '',
+      },
+      target: {
+        chain: 'goerli',
+        url: this.ethereumLinea2EthLnv2Endpoint,
+        feeToken: '',
+      },
+      isLock: true,
+      bridge: 'linea2ethLnv20',
+      symbols: [
+        {
+          from: 'USDC',
+          to: 'USD//C',
+          address: '0xb4257f31750961c8e536f5cfcbb3079437700416',
+          toAddress: '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
+          protocolFee: 1500000,
+        },
+        {
+          from: 'lineaETH',
+          to: 'GoerliETH',
+          address: '0x0000000000000000000000000000000000000000',
+          toAddress: '0x0000000000000000000000000000000000000000',
+          protocolFee: 100000000000000,
+        }
+      ]
+    },
+    {
+      source: {
+        chain: 'goerli',
+        url: this.ethereumEth2LineaLnv2Endpoint,
+        feeToken: '',
+      },
+      target: {
+        chain: 'linea-goerli',
+        url: this.lineaEth2LineaLnv2Endpoint,
+        feeToken: '',
+      },
+      isLock: false,
+      bridge: 'eth2lineaLnv20',
+      symbols: [
+        {
+          from: 'USD//C',
+          to: 'USDC',
+          address: '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
+          toAddress: '0xb4257f31750961c8e536f5cfcbb3079437700416',
+          protocolFee: 1500000,
+        },
+        {
+          from: 'GoerliETH',
+          to: 'lineaETH',
+          address: '0x0000000000000000000000000000000000000000',
+          toAddress: '0x0000000000000000000000000000000000000000',
+          protocolFee: 100000000000000,
+        }
+      ]
+    },
+    {
+      source: {
+        chain: 'arbitrum-goerli',
+        url: this.arbitrumArb2LineaLnv2Endpoint,
+        feeToken: '',
+      },
+      target: {
+        chain: 'linea-goerli',
+        url: this.lineaArb2LineaLnv2Endpoint,
+        feeToken: '',
+      },
+      isLock: false,
+      bridge: 'arb2lineaLnv20',
+      symbols: [
+        {
+          from: 'USDC',
+          to: 'USDC',
+          address: '0xea70a40df1432a1b38b916a51fb81a4cc805a963',
+          toAddress: '0xb4257f31750961c8e536f5cfcbb3079437700416',
+          protocolFee: 1500000,
+        },
+      ]
+    },
+    {
+      source: {
+        chain: 'linea-goerli',
+        url: this.lineaArb2LineaLnv2Endpoint,
+        feeToken: '',
+      },
+      target: {
+        chain: 'arbitrum-goerli',
+        url: this.arbitrumArb2LineaLnv2Endpoint,
+        feeToken: '',
+      },
+      isLock: false,
+      bridge: 'linea2arbLnv20',
+      symbols: [
+        {
+          from: 'USDC',
+          to: 'USDC',
+          address: '0xb4257f31750961c8e536f5cfcbb3079437700416',
+          toAddress: '0xea70a40df1432a1b38b916a51fb81a4cc805a963',
+          protocolFee: 1500000,
+        },
+      ]
+    },
+    {
+      source: {
+        chain: 'arbitrum-goerli',
+        url: this.arbitrumArb2ZkLnv2Endpoint,
+        feeToken: '',
+      },
+      target: {
+        chain: 'zksync-goerli',
+        url: this.zksyncArb2ZkLnv2Endpoint,
+        feeToken: '',
+      },
+      isLock: false,
+      bridge: 'arb2zkLnv20',
+      symbols: [
+        {
+          from: 'USDC',
+          to: 'USDC',
+          address: '0xea70a40df1432a1b38b916a51fb81a4cc805a963',
+          toAddress: '0x0faf6df7054946141266420b43783387a78d82a9',
+          protocolFee: 1500000,
+        },
+      ]
+    },
+    {
+      source: {
+        chain: 'zksync-goerli',
+        url: this.zksyncArb2ZkLnv2Endpoint,
+        feeToken: '',
+      },
+      target: {
+        chain: 'arbitrum-goerli',
+        url: this.arbitrumArb2ZkLnv2Endpoint,
+        feeToken: '',
+      },
+      isLock: false,
+      bridge: 'zk2arbLnv20',
+      symbols: [
+        {
+          from: 'USDC',
+          to: 'USDC',
+          address: '0x0faf6df7054946141266420b43783387a78d82a9',
+          toAddress: '0xea70a40df1432a1b38b916a51fb81a4cc805a963',
+          protocolFee: 1500000,
+        },
+      ]
+    },
+    {
+      source: {
+        chain: 'zksync-goerli',
+        url: this.zksyncZk2LineaLnv2Endpoint,
+        feeToken: '',
+      },
+      target: {
+        chain: 'linea-goerli',
+        url: this.lineaZk2LineaLnv2Endpoint,
+        feeToken: '',
+      },
+      isLock: false,
+      bridge: 'zk2lineaLnv20',
+      symbols: [
+        {
+          from: 'USDC',
+          to: 'USDC',
+          address: '0x0faf6df7054946141266420b43783387a78d82a9',
+          toAddress: '0xb4257f31750961c8e536f5cfcbb3079437700416',
+          protocolFee: 1500000,
+        },
+      ]
+    },
+    {
+      source: {
+        chain: 'linea-goerli',
+        url: this.lineaZk2LineaLnv2Endpoint,
+        feeToken: '',
+      },
+      target: {
+        chain: 'zksync-goerli',
+        url: this.zksyncZk2LineaLnv2Endpoint,
+        feeToken: '',
+      },
+      isLock: false,
+      bridge: 'linea2zkLnv20',
+      symbols: [
+        {
+          from: 'USDC',
+          to: 'USDC',
+          address: '0xb4257f31750961c8e536f5cfcbb3079437700416',
+          toAddress: '0x0faf6df7054946141266420b43783387a78d82a9',
+          protocolFee: 1500000,
+        },
       ]
     }
   ];

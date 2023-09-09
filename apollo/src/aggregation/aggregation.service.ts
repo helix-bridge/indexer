@@ -27,6 +27,12 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     });
   }
 
+  async deleteHistoryRecord(data: Prisma.HistoryRecordWhereUniqueInput): Promise<HistoryRecord> {
+    return this.historyRecord.delete({
+      where: data,
+    });
+  }
+
   async updateHistoryRecord(params: {
     where: Prisma.HistoryRecordWhereUniqueInput;
     data: Prisma.HistoryRecordUpdateInput;
