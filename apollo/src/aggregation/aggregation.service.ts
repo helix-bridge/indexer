@@ -70,11 +70,13 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
   }
 
   async queryLnv20RelayInfoFirst(
-    lnv20RelayInfoWhereInput: Prisma.Lnv20RelayInfoWhereInput
+    lnv20RelayInfoWhereInput: Prisma.Lnv20RelayInfoWhereInput,
+    orderBy?: Prisma.Enumerable<Prisma.Lnv20RelayInfoOrderByWithRelationAndSearchRelevanceInput>,
   ): Promise<Lnv20RelayInfo | null> {
     return this.lnv20RelayInfo.findFirst({
       where: lnv20RelayInfoWhereInput,
-      orderBy: { nonce: 'desc' },
+      orderBy,
+      //orderBy: { nonce: 'desc' },
     });
   }
 

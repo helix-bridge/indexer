@@ -10,7 +10,6 @@ import { AggregationModule } from './aggregation/aggregation.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TasksModule } from './tasks/tasks.module';
-import { CbridgeModule } from './cbridge/cbridge.module';
 import { StatisticModule } from './statistic/statistic.module';
 import { XcmModule } from './xcm/xcm.module';
 import { Sub2ethv2Module } from './sub2ethv2/sub2ethv2.module';
@@ -42,7 +41,6 @@ export class BigIntScalar extends BigInt {}
     ScheduleModule.forRoot(),
     TasksModule,
     AggregationModule,
-    //CbridgeModule,
     StatisticModule,
     //XcmModule,
     Sub2ethv2Module,
