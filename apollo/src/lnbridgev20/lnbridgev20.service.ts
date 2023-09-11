@@ -296,7 +296,7 @@ export class Lnbridgev20Service implements OnModuleInit {
   // 2. cancel inited, save timestamp to check if users can cancel tx or ln can relay msg
   // 3. cancel request sent, save status and fetch status from src chain
   async fetchStatus(transfer: PartnerT2, index: number) {
-    const { chain: fromChain } = transfer;
+    const { chain: fromChain, bridge } = transfer;
     try {
       const uncheckedRecords = await this.aggregationService
         .queryHistoryRecords({
@@ -324,7 +324,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         let txStatus = record.result;
 
         if (txStatus === RecordStatus.pending) {
-          const toPartner = this.findPartnerByChainName(record.toChain);
+          const toPartner = this.findPartnerByChainName(record.toChain, bridge);
           const query = `query { lnv2RelayRecord(id: "${transferId}") { id, timestamp, transactionHash, slasher }}`;
           const relayRecord = await axios
             .post(toPartner.url, {
@@ -352,7 +352,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             });
 
             this.logger.log(
-              `lnv2bridge new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
+              `[${record.fromChain}->${record.toChain}]lnv2bridge new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
             );
           }
         }
@@ -370,8 +370,8 @@ export class Lnbridgev20Service implements OnModuleInit {
       return this.transferService.transfers.find((item) => item.chainId === chainId) ?? null;
   }
 
-  private findPartnerByChainName(chainName: string) {
-      return this.transferService.transfers.find((item) => item.chain === chainName) ?? null;
+  private findPartnerByChainName(chainName: string, bridge: string) {
+      return this.transferService.transfers.find((item) => item.chain === chainName && item.bridge === bridge) ?? null;
   }
 
   async fetchMarginInfoFromTarget(transfer: PartnerT2, index: number) {
