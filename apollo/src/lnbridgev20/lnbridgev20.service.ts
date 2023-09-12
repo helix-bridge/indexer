@@ -160,7 +160,7 @@ export class Lnbridgev20Service implements OnModuleInit {
                       id: firstPendingRecord.id
                   });
                   this.fetchCache[index].confirmedNonce = this.formatSortedMessageNonce(Number(firstPendingRecord.nonce));
-                  const toPartner = this.findPartnerByChainId(record.remoteChainId);
+                  const toPartner = this.findPartnerByChainId(record.remoteChainId, transfer.bridge);
 
                   // add correct tx
                   await this.aggregationService.createHistoryRecord({
@@ -235,7 +235,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           }
 
           const fromToken = fromSymbol.symbol;
-          const toPartner = this.findPartnerByChainId(record.remoteChainId);
+          const toPartner = this.findPartnerByChainId(record.remoteChainId, transfer.bridge);
           const toSymbol = toPartner.symbols.find((item) => item.address.toLowerCase() === record.targetToken) ?? null;
           if (!toSymbol) {
             this.logger.warn(`cannot find to symbol, toChain: ${toPartner.chain} address ${record.targetToken}`);
@@ -366,8 +366,8 @@ export class Lnbridgev20Service implements OnModuleInit {
     return `lnv20-${fromChainId}-${toChainId}-${provider}-${sourceToken}`;
   }
 
-  private findPartnerByChainId(chainId: number) {
-      return this.transferService.transfers.find((item) => item.chainId === chainId) ?? null;
+  private findPartnerByChainId(chainId: number, bridge: string) {
+      return this.transferService.transfers.find((item) => item.chainId === chainId && item.bridge === bridge) ?? null;
   }
 
   private findPartnerByChainName(chainName: string, bridge: string) {
@@ -375,7 +375,7 @@ export class Lnbridgev20Service implements OnModuleInit {
   }
 
   async fetchMarginInfoFromTarget(transfer: PartnerT2, index: number) {
-    const { chain: toChain } = transfer;
+    const { chain: toChain, symbols } = transfer;
     let latestNonce = this.fetchCache[index].latestRelayerInfoTargetNonce;
     try {
       if (latestNonce == -1) {
@@ -407,8 +407,22 @@ export class Lnbridgev20Service implements OnModuleInit {
           id: id,
         });
         if (relayerInfo) {
+          // transfer target margin to source margin
+          const toSymbol = symbols.find((item) => item.address.toLowerCase() === record.targetToken) ?? null;
+          if (!toSymbol) {
+              this.logger.warn(`to symbol not find ${record.targetToken}`);
+              return;
+          }
+          const sourcePartner = this.findPartnerByChainId(record.remoteChainId, transfer.bridge);
+          const fromSymbol = sourcePartner.symbols.find((item) => item.address.toLowerCase() === record.sourceToken) ?? null;
+          if (!fromSymbol) {
+            this.logger.warn(`to symbol not find ${record.sourceToken}`);
+            return;
+          }
+
+          const sourceMargin = Number(record.margin) * Math.pow(10, fromSymbol.decimals - toSymbol.decimals);
           const updateData = {
-            margin: record.margin,
+            margin: BigInt(sourceMargin).toString(),
             slashCount: relayerInfo.slashCount,
             withdrawNonce: relayerInfo.withdrawNonce,
             targetNonce: latestNonce + 1,
@@ -474,7 +488,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         if (symbol == null) {
             return;
         }
-        const toPartner = this.findPartnerByChainId(record.remoteChainId);
+        const toPartner = this.findPartnerByChainId(record.remoteChainId, transfer.bridge);
         if (!relayerInfo) {
           // if not exist create
           await this.aggregationService.createLnv20RelayInfo({
@@ -558,7 +572,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         if (symbol == null) {
             return;
         }
-        const toPartner = this.findPartnerByChainId(record.remoteChainId);
+        const toPartner = this.findPartnerByChainId(record.remoteChainId, transfer.bridge);
         if (!relayerInfo) {
           // if not exist create
           const margin = record.margin === null ? '0' : record.margin;

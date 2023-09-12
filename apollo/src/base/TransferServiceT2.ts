@@ -35,6 +35,7 @@ export interface PartnerSymbol {
   symbol: string;
   address: string;
   protocolFee: number;
+  decimals: number;
 }
 
 export interface PartnerT2 {
