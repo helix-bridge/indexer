@@ -1,0 +1,18 @@
+{
+  "name": "Bridge",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "build-goerli": "sh generate.sh goerli 0x79e6f452f1e491a7aF0382FA0a6EF9368691960D 9658728 && graph codegen && graph build",
+    "build-arbitrum": "sh generate.sh arbigoerli 0x79e6f452f1e491a7aF0382FA0a6EF9368691960D 40151409 && graph codegen && graph build",
+    "build-linea": "sh generate.sh lineagoerli 0x79e6f452f1e491a7aF0382FA0a6EF9368691960D 1494962 && graph codegen && graph build",
+    "build-mantle": "sh generate.sh mantlegoerli 0x79e6f452f1e491a7aF0382FA0a6EF9368691960D 19685918 && graph codegen && graph build",
+    "create-remote": "graph create --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ lnopposite/$NETWORK",
+    "deploy-remote": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs http://g2.generic.darwinia.network:5001/ lnopposite/$NETWORK"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.21.1",
+    "@graphprotocol/graph-ts": "0.20.0"
+  }
+}

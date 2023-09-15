@@ -168,7 +168,7 @@ export class TransferService extends BaseTransferServiceT2 {
             {
                 symbol: 'USDT',
                 address: '0xbc1a2f123dc9cd2ec8d3ce42ef16c28f3c9ba686',
-                protocolFee: 100000000000000000000,
+                protocolFee: 100000000,
                 decimals: 6,
             },
         ],
@@ -188,7 +188,7 @@ export class TransferService extends BaseTransferServiceT2 {
             {
                 symbol: 'USDT',
                 address: '0xbc1a2f123dc9cd2ec8d3ce42ef16c28f3c9ba686',
-                protocolFee: 100000000000000000000,
+                protocolFee: 100000000,
                 decimals: 6,
             },
         ],
