@@ -176,8 +176,8 @@ export class Lnbridgev20Service implements OnModuleInit {
                       recipient: record.receiver,
                       sendToken: firstPendingRecord.sendToken,
                       recvToken: firstPendingRecord.recvToken,
-                      sendAmount: record.amount,
-                      recvAmount: '0',
+                      sendAmount: firstPendingRecord.sendAmount,
+                      recvAmount: firstPendingRecord.recvAmount,
                       startTime: Number(record.timestamp),
                       endTime: 0,
                       result: 0,
@@ -242,6 +242,9 @@ export class Lnbridgev20Service implements OnModuleInit {
             continue;
           }
           const toToken = toSymbol.symbol;
+          
+          const decimalsDiff = fromSymbol.decimals - toSymbol.decimals;
+          const sendAmount = decimalsDiff > 0 ? BigInt(record.amount) * BigInt(10 ** decimalsDiff) : BigInt(record.amount) / BigInt(10 ** -decimalsDiff);
 
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, record.id),
@@ -256,8 +259,8 @@ export class Lnbridgev20Service implements OnModuleInit {
             recipient: record.receiver,
             sendToken: fromToken,
             recvToken: toToken,
-            sendAmount: record.amount,
-            recvAmount: '0',
+            sendAmount: sendAmount.toString(),
+            recvAmount: record.amount,
             startTime: Number(record.timestamp),
             endTime: 0,
             result: RecordStatus.pending,
@@ -343,7 +346,6 @@ export class Lnbridgev20Service implements OnModuleInit {
               responseTxHash: relayRecord.transactionHash,
               endTxHash: relayRecord.transactionHash,
               endTime: Number(relayRecord.timestamp), // we use this time to check slash time
-              recvAmount: record.sendAmount,
             };
 
             await this.aggregationService.updateHistoryRecord({
