@@ -162,7 +162,7 @@ export class AggregationResolver {
     await this.aggregationService.updateLnv20RelayInfo({
       where: { id: id },
       data: {
-        heartbeatTimestamp: Date.now() / 1000,
+        heartbeatTimestamp: Math.floor(Date.now() / 1000),
       },
     });
   }
