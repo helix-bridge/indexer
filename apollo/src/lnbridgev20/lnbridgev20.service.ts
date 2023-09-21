@@ -39,7 +39,7 @@ export class Lnbridgev20Service implements OnModuleInit {
     .fill('')
     .map((_) => ({
       latestNonce: -1,
-      confirmedNonce: "0",
+      confirmedNonce: '0',
       latestRelayerInfoNonce: -1,
       latestRelayerInfoTargetNonce: -1,
       isSyncingHistory: false,
@@ -75,10 +75,10 @@ export class Lnbridgev20Service implements OnModuleInit {
     }
     this.fetchCache[index].isSyncingHistory = true;
     if (item.bridge === 'opposite') {
-        await this.fetchRelayInfo(item, index);
+      await this.fetchRelayInfo(item, index);
     } else {
-        await this.fetchFeeInfoFromSource(item, index);
-        await this.fetchMarginInfoFromTarget(item, index);
+      await this.fetchFeeInfoFromSource(item, index);
+      await this.fetchMarginInfoFromTarget(item, index);
     }
     await this.repairReorg(item, index);
     // from source chain
@@ -89,112 +89,119 @@ export class Lnbridgev20Service implements OnModuleInit {
   }
 
   private bridgeName(transfer: PartnerT2): string {
-      return 'lnbridgev20-' + transfer.bridge;
+    return 'lnbridgev20-' + transfer.bridge;
   }
 
   private formatSortedMessageNonce(nonce: number): string {
-      return (100000000 + nonce).toString();
+    return (100000000 + nonce).toString();
   }
 
   async updateLastTransferId(transfer: PartnerT2, toChain: string, toChainId: number) {
-      const { chain: fromChain } = transfer;
-      // query the last transfer
-      const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
-          {
-            fromChain: fromChain,
-            toChain: toChain,
-            bridge: this.bridgeName(transfer),
-          },
-          { nonce: 'desc' }
-        );
-      const providerId = this.genRelayInfoID(transfer.chainId, toChainId, firstRecord.relayer, firstRecord.sendTokenAddress);
-      const recordSplitted = firstRecord.id.split('-');
-      const transferId = last(recordSplitted);
-      await this.aggregationService.updateLnv20RelayInfo({
-          where: { id: providerId },
-          data: {lastTransferId: transferId},
-      });
+    const { chain: fromChain } = transfer;
+    // query the last transfer
+    const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
+      {
+        fromChain: fromChain,
+        toChain: toChain,
+        bridge: this.bridgeName(transfer),
+      },
+      { nonce: 'desc' }
+    );
+    const providerId = this.genRelayInfoID(
+      transfer.chainId,
+      toChainId,
+      firstRecord.relayer,
+      firstRecord.sendTokenAddress
+    );
+    const recordSplitted = firstRecord.id.split('-');
+    const transferId = last(recordSplitted);
+    await this.aggregationService.updateLnv20RelayInfo({
+      where: { id: providerId },
+      data: { lastTransferId: transferId },
+    });
   }
 
   // pending long time and not refreshed
   async repairReorg(transfer: PartnerT2, index: number) {
-      const { chain: fromChain } = transfer;
-      // query the first pending tx
-      const firstPendingRecord = await this.aggregationService.queryHistoryRecordFirst(
-        {
-          AND: {
-              fromChain: fromChain,
-              bridge: this.bridgeName(transfer),
-              result: RecordStatus.pending,
-              messageNonce: { gt: this.fetchCache[index].confirmedNonce },
-          },
+    const { chain: fromChain } = transfer;
+    // query the first pending tx
+    const firstPendingRecord = await this.aggregationService.queryHistoryRecordFirst(
+      {
+        AND: {
+          fromChain: fromChain,
+          bridge: this.bridgeName(transfer),
+          result: RecordStatus.pending,
+          messageNonce: { gt: this.fetchCache[index].confirmedNonce },
         },
-        { nonce: 'asc' }
-      );
-      // the same tx hash, but different id
-      if (firstPendingRecord) {
-          if (firstPendingRecord.startTime + this.reorgTime < Date.now() / 1000) {
-              const query = `query { lnv2TransferRecords(where: {transactionHash: \"${firstPendingRecord.requestTxHash}\"}) { id, nonce, provider, sender, receiver, sourceToken, targetToken, amount, transactionHash, timestamp, fee } }`;
+      },
+      { nonce: 'asc' }
+    );
+    // the same tx hash, but different id
+    if (firstPendingRecord) {
+      if (firstPendingRecord.startTime + this.reorgTime < Date.now() / 1000) {
+        const query = `query { lnv2TransferRecords(where: {transactionHash: \"${firstPendingRecord.requestTxHash}\"}) { id, nonce, provider, sender, receiver, sourceToken, targetToken, amount, transactionHash, timestamp, fee } }`;
 
-              const records = await axios
-              .post(transfer.url, {
-                  query: query,
-                  variables: null,
-              })
-              .then((res) => res.data?.data?.lnv2TransferRecords)
-              .catch((err) => {
-                  this.logger.warn(`repair:query transfer records failed err ${err}`);
-              });
+        const records = await axios
+          .post(transfer.url, {
+            query: query,
+            variables: null,
+          })
+          .then((res) => res.data?.data?.lnv2TransferRecords)
+          .catch((err) => {
+            this.logger.warn(`repair:query transfer records failed err ${err}`);
+          });
 
-              if (records && records.length == 1) {
-                  const record = records[0];
-                  const newId = this.genID(transfer, record.id);
-                  if (newId === firstPendingRecord.id) {
-                    return;
-                  }
-                  this.logger.log(
-                      `tx reorged, from ${transfer.chainId}, to ${record.remoteChainId}, txHash ${record.transactionHash}, oldId ${firstPendingRecord.id}, newId ${newId}`
-                  );
-                  // delete reorged tx
-                  await this.aggregationService.deleteHistoryRecord({
-                      id: firstPendingRecord.id
-                  });
-                  this.fetchCache[index].confirmedNonce = this.formatSortedMessageNonce(Number(firstPendingRecord.nonce));
-                  const toPartner = this.findPartnerByChainId(record.remoteChainId, transfer.bridge);
-
-                  // add correct tx
-                  await this.aggregationService.createHistoryRecord({
-                      id: this.genID(transfer, record.id),
-                      relayer: record.provider,
-                      fromChain: fromChain,
-                      toChain: toPartner.chain,
-                      bridge: this.bridgeName(transfer),
-                      messageNonce: this.formatSortedMessageNonce(Number(record.nonce)),
-                      nonce: firstPendingRecord.nonce,
-                      requestTxHash: record.transactionHash,
-                      sender: record.sender,
-                      recipient: record.receiver,
-                      sendToken: firstPendingRecord.sendToken,
-                      recvToken: firstPendingRecord.recvToken,
-                      sendAmount: firstPendingRecord.sendAmount,
-                      recvAmount: firstPendingRecord.recvAmount,
-                      startTime: Number(record.timestamp),
-                      endTime: 0,
-                      result: 0,
-                      fee: record.fee,
-                      feeToken: firstPendingRecord.feeToken,
-                      responseTxHash: '',
-                      reason: '',
-                      sendTokenAddress: record.sourceToken,
-                      recvTokenAddress: firstPendingRecord.recvTokenAddress,
-                      endTxHash: '',
-                      confirmedBlocks: '',
-                  });
-                  // update last id
-                  await this.updateLastTransferId(transfer, toPartner.chain, toPartner.chainId);
-              }
+        if (records && records.length == 1) {
+          const record = records[0];
+          const newId = this.genID(transfer, record.id);
+          if (newId === firstPendingRecord.id) {
+            return;
           }
+          this.logger.log(
+            `tx reorged, from ${transfer.chainId}, to ${record.remoteChainId}, txHash ${record.transactionHash}, oldId ${firstPendingRecord.id}, newId ${newId}`
+          );
+          // delete reorged tx
+          await this.aggregationService.deleteHistoryRecord({
+            id: firstPendingRecord.id,
+          });
+          this.fetchCache[index].confirmedNonce = this.formatSortedMessageNonce(
+            Number(firstPendingRecord.nonce)
+          );
+          const toPartner = this.findPartnerByChainId(record.remoteChainId, transfer.bridge);
+
+          // add correct tx
+          await this.aggregationService.createHistoryRecord({
+            id: this.genID(transfer, record.id),
+            relayer: record.provider,
+            fromChain: fromChain,
+            toChain: toPartner.chain,
+            bridge: this.bridgeName(transfer),
+            messageNonce: this.formatSortedMessageNonce(Number(record.nonce)),
+            nonce: firstPendingRecord.nonce,
+            requestTxHash: record.transactionHash,
+            sender: record.sender,
+            recipient: record.receiver,
+            sendToken: firstPendingRecord.sendToken,
+            recvToken: firstPendingRecord.recvToken,
+            sendAmount: firstPendingRecord.sendAmount,
+            recvAmount: firstPendingRecord.recvAmount,
+            startTime: Number(record.timestamp),
+            endTime: 0,
+            result: 0,
+            fee: record.fee,
+            feeToken: firstPendingRecord.feeToken,
+            responseTxHash: '',
+            reason: '',
+            sendTokenAddress: record.sourceToken,
+            recvTokenAddress: firstPendingRecord.recvTokenAddress,
+            endTxHash: '',
+            confirmedBlocks: '',
+          });
+          // update last id
+          await this.updateLastTransferId(transfer, toPartner.chain, toPartner.chainId);
+        }
       }
+    }
   }
 
   // fetch records from src chain
@@ -224,27 +231,37 @@ export class Lnbridgev20Service implements OnModuleInit {
         })
         .then((res) => res.data?.data?.lnv2TransferRecords)
         .catch((err) => {
-            this.logger.warn(`query transfer records failed err ${err}`);
+          this.logger.warn(`query transfer records failed err ${err}`);
         });
       if (records && records.length > 0) {
         for (const record of records) {
-          const fromSymbol = symbols.find((item) => item.address.toLowerCase() === record.sourceToken) ?? null;
+          const fromSymbol =
+            symbols.find((item) => item.address.toLowerCase() === record.sourceToken) ?? null;
           if (!fromSymbol) {
-            this.logger.warn(`cannot find from symbol, fromChain ${fromChain} address ${record.sourceToken}`);
+            this.logger.warn(
+              `cannot find from symbol, fromChain ${fromChain} address ${record.sourceToken}`
+            );
             continue;
           }
 
           const fromToken = fromSymbol.symbol;
           const toPartner = this.findPartnerByChainId(record.remoteChainId, transfer.bridge);
-          const toSymbol = toPartner.symbols.find((item) => item.address.toLowerCase() === record.targetToken) ?? null;
+          const toSymbol =
+            toPartner.symbols.find((item) => item.address.toLowerCase() === record.targetToken) ??
+            null;
           if (!toSymbol) {
-            this.logger.warn(`cannot find to symbol, toChain: ${toPartner.chain} address ${record.targetToken}`);
+            this.logger.warn(
+              `cannot find to symbol, toChain: ${toPartner.chain} address ${record.targetToken}`
+            );
             continue;
           }
           const toToken = toSymbol.symbol;
-          
+
           const decimalsDiff = fromSymbol.decimals - toSymbol.decimals;
-          const sendAmount = decimalsDiff > 0 ? BigInt(record.amount) * BigInt(10 ** decimalsDiff) : BigInt(record.amount) / BigInt(10 ** -decimalsDiff);
+          const sendAmount =
+            decimalsDiff > 0
+              ? BigInt(record.amount) * BigInt(10 ** decimalsDiff)
+              : BigInt(record.amount) / BigInt(10 ** -decimalsDiff);
 
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, record.id),
@@ -273,10 +290,15 @@ export class Lnbridgev20Service implements OnModuleInit {
             endTxHash: '',
             confirmedBlocks: '',
           });
-          const providerId = this.genRelayInfoID(transfer.chainId, record.remoteChainId, record.provider, record.sourceToken);
+          const providerId = this.genRelayInfoID(
+            transfer.chainId,
+            record.remoteChainId,
+            record.provider,
+            record.sourceToken
+          );
           await this.aggregationService.updateLnv20RelayInfo({
             where: { id: providerId },
-            data: {lastTransferId: record.id},
+            data: { lastTransferId: record.id },
           });
           latestNonce += 1;
         }
@@ -288,9 +310,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         this.fetchCache[index].latestNonce = latestNonce;
       }
     } catch (error) {
-      this.logger.warn(
-        `lnbridgev2 fetch record failed, from ${transfer.chainId}, ${error}`
-      );
+      this.logger.warn(`lnbridgev2 fetch record failed, from ${transfer.chainId}, ${error}`);
     }
   }
 
@@ -328,7 +348,7 @@ export class Lnbridgev20Service implements OnModuleInit {
 
         if (txStatus === RecordStatus.pending) {
           const toPartner = this.findPartnerByChainName(record.toChain, bridge);
-          const query = `query { lnv2RelayRecord(id: "${transferId}") { id, timestamp, transactionHash, slasher }}`;
+          const query = `query { lnv2RelayRecord(id: "${transferId}") { id, timestamp, transactionHash, slasher, fee }}`;
           const relayRecord = await axios
             .post(toPartner.url, {
               query: query,
@@ -336,7 +356,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             })
             .then((res) => res.data?.data?.lnv2RelayRecord)
             .catch((err) => {
-                this.logger.warn(`query relay record failed err ${err}`);
+              this.logger.warn(`query relay record failed err ${err}`);
             });
 
           if (relayRecord) {
@@ -353,6 +373,26 @@ export class Lnbridgev20Service implements OnModuleInit {
               data: updateData,
             });
 
+            const cost = relayRecord.slasher === null ? relayRecord.fee : 0;
+            const profit = relayRecord.slasher === null ? record.fee : 0;
+            // update cost & profit TODO: penalty
+            const providerId = this.genRelayInfoID(
+              transfer.chainId,
+              toPartner.chainId,
+              record.relayer,
+              record.sendTokenAddress
+            );
+            const relayerInfo = await this.aggregationService.queryLnv20RelayInfoById({
+              id: providerId,
+            });
+            await this.aggregationService.updateLnv20RelayInfo({
+              where: { id: providerId },
+              data: {
+                cost: (BigInt(relayerInfo.cost) + BigInt(cost)).toString(),
+                profit: (BigInt(relayerInfo.profit) + BigInt(profit)).toString(),
+              },
+            });
+
             this.logger.log(
               `[${record.fromChain}->${record.toChain}]lnv2bridge new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
             );
@@ -364,16 +404,29 @@ export class Lnbridgev20Service implements OnModuleInit {
     }
   }
 
-  private genRelayInfoID(fromChainId: number, toChainId: number, provider: string, sourceToken: string): string {
+  private genRelayInfoID(
+    fromChainId: number,
+    toChainId: number,
+    provider: string,
+    sourceToken: string
+  ): string {
     return `lnv20-${fromChainId}-${toChainId}-${provider}-${sourceToken}`;
   }
 
   private findPartnerByChainId(chainId: number, bridge: string) {
-      return this.transferService.transfers.find((item) => item.chainId === chainId && item.bridge === bridge) ?? null;
+    return (
+      this.transferService.transfers.find(
+        (item) => item.chainId === chainId && item.bridge === bridge
+      ) ?? null
+    );
   }
 
   private findPartnerByChainName(chainName: string, bridge: string) {
-      return this.transferService.transfers.find((item) => item.chain === chainName && item.bridge === bridge) ?? null;
+    return (
+      this.transferService.transfers.find(
+        (item) => item.chain === chainName && item.bridge === bridge
+      ) ?? null
+    );
   }
 
   async fetchMarginInfoFromTarget(transfer: PartnerT2, index: number) {
@@ -382,11 +435,11 @@ export class Lnbridgev20Service implements OnModuleInit {
     try {
       if (latestNonce == -1) {
         const firstRecord = await this.aggregationService.queryLnv20RelayInfoFirst(
-            {
-                toChain: toChain,
-                bridge: this.bridgeName(transfer),
-            },
-            { targetNonce: 'desc' },
+          {
+            toChain: toChain,
+            bridge: this.bridgeName(transfer),
+          },
+          { targetNonce: 'desc' }
         );
         latestNonce = firstRecord ? Number(firstRecord.targetNonce) : 0;
       }
@@ -398,31 +451,41 @@ export class Lnbridgev20Service implements OnModuleInit {
         })
         .then((res) => res.data?.data?.lnv2RelayUpdateRecords)
         .catch((err) => {
-            this.logger.warn(`query margin update failed err ${err}`);
+          this.logger.warn(`query margin update failed err ${err}`);
         });
 
       if (records && records.length > 0) {
         const record = records[0];
         // query by relayer
-        const id = this.genRelayInfoID(record.remoteChainId, transfer.chainId, record.provider, record.sourceToken);
+        const id = this.genRelayInfoID(
+          record.remoteChainId,
+          transfer.chainId,
+          record.provider,
+          record.sourceToken
+        );
         const relayerInfo = await this.aggregationService.queryLnv20RelayInfoById({
           id: id,
         });
         if (relayerInfo) {
           // transfer target margin to source margin
-          const toSymbol = symbols.find((item) => item.address.toLowerCase() === record.targetToken) ?? null;
+          const toSymbol =
+            symbols.find((item) => item.address.toLowerCase() === record.targetToken) ?? null;
           if (!toSymbol) {
-              this.logger.warn(`to symbol not find ${record.targetToken}`);
-              return;
+            this.logger.warn(`to symbol not find ${record.targetToken}`);
+            return;
           }
           const sourcePartner = this.findPartnerByChainId(record.remoteChainId, transfer.bridge);
-          const fromSymbol = sourcePartner.symbols.find((item) => item.address.toLowerCase() === record.sourceToken) ?? null;
+          const fromSymbol =
+            sourcePartner.symbols.find(
+              (item) => item.address.toLowerCase() === record.sourceToken
+            ) ?? null;
           if (!fromSymbol) {
             this.logger.warn(`to symbol not find ${record.sourceToken}`);
             return;
           }
 
-          const sourceMargin = Number(record.margin) * Math.pow(10, fromSymbol.decimals - toSymbol.decimals);
+          const sourceMargin =
+            Number(record.margin) * Math.pow(10, fromSymbol.decimals - toSymbol.decimals);
           const updateData = {
             margin: BigInt(sourceMargin).toString(),
             slashCount: relayerInfo.slashCount,
@@ -434,7 +497,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           } else if (record.updateType == RelayUpdateType.WITHDRAW) {
             updateData.withdrawNonce = Number(record.withdrawNonce);
             if (updateData.withdrawNonce < relayerInfo.withdrawNonce) {
-                updateData.withdrawNonce = relayerInfo.withdrawNonce;
+              updateData.withdrawNonce = relayerInfo.withdrawNonce;
             }
           }
           await this.aggregationService.updateLnv20RelayInfo({
@@ -444,7 +507,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           latestNonce += 1;
           this.fetchCache[index].latestRelayerInfoTargetNonce = latestNonce;
           this.logger.log(
-              `update lnv20 relay margin, id ${id}, margin ${record.margin}, withdrawNonce ${updateData.withdrawNonce}, nonce ${latestNonce}`
+            `update lnv20 relay margin, id ${id}, margin ${record.margin}, withdrawNonce ${updateData.withdrawNonce}, nonce ${latestNonce}`
           );
         }
       }
@@ -459,11 +522,11 @@ export class Lnbridgev20Service implements OnModuleInit {
     try {
       if (latestNonce == -1) {
         const firstRecord = await this.aggregationService.queryLnv20RelayInfoFirst(
-            {
-                fromChain: fromChain,
-                bridge: this.bridgeName(transfer),
-            },
-            { nonce: 'desc' },
+          {
+            fromChain: fromChain,
+            bridge: this.bridgeName(transfer),
+          },
+          { nonce: 'desc' }
         );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
@@ -476,19 +539,25 @@ export class Lnbridgev20Service implements OnModuleInit {
         })
         .then((res) => res.data?.data?.lnv2RelayUpdateRecords)
         .catch((err) => {
-            this.logger.warn(`query fee update failed err ${err}`);
+          this.logger.warn(`query fee update failed err ${err}`);
         });
 
       // query nonce big then latestNonce
       for (const record of records) {
         // query by relayer
-        const id = this.genRelayInfoID(transfer.chainId, record.remoteChainId, record.provider, record.sourceToken);
+        const id = this.genRelayInfoID(
+          transfer.chainId,
+          record.remoteChainId,
+          record.provider,
+          record.sourceToken
+        );
         const relayerInfo = await this.aggregationService.queryLnv20RelayInfoById({
           id: id,
         });
-        const symbol = symbols.find((item) => item.address.toLowerCase() === record.sourceToken) ?? null;
+        const symbol =
+          symbols.find((item) => item.address.toLowerCase() === record.sourceToken) ?? null;
         if (symbol == null) {
-            return;
+          return;
         }
         const toPartner = this.findPartnerByChainId(record.remoteChainId, transfer.bridge);
         if (!relayerInfo) {
@@ -509,6 +578,9 @@ export class Lnbridgev20Service implements OnModuleInit {
             liquidityFeeRate: Number(record.liquidityFeeRate),
             slashCount: 0,
             targetNonce: 0,
+            cost: '0',
+            profit: '0',
+            heartbeatTimestamp: 0,
             lastTransferId: '0x0000000000000000000000000000000000000000000000000000000000000000',
           });
         } else {
@@ -543,11 +615,11 @@ export class Lnbridgev20Service implements OnModuleInit {
     try {
       if (latestNonce == -1) {
         const firstRecord = await this.aggregationService.queryLnv20RelayInfoFirst(
-            {
-                fromChain: fromChain,
-                bridge: this.bridgeName(transfer),
-            },
-            { nonce: 'desc' },
+          {
+            fromChain: fromChain,
+            bridge: this.bridgeName(transfer),
+          },
+          { nonce: 'desc' }
         );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
@@ -560,19 +632,25 @@ export class Lnbridgev20Service implements OnModuleInit {
         })
         .then((res) => res.data?.data?.lnv2RelayUpdateRecords)
         .catch((err) => {
-            this.logger.warn(`query relay update record failed err ${err}`);
+          this.logger.warn(`query relay update record failed err ${err}`);
         });
 
       // query nonce big then latestNonce
       for (const record of records) {
         // query by relayer
-        const id = this.genRelayInfoID(transfer.chainId, record.remoteChainId, record.provider, record.sourceToken);
+        const id = this.genRelayInfoID(
+          transfer.chainId,
+          record.remoteChainId,
+          record.provider,
+          record.sourceToken
+        );
         const relayerInfo = await this.aggregationService.queryLnv20RelayInfoById({
           id: id,
         });
-        const symbol = symbols.find((item) => item.address.toLowerCase() === record.sourceToken) ?? null;
+        const symbol =
+          symbols.find((item) => item.address.toLowerCase() === record.sourceToken) ?? null;
         if (symbol == null) {
-            return;
+          return;
         }
         const toPartner = this.findPartnerByChainId(record.remoteChainId, transfer.bridge);
         if (!relayerInfo) {
@@ -595,6 +673,9 @@ export class Lnbridgev20Service implements OnModuleInit {
             withdrawNonce: 0,
             targetNonce: 0,
             lastTransferId: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            cost: '0',
+            profit: '0',
+            heartbeatTimestamp: 0,
           });
         } else {
           // else update

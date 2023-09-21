@@ -93,6 +93,9 @@ export class Lnv20RelayInfo {
     slashCount?: Nullable<number>;
     withdrawNonce?: Nullable<BigInt>;
     lastTransferId?: Nullable<string>;
+    cost?: Nullable<string>;
+    profit?: Nullable<string>;
+    heartbeatTimestamp?: Nullable<number>;
 }
 
 export class Lnv20RelayInfos {
@@ -104,6 +107,8 @@ export abstract class IMutation {
     abstract addGuardSignature(id?: Nullable<string>, dataHash?: Nullable<string>, signature?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 
     abstract updateConfirmedBlock(id?: Nullable<string>, block?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
+
+    abstract lnBridgeHeartBeat(fromChainId?: Nullable<string>, toChainId?: Nullable<string>, relayer?: Nullable<string>, tokenAddress?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 }
 
 export type BigInt = any;

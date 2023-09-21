@@ -136,6 +136,7 @@ export function handleTransferFilled(event: TransferFilled): void {
   }
   entity.timestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
+  entity.fee = event.receipt!.gasUsed * event.transaction.gasPrice;
   entity.save();
 }
 // target chain end

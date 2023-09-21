@@ -144,13 +144,26 @@ export class AggregationResolver {
   }
 
   @Mutation()
-  async updateConfirmedBlock(
-    @Args('id') id: string,
-    @Args('block') block: string 
-  ) {
+  async updateConfirmedBlock(@Args('id') id: string, @Args('block') block: string) {
     await this.aggregationService.updateConfirmedBlock({
       where: { id: id },
       block: block,
+    });
+  }
+
+  @Mutation()
+  async lnBridgeHeartBeat(
+    @Args('fromChainId') fromChainId: string,
+    @Args('toChainId') toChainId: string,
+    @Args('relayer') relayer: string,
+    @Args('tokenAddress') tokenAddress: string
+  ) {
+    const id = `lnv20-${fromChainId}-${toChainId}-${relayer}-${tokenAddress}`;
+    await this.aggregationService.updateLnv20RelayInfo({
+      where: { id: id },
+      data: {
+        heartbeatTimestamp: Date.now() / 1000,
+      },
     });
   }
 

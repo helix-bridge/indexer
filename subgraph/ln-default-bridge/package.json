@@ -12,7 +12,7 @@
     "deploy-remote": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs http://g2.generic.darwinia.network:5001/ lndefault/$NETWORK"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.21.1",
-    "@graphprotocol/graph-ts": "0.20.0"
+    "@graphprotocol/graph-cli": "0.31.1",
+    "@graphprotocol/graph-ts": "0.31.0"
   }
 }

@@ -269,7 +269,68 @@
         },
         {
           "indexed": false,
-          "internalType": "uint64",
+          "internalType": "uint32",
+          "name": "timestamp",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "receiver",
+          "type": "address"
+        }
+      ],
+      "name": "TokenLocked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "remoteChainId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "transferId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "provider",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "sourceToken",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "targetToken",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint112",
+          "name": "amount",
+          "type": "uint112"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint112",
+          "name": "fee",
+          "type": "uint112"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
           "name": "timestamp",
           "type": "uint64"
         },
@@ -461,7 +522,7 @@
         },
         {
           "internalType": "uint256",
-          "name": "_remoteChainId",
+          "name": "_localChainId",
           "type": "uint256"
         },
         {
@@ -499,6 +560,11 @@
           "type": "bytes32"
         },
         {
+          "internalType": "uint256",
+          "name": "_localChainId",
+          "type": "uint256"
+        },
+        {
           "internalType": "uint64",
           "name": "_withdrawNonce",
           "type": "uint64"
@@ -532,7 +598,7 @@
           "type": "bytes"
         }
       ],
-      "stateMutability": "view",
+      "stateMutability": "pure",
       "type": "function"
     },
     {

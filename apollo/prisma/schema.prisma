@@ -69,5 +69,8 @@ model Lnv20RelayInfo {
   liquidityFeeRate Int
   slashCount Int
   lastTransferId String
+  cost String
+  profit String
+  heartbeatTimestamp Int
 }
 
