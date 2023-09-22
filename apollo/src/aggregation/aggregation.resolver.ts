@@ -158,13 +158,18 @@ export class AggregationResolver {
     @Args('relayer') relayer: string,
     @Args('tokenAddress') tokenAddress: string
   ) {
-    const id = `lnv20-${fromChainId}-${toChainId}-${relayer}-${tokenAddress}`;
-    await this.aggregationService.updateLnv20RelayInfo({
-      where: { id: id },
-      data: {
-        heartbeatTimestamp: Math.floor(Date.now() / 1000),
-      },
-    });
+    const id = `lnv20-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
+    try {
+      await this.aggregationService.updateLnv20RelayInfo({
+        where: { id: id },
+        data: {
+          heartbeatTimestamp: Math.floor(Date.now() / 1000),
+        },
+      });
+    } catch (e) {
+      console.log(`heart beat failed ${id}`);
+      return;
+    }
   }
 
   @Query()
