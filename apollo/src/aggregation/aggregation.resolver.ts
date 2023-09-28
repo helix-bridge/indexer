@@ -228,12 +228,13 @@ export class AggregationResolver {
     @Args('fromChain') fromChain: string,
     @Args('toChain') toChain: string,
     @Args('bridge') bridge: string,
+    @Args('relayer') relayer: string,
     @Args('row') row: number,
     @Args('page') page: number
   ) {
     const skip = row * page || 0;
     const take = row || 10;
-    const baseFilters = { fromChain, toChain, bridge };
+    const baseFilters = { fromChain, toChain, bridge, relayer };
 
     const where = {
       ...baseFilters,
