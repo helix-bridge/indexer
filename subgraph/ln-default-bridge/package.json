@@ -4,10 +4,11 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "build-goerli": "sh generate.sh goerli 0x54cc9716905ba8ebdD01E6364125cA338Cd0054E 9658728 && graph codegen && graph build",
-    "build-arbitrum": "sh generate.sh arbigoerli 0x54cc9716905ba8ebdD01E6364125cA338Cd0054E 40151409 && graph codegen && graph build",
-    "build-linea": "sh generate.sh lineagoerli 0x54cc9716905ba8ebdD01E6364125cA338Cd0054E 1494962 && graph codegen && graph build",
-    "build-mantle": "sh generate.sh mantlegoerli 0x54cc9716905ba8ebdD01E6364125cA338Cd0054E 19685918 && graph codegen && graph build",
+    "build-goerli": "sh generate.sh goerli 0x258F81A0B59e0fD84604E3e9fc1b70718927c239 9840927 && graph codegen && graph build",
+    "build-arbitrum": "sh generate.sh arbigoerli 0x258F81A0B59e0fD84604E3e9fc1b70718927c239 46729061 && graph codegen && graph build",
+    "build-linea": "sh generate.sh lineagoerli 0x258F81A0B59e0fD84604E3e9fc1b70718927c239 1693292 && graph codegen && graph build",
+    "build-mantle": "sh generate.sh mantlegoerli 0x258F81A0B59e0fD84604E3e9fc1b70718927c239 23288903 && graph codegen && graph build",
+    "build-zkgoerli": "sh generate.sh zkgoerli 0x77300647Ac7D751fc1b5B5F8ffA9f63337F2D264 12510285 && graph codegen && graph build",
     "create-remote": "graph create --access-token ${KEY} --node https://thegraph-g2.darwinia.network/helix/deploy/ lndefault/${NETWORK}",
     "deploy-remote": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs http://g2.generic.darwinia.network:5001/ lndefault/$NETWORK"
   },

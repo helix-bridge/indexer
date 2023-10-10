@@ -288,67 +288,6 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "uint256",
-          "name": "remoteChainId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes32",
-          "name": "transferId",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "provider",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "sourceToken",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "targetToken",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint112",
-          "name": "amount",
-          "type": "uint112"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint112",
-          "name": "fee",
-          "type": "uint112"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint32",
-          "name": "timestamp",
-          "type": "uint64"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "receiver",
-          "type": "address"
-        }
-      ],
-      "name": "TokenLocked",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
           "internalType": "bytes32",
           "name": "transferId",
           "type": "bytes32"
@@ -406,6 +345,43 @@
       ],
       "name": "WithdrawMarginRequest",
       "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "appAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "enable",
+          "type": "bool"
+        }
+      ],
+      "name": "authoriseAppCaller",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "callerWhiteList",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
       "inputs": [],

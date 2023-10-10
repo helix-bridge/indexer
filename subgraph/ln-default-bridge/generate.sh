@@ -25,8 +25,6 @@ dataSources:
       eventHandlers:
         - event: TokenLocked(uint256,bytes32,address,address,address,uint112,uint112,uint32,address)
           handler: handleTokenLocked
-        - event: TokenLocked(uint256,bytes32,address,address,address,uint112,uint112,uint64,address)
-          handler: handleTokenLocked
         - event: LnProviderUpdated(uint256,address,address,address,uint112,uint8)
           handler: handleLnProviderUpdated
         - event: TransferFilled(bytes32,address)
