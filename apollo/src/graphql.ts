@@ -88,6 +88,7 @@ export class Lnv20RelayInfo {
     transaction_hash: string;
     timestamp: number;
     margin?: Nullable<string>;
+    protocolFee?: Nullable<string>;
     baseFee?: Nullable<string>;
     liquidityFeeRate?: Nullable<number>;
     slashCount?: Nullable<number>;

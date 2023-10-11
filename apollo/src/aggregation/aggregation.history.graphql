@@ -57,6 +57,7 @@ type Lnv20RelayInfo {
   transaction_hash: String!
   timestamp: Int!
   margin: String
+  protocolFee: String
   baseFee: String
   liquidityFeeRate: Int
   slashCount: Int
