@@ -44,19 +44,25 @@ export class TransferService extends BaseTransferServiceT2 {
       symbols: [
         {
           symbol: 'USDC',
-          address: '0x1a70127284b774ff4a4dbfe0115114642f0eca65',
+          address: '0xe9784E0d9A939dbe966b021DE3cd877284DB1B99',
           protocolFee: 100000000,
           decimals: 6,
         },
         {
           symbol: 'USDT',
-          address: '0x2303e4d55BF16a897Cb5Ab71c6225399509d9314',
-          protocolFee: 100000000000000000000,
+          address: '0xa39cffE89567eBfb5c306a07dfb6e5B3ba41F358',
+          protocolFee: 100000000,
           decimals: 6,
         },
         {
           symbol: 'ETH',
           address: '0x0000000000000000000000000000000000000000',
+          protocolFee: 1000000000000000,
+          decimals: 18,
+        },
+        {
+          symbol: 'MNT',
+          address: '0xc1dc2d65a2243c22344e725677a3e3bebd26e604',
           protocolFee: 1000000000000000,
           decimals: 18,
         },
@@ -70,14 +76,14 @@ export class TransferService extends BaseTransferServiceT2 {
       symbols: [
         {
           symbol: 'USDC',
-          address: '0x1a70127284B774fF4A4dbfe0115114642f0eca65',
+          address: '0xe9784E0d9A939dbe966b021DE3cd877284DB1B99',
           protocolFee: 100000000,
           decimals: 6,
         },
         {
           symbol: 'USDT',
-          address: '0x2303e4d55BF16a897Cb5Ab71c6225399509d9314',
-          protocolFee: 100000000000000000000,
+          address: '0xa39cffE89567eBfb5c306a07dfb6e5B3ba41F358',
+          protocolFee: 100000000,
           decimals: 6,
         },
         {
@@ -102,20 +108,20 @@ export class TransferService extends BaseTransferServiceT2 {
       symbols: [
         {
           symbol: 'USDC',
-          address: '0x39de82e1d9b8f62e11022fc3fc127a82f93fe47e',
-          protocolFee: 100000000,
+          address: '0xBAD026e314a77e727dF643B02f63adA573a3757c',
+          protocolFee: 100000000000000000000,
           decimals: 18,
         },
         {
           symbol: 'USDT',
-          address: '0x6d828718c1097a4c573bc25c638cc05bf10dfeaf',
+          address: '0x543bf1AC41485dc78039b9351563E4Dd13A288cb',
           protocolFee: 100000000000000000000,
           decimals: 18,
         },
         {
           symbol: 'ETH',
           address: '0x0000000000000000000000000000000000000000',
-          protocolFee: 1000000000000000,
+          protocolFee: 100000000000000000000,
           decimals: 18,
         },
       ],
@@ -128,13 +134,13 @@ export class TransferService extends BaseTransferServiceT2 {
       symbols: [
         {
           symbol: 'USDC',
-          address: '0x39de82e1d9b8f62e11022fc3fc127a82f93fe47e',
-          protocolFee: 100000000,
+          address: '0xBAD026e314a77e727dF643B02f63adA573a3757c',
+          protocolFee: 100000000000000000000,
           decimals: 18,
         },
         {
           symbol: 'USDT',
-          address: '0x6d828718c1097a4c573bc25c638cc05bf10dfeaf',
+          address: '0x543bf1AC41485dc78039b9351563E4Dd13A288cb',
           protocolFee: 100000000000000000000,
           decimals: 18,
         },
@@ -154,13 +160,13 @@ export class TransferService extends BaseTransferServiceT2 {
       symbols: [
         {
           symbol: 'USDC',
-          address: '0x0258eb547bfed540ed17843658c018569fe1e328',
-          protocolFee: 100000000,
+          address: '0xD610DE267f7590D5bCCE89489ECd2C1A4AfdF76B',
+          protocolFee: 100000000000000000000,
           decimals: 18,
         },
         {
           symbol: 'USDT',
-          address: '0x5f8d4232367759bce5d9488d3ade77fcff6b9b6b',
+          address: '0xDb06D904AC5Bdff3b8E6Ac96AFedd3381d94CFDD',
           protocolFee: 100000000000000000000,
           decimals: 18,
         },
@@ -180,13 +186,13 @@ export class TransferService extends BaseTransferServiceT2 {
       symbols: [
         {
           symbol: 'USDC',
-          address: '0x0258eb547bfed540ed17843658c018569fe1e328',
-          protocolFee: 100000000,
+          address: '0xD610DE267f7590D5bCCE89489ECd2C1A4AfdF76B',
+          protocolFee: 100000000000000000000,
           decimals: 18,
         },
         {
           symbol: 'USDT',
-          address: '0x5f8d4232367759bce5d9488d3ade77fcff6b9b6b',
+          address: '0xDb06D904AC5Bdff3b8E6Ac96AFedd3381d94CFDD',
           protocolFee: 100000000000000000000,
           decimals: 18,
         },
@@ -206,14 +212,14 @@ export class TransferService extends BaseTransferServiceT2 {
       symbols: [
         {
           symbol: 'USDC',
-          address: '0xb5e028f980df5533cb0e8f04530b76637383d993',
-          protocolFee: 100000000,
+          address: '0xeC89AF5FF618bbF667755BE9d63C69F21F1c00C8',
+          protocolFee: 100000000000000000000,
           decimals: 18,
         },
         {
           symbol: 'USDT',
-          address: '0xbc1a2f123dc9cd2ec8d3ce42ef16c28f3c9ba686',
-          protocolFee: 100000000,
+          address: '0x8f3663930211f3DE17619FEB2eeB44c9c3F44a06',
+          protocolFee: 100000000000000000000,
           decimals: 18,
         },
         {
@@ -232,14 +238,14 @@ export class TransferService extends BaseTransferServiceT2 {
       symbols: [
         {
           symbol: 'USDC',
-          address: '0xb5e028f980df5533cb0e8f04530b76637383d993',
-          protocolFee: 100000000,
+          address: '0xeC89AF5FF618bbF667755BE9d63C69F21F1c00C8',
+          protocolFee: 100000000000000000000,
           decimals: 18,
         },
         {
           symbol: 'USDT',
-          address: '0xbc1a2f123dc9cd2ec8d3ce42ef16c28f3c9ba686',
-          protocolFee: 100000000,
+          address: '0x8f3663930211f3DE17619FEB2eeB44c9c3F44a06',
+          protocolFee: 100000000000000000000,
           decimals: 18,
         },
         {
@@ -258,14 +264,14 @@ export class TransferService extends BaseTransferServiceT2 {
       symbols: [
         {
           symbol: 'USDC',
-          address: '0xae60e005c560e869a2bad271e38e3c9d78381aff',
-          protocolFee: 100000000,
+          address: '0xAe60e005C560E869a2bad271e38e3C9D78381aFF',
+          protocolFee: 100000000000000000000,
           decimals: 18,
         },
         {
           symbol: 'USDT',
-          address: '0xb5372ed3bb2cba63e7908066ac10ee94d30ea839',
-          protocolFee: 100000000,
+          address: '0xb5372ed3bb2CbA63e7908066ac10ee94d30eA839',
+          protocolFee: 100000000000000000000,
           decimals: 18,
         },
         {

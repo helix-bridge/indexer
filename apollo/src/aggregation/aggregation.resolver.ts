@@ -167,7 +167,7 @@ export class AggregationResolver {
         },
       });
     } catch (e) {
-      console.log(`heart beat failed ${id}`);
+      console.log(`heart beat failed ${id}, exception: ${e}`);
       return;
     }
   }

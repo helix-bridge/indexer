@@ -4,10 +4,10 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "build-goerli": "sh generate.sh goerli 0xe8d97E5B87fCA75FE33f9C0278470C975485675C 9840925 && graph codegen && graph build",
-    "build-arbitrum": "sh generate.sh arbigoerli 0xe8d97E5B87fCA75FE33f9C0278470C975485675C 46728946 && graph codegen && graph build",
-    "build-linea": "sh generate.sh lineagoerli 0xe8d97E5B87fCA75FE33f9C0278470C975485675C 1693290 && graph codegen && graph build",
-    "build-mantle": "sh generate.sh mantlegoerli 0xe8d97E5B87fCA75FE33f9C0278470C975485675C 19685918 && graph codegen && graph build",
+    "build-goerli": "sh generate.sh goerli 0x4C538EfA6e3f9Dfb939AA4F0B224577DA665923a 9844813 && graph codegen && graph build",
+    "build-arbitrum": "sh generate.sh arbigoerli 0x4C538EfA6e3f9Dfb939AA4F0B224577DA665923a 46913317 && graph codegen && graph build",
+    "build-linea": "sh generate.sh lineagoerli 0x4C538EfA6e3f9Dfb939AA4F0B224577DA665923a 1698144 && graph codegen && graph build",
+    "build-mantle": "sh generate.sh mantlegoerli 0x4C538EfA6e3f9Dfb939AA4F0B224577DA665923a 23363565 && graph codegen && graph build",
     "create-remote": "graph create --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ lnopposite/$NETWORK",
     "deploy-remote": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs http://g2.generic.darwinia.network:5001/ lnopposite/$NETWORK"
   },
