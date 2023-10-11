@@ -97,6 +97,7 @@ export class Lnv20RelayInfo {
     cost?: Nullable<string>;
     profit?: Nullable<string>;
     heartbeatTimestamp?: Nullable<number>;
+    messageChannel?: Nullable<string>;
 }
 
 export class Lnv20RelayInfos {

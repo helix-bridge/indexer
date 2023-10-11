@@ -561,6 +561,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         }
         const toPartner = this.findPartnerByChainId(record.remoteChainId, transfer.bridge);
         if (!relayerInfo) {
+          const messageChannel = this.transferService.messageChannel[fromChain]?.[toPartner.chain];
           // if not exist create
           await this.aggregationService.createLnv20RelayInfo({
             id: id,
@@ -583,6 +584,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             profit: '0',
             heartbeatTimestamp: 0,
             lastTransferId: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            messageChannel: messageChannel,
           });
         } else {
           // else update
@@ -657,6 +659,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         if (!relayerInfo) {
           // if not exist create
           const margin = record.margin === null ? '0' : record.margin;
+          const messageChannel = this.transferService.messageChannel[fromChain]?.[toPartner.chain];
           await this.aggregationService.createLnv20RelayInfo({
             id: id,
             fromChain: fromChain,
@@ -678,6 +681,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             cost: '0',
             profit: '0',
             heartbeatTimestamp: 0,
+            messageChannel: messageChannel,
           });
         } else {
           // else update

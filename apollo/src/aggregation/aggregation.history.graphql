@@ -66,6 +66,7 @@ type Lnv20RelayInfo {
   cost: String
   profit: String
   heartbeatTimestamp: Int
+  messageChannel: String
 }
 
 type Lnv20RelayInfos {

@@ -285,6 +285,40 @@ export class TransferService extends BaseTransferServiceT2 {
   ];
 
   addressToTokenInfo: { [key: string]: AddressTokenMap } = {};
+
+  // message channel is used to withdraw liquidity
+  public readonly messageChannel = {
+      "goerli": {
+          "arbitrum-goerli": "arbitrum-l2",
+          "linea-goerli": "linea-l2",
+          "mantle-goerli": "axelar",
+          "zksync-goerli": "layerzero",
+      },
+      "arbitrum-goerli": {
+          "goerli": "arbitrum-l2",
+          "linea-goerli": "layerzero",
+          "mantle-goerli": "layerzero",
+          "zksync-goerli": "layerzero",
+      },
+      "linea-goerli": {
+          "goerli": "linea-l2",
+          "arbitrum-goerli": "layerzero",
+          "mantle-goerli": "layerzero",
+          "zksync-goerli": "layerzero",
+      },
+      "mantle-goerli": {
+          "goerli": "axelar",
+          "arbitrum-goerli": "layerzero",
+          "linea-goerli": "layerzero",
+          "zksync-goerli": "layerzero",
+      },
+      "zksync-goerli": {
+          "goerli": "layerzero",
+          "arbitrum-goerli": "layerzero",
+          "linea-goerli": "layerzero",
+          "mantle-goerli": "layerzero",
+      }
+  };
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
 
   constructor(public configService: ConfigService) {
