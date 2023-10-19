@@ -45,8 +45,8 @@ export class TransferService extends BaseTransferServiceT2 {
           address: '0x9469D013805bFfB7D3DEBe5E7839237e535ec483',
           protocolFee: 100000000000000000000,
           decimals: 18,
-        }
-      ]
+        },
+      ],
     },
     {
       chainId: 42161,
@@ -59,9 +59,9 @@ export class TransferService extends BaseTransferServiceT2 {
           address: '0x9e523234D36973f9e38642886197D023C88e307e',
           protocolFee: 100000000000000000000,
           decimals: 18,
-        }
-      ]
-    }
+        },
+      ],
+    },
   ];
 
   testChainTransfers: PartnerT2[] = [
@@ -317,36 +317,36 @@ export class TransferService extends BaseTransferServiceT2 {
 
   // message channel is used to withdraw liquidity
   public readonly messageChannel = {
-      "goerli": {
-          "arbitrum-goerli": "arbitrum-l2",
-          "linea-goerli": "linea-l2",
-          "mantle-goerli": "axelar",
-          "zksync-goerli": "layerzero",
-      },
-      "arbitrum-goerli": {
-          "goerli": "arbitrum-l2",
-          "linea-goerli": "layerzero",
-          "mantle-goerli": "layerzero",
-          "zksync-goerli": "layerzero",
-      },
-      "linea-goerli": {
-          "goerli": "linea-l2",
-          "arbitrum-goerli": "layerzero",
-          "mantle-goerli": "layerzero",
-          "zksync-goerli": "layerzero",
-      },
-      "mantle-goerli": {
-          "goerli": "axelar",
-          "arbitrum-goerli": "layerzero",
-          "linea-goerli": "layerzero",
-          "zksync-goerli": "layerzero",
-      },
-      "zksync-goerli": {
-          "goerli": "layerzero",
-          "arbitrum-goerli": "layerzero",
-          "linea-goerli": "layerzero",
-          "mantle-goerli": "layerzero",
-      }
+    goerli: {
+      'arbitrum-goerli': 'arbitrum-l2',
+      'linea-goerli': 'linea-l2',
+      'mantle-goerli': 'axelar',
+      'zksync-goerli': 'layerzero',
+    },
+    'arbitrum-goerli': {
+      goerli: 'arbitrum-l2',
+      'linea-goerli': 'layerzero',
+      'mantle-goerli': 'layerzero',
+      'zksync-goerli': 'layerzero',
+    },
+    'linea-goerli': {
+      goerli: 'linea-l2',
+      'arbitrum-goerli': 'layerzero',
+      'mantle-goerli': 'layerzero',
+      'zksync-goerli': 'layerzero',
+    },
+    'mantle-goerli': {
+      goerli: 'axelar',
+      'arbitrum-goerli': 'layerzero',
+      'linea-goerli': 'layerzero',
+      'zksync-goerli': 'layerzero',
+    },
+    'zksync-goerli': {
+      goerli: 'layerzero',
+      'arbitrum-goerli': 'layerzero',
+      'linea-goerli': 'layerzero',
+      'mantle-goerli': 'layerzero',
+    },
   };
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
 
