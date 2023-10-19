@@ -33,7 +33,36 @@ export class TransferService extends BaseTransferServiceT2 {
     'LN_ZKSYNC_DEFAULT_ENDPOINT'
   );
 
-  formalChainTransfers: PartnerT2[] = [];
+  formalChainTransfers: PartnerT2[] = [
+    {
+      chainId: 1,
+      chain: 'ethereum',
+      url: this.lnEthereumOppositeEndpoint,
+      bridge: 'opposite',
+      symbols: [
+        {
+          symbol: 'RING',
+          address: '0x9469D013805bFfB7D3DEBe5E7839237e535ec483',
+          protocolFee: 100000000000000000000,
+          decimals: 18,
+        }
+      ]
+    },
+    {
+      chainId: 42161,
+      chain: 'arbitrum',
+      url: this.lnArbitrumOppositeEndpoint,
+      bridge: 'opposite',
+      symbols: [
+        {
+          symbol: 'RING',
+          address: '0x9e523234D36973f9e38642886197D023C88e307e',
+          protocolFee: 100000000000000000000,
+          decimals: 18,
+        }
+      ]
+    }
+  ];
 
   testChainTransfers: PartnerT2[] = [
     {
