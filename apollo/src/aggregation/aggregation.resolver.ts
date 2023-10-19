@@ -144,14 +144,32 @@ export class AggregationResolver {
   }
 
   @Mutation()
-  async updateConfirmedBlock(
-    @Args('id') id: string,
-    @Args('block') block: string 
-  ) {
+  async updateConfirmedBlock(@Args('id') id: string, @Args('block') block: string) {
     await this.aggregationService.updateConfirmedBlock({
       where: { id: id },
       block: block,
     });
+  }
+
+  @Mutation()
+  async lnBridgeHeartBeat(
+    @Args('fromChainId') fromChainId: string,
+    @Args('toChainId') toChainId: string,
+    @Args('relayer') relayer: string,
+    @Args('tokenAddress') tokenAddress: string
+  ) {
+    const id = `lnv20-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
+    try {
+      await this.aggregationService.updateLnv20RelayInfo({
+        where: { id: id },
+        data: {
+          heartbeatTimestamp: Math.floor(Date.now() / 1000),
+        },
+      });
+    } catch (e) {
+      console.log(`heart beat failed ${id}, exception: ${e}`);
+      return;
+    }
   }
 
   @Query()
@@ -210,12 +228,13 @@ export class AggregationResolver {
     @Args('fromChain') fromChain: string,
     @Args('toChain') toChain: string,
     @Args('bridge') bridge: string,
+    @Args('relayer') relayer: string,
     @Args('row') row: number,
     @Args('page') page: number
   ) {
     const skip = row * page || 0;
     const take = row || 10;
-    const baseFilters = { fromChain, toChain, bridge };
+    const baseFilters = { fromChain, toChain, bridge, relayer };
 
     const where = {
       ...baseFilters,

@@ -65,9 +65,14 @@ model Lnv20RelayInfo {
   transaction_hash String
   timestamp Int
   margin String
+  protocolFee String
   baseFee String
   liquidityFeeRate Int
   slashCount Int
   lastTransferId String
+  cost String
+  profit String
+  heartbeatTimestamp Int
+  messageChannel String
 }
 

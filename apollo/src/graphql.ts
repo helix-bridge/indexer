@@ -27,7 +27,7 @@ export abstract class IQuery {
 
     abstract queryRelayRecords(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, relayer?: Nullable<string>, row?: Nullable<number>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
 
-    abstract queryLnv20RelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<Lnv20RelayInfos> | Promise<Nullable<Lnv20RelayInfos>>;
+    abstract queryLnv20RelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, relayer?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<Lnv20RelayInfos> | Promise<Nullable<Lnv20RelayInfos>>;
 
     abstract sortedLnv20RelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>, row?: Nullable<number>, amount?: Nullable<string>, decimals?: Nullable<number>): Nullable<Nullable<Lnv20RelayInfo>[]> | Promise<Nullable<Nullable<Lnv20RelayInfo>[]>>;
 }
@@ -88,11 +88,16 @@ export class Lnv20RelayInfo {
     transaction_hash: string;
     timestamp: number;
     margin?: Nullable<string>;
+    protocolFee?: Nullable<string>;
     baseFee?: Nullable<string>;
     liquidityFeeRate?: Nullable<number>;
     slashCount?: Nullable<number>;
     withdrawNonce?: Nullable<BigInt>;
     lastTransferId?: Nullable<string>;
+    cost?: Nullable<string>;
+    profit?: Nullable<string>;
+    heartbeatTimestamp?: Nullable<number>;
+    messageChannel?: Nullable<string>;
 }
 
 export class Lnv20RelayInfos {
@@ -104,6 +109,8 @@ export abstract class IMutation {
     abstract addGuardSignature(id?: Nullable<string>, dataHash?: Nullable<string>, signature?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 
     abstract updateConfirmedBlock(id?: Nullable<string>, block?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
+
+    abstract lnBridgeHeartBeat(fromChainId?: Nullable<string>, toChainId?: Nullable<string>, relayer?: Nullable<string>, tokenAddress?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 }
 
 export type BigInt = any;

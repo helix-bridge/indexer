@@ -28,24 +28,28 @@ export class TransferService extends BaseTransferServiceT2 {
       chain: 'karura',
       url: this.karuraEndpoint,
       bridge: 'xcm',
+      symbols: [],
     },
     {
       chainId: 2023,
       chain: 'moonriver',
       url: this.moonriverEndpoint,
       bridge: 'xcm',
+      symbols: [],
     },
     {
       chainId: 2004,
       chain: 'khala',
       url: this.khalaEndpoint,
       bridge: 'xcm',
+      symbols: [],
     },
     {
       chainId: 2007,
       chain: 'shiden',
       url: this.shidenEndpoint,
       bridge: 'xcm',
+      symbols: [],
     },
   ];
 

@@ -18,11 +18,32 @@ export enum RecordStatus {
   failed,
 }
 
+export interface FetchCacheInfo {
+  latestNonce: number;
+  isSyncingHistory: boolean;
+  skip: number;
+}
+
+export interface BridgeBaseConfigure {
+  name: string;
+  fetchHistoryDataFirst: number;
+  fetchSendDataInterval: number;
+  takeEachTime: number;
+}
+
+export interface PartnerSymbol {
+  symbol: string;
+  address: string;
+  protocolFee: number;
+  decimals: number;
+}
+
 export interface PartnerT2 {
   chainId: number;
   chain: string;
   url: string; // record api endpoint
   bridge: string;
+  symbols: PartnerSymbol[];
 }
 
 export abstract class BaseTransferServiceT2 extends AddressToken {

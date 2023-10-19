@@ -40,12 +40,14 @@ export class TransferService extends BaseTransferServiceT2 {
       chain: 'ethereum',
       url: this.ethereumSub2EthLnEndpoint,
       bridge: 'sub2ethlp',
+      symbols: [],
     },
     {
       chainId: 46,
       chain: 'darwinia-dvm',
       url: this.darwiniaSub2EthLnEndpoint,
       bridge: 'sub2ethlp',
+      symbols: [],
     },
   ];
 
