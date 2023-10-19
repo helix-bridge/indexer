@@ -347,6 +347,9 @@ export class TransferService extends BaseTransferServiceT2 {
       'linea-goerli': 'layerzero',
       'mantle-goerli': 'layerzero',
     },
+    'arbitrum': {
+      ethereum: 'arbitrum-l2',
+    },
   };
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
 
