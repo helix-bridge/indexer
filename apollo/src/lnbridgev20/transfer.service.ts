@@ -62,6 +62,34 @@ export class TransferService extends BaseTransferServiceT2 {
         },
       ],
     },
+    {
+      chainId: 1,
+      chain: 'ethereum',
+      url: this.lnEthereumDefaultEndpoint,
+      bridge: 'default',
+      symbols: [
+        {
+          symbol: 'RING',
+          address: '0x9469D013805bFfB7D3DEBe5E7839237e535ec483',
+          protocolFee: 100000000000000000000,
+          decimals: 18,
+        },
+      ],
+    },
+    {
+      chainId: 42161,
+      chain: 'arbitrum',
+      url: this.lnArbitrumDefaultEndpoint,
+      bridge: 'default',
+      symbols: [
+        {
+          symbol: 'RING',
+          address: '0x9e523234D36973f9e38642886197D023C88e307e',
+          protocolFee: 100000000000000000000,
+          decimals: 18,
+        },
+      ],
+    },
   ];
 
   testChainTransfers: PartnerT2[] = [
@@ -349,6 +377,9 @@ export class TransferService extends BaseTransferServiceT2 {
     },
     'arbitrum': {
       ethereum: 'arbitrum-l2',
+    },
+    'ethereum': {
+      arbitrum: 'arbitrum-l2',
     },
   };
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
