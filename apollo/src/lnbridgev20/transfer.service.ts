@@ -88,6 +88,26 @@ export class TransferService extends BaseTransferServiceT2 {
           protocolFee: 100000000000000000000,
           decimals: 18,
         },
+        {
+          symbol: 'USDT',
+          address: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
+          protocolFee: 100000,
+          decimals: 6,
+        },
+      ],
+    },
+    {
+      chainId: 5000,
+      chain: 'mantle',
+      url: this.lnMantleDefaultEndpoint,
+      bridge: 'default',
+      symbols: [
+        {
+          symbol: 'USDT',
+          address: '0x201eba5cc46d216ce6dc03f6a759e8e766e956ae',
+          protocolFee: 100000,
+          decimals: 6,
+        },
       ],
     },
   ];
@@ -377,10 +397,14 @@ export class TransferService extends BaseTransferServiceT2 {
     },
     'arbitrum': {
       ethereum: 'arbitrum-l2',
+      mantle: 'layerzero',
     },
     'ethereum': {
       arbitrum: 'arbitrum-l2',
     },
+    'mantle': {
+      arbitrum: 'layerzero',
+    }
   };
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
 
