@@ -275,6 +275,7 @@ export class AggregationResolver {
     const validRecords = records.records.filter((record) => BigInt(record.margin) > BigInt(amount));
     // query all pending txs
     var sortedRelayers = [];
+    var maxMargin = BigInt(0);
     for (const record of validRecords) {
       const point = await this.aggregationService.calculateLnv20RelayerPoint(
         token,
@@ -285,8 +286,14 @@ export class AggregationResolver {
       if (point == null) {
         continue;
       }
+      if (BigInt(record.margin) > maxMargin) {
+          maxMargin = BigInt(record.margin);
+      }
       sortedRelayers.push({ record, point });
     }
-    return sortedRelayers.sort((l, r) => l.point - r.point).map((item) => item.record);
+    return {
+        maxMargin: maxMargin,
+        records: sortedRelayers.sort((l, r) => l.point - r.point).map((item) => item.record)
+    };
   }
 }

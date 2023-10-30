@@ -29,7 +29,7 @@ export abstract class IQuery {
 
     abstract queryLnv20RelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, relayer?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<Lnv20RelayInfos> | Promise<Nullable<Lnv20RelayInfos>>;
 
-    abstract sortedLnv20RelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>, row?: Nullable<number>, amount?: Nullable<string>, decimals?: Nullable<number>): Nullable<Nullable<Lnv20RelayInfo>[]> | Promise<Nullable<Nullable<Lnv20RelayInfo>[]>>;
+    abstract sortedLnv20RelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>, row?: Nullable<number>, amount?: Nullable<string>, decimals?: Nullable<number>): Nullable<SortedLnv20RelayInfos> | Promise<Nullable<SortedLnv20RelayInfos>>;
 }
 
 export class HistoryRecord {
@@ -102,6 +102,11 @@ export class Lnv20RelayInfo {
 
 export class Lnv20RelayInfos {
     total: number;
+    records?: Nullable<Nullable<Lnv20RelayInfo>[]>;
+}
+
+export class SortedLnv20RelayInfos {
+    maxMargin: BigInt;
     records?: Nullable<Nullable<Lnv20RelayInfo>[]>;
 }
 
