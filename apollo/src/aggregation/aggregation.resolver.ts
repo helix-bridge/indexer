@@ -272,11 +272,18 @@ export class AggregationResolver {
       where,
     });
     // w=P * 0.5 + max(R - S*0.001, 0) * 0.1 + max(1-T_0 * 0.001, 0)*0.1 + T_1 * 0.2
-    const validRecords = records.records.filter((record) => BigInt(record.margin) > BigInt(amount));
+    //const validRecords = records.records.filter((record) => BigInt(record.margin) > BigInt(amount));
     // query all pending txs
     var sortedRelayers = [];
     var maxMargin = BigInt(0);
-    for (const record of validRecords) {
+    for (const record of records.records) {
+      const margin = BigInt(record.margin);
+      if (margin > maxMargin) {
+        maxMargin = margin;
+      }
+      if (margin < BigInt(amount)) {
+        continue;
+      }
       const point = await this.aggregationService.calculateLnv20RelayerPoint(
         token,
         BigInt(amount),
@@ -285,9 +292,6 @@ export class AggregationResolver {
       );
       if (point == null) {
         continue;
-      }
-      if (BigInt(record.margin) > maxMargin) {
-          maxMargin = BigInt(record.margin);
       }
       sortedRelayers.push({ record, point });
     }
