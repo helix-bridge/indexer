@@ -32,6 +32,9 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly lnZkSyncDefaultEndpoint = this.configService.get<string>(
     'LN_ZKSYNC_DEFAULT_ENDPOINT'
   );
+  private readonly lnPolygonDefaultEndpoint = this.configService.get<string>(
+    'LN_POLYGON_DEFAULT_ENDPOINT'
+  );
 
   formalChainTransfers: PartnerT2[] = [
     {
@@ -105,6 +108,34 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           symbol: 'USDT',
           address: '0x201eba5cc46d216ce6dc03f6a759e8e766e956ae',
+          protocolFee: 100000,
+          decimals: 6,
+        },
+      ],
+    },
+    {
+      chainId: 137,
+      chain: 'polygon',
+      url: this.lnPolygonDefaultEndpoint,
+      bridge: 'default',
+      symbols: [
+        {
+          symbol: 'RING',
+          address: '0x9c1c23e60b72bc88a043bf64afdb16a02540ae8f',
+          protocolFee: 100000000000000000000,
+          decimals: 18,
+        },
+      ],
+    },
+    {
+      chainId: 324,
+      chain: 'zksync',
+      url: this.lnZkSyncDefaultEndpoint,
+      bridge: 'default',
+      symbols: [
+        {
+          symbol: 'USDT',
+          address: '0x493257fd37edb34451f62edf8d2a0c418852ba4c',
           protocolFee: 100000,
           decimals: 6,
         },
