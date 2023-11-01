@@ -429,13 +429,19 @@ export class TransferService extends BaseTransferServiceT2 {
     'arbitrum': {
       ethereum: 'arbitrum-l2',
       mantle: 'layerzero',
+      zksync: 'layerzero',
     },
     'ethereum': {
       arbitrum: 'arbitrum-l2',
     },
     'mantle': {
       arbitrum: 'layerzero',
-    }
+      zksync: 'layerzero',
+    },
+    'zksync': {
+      arbitrum: 'layerzero',
+      mantle: 'layerzero',
+    },
   };
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
 
