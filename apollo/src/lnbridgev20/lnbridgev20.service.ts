@@ -594,7 +594,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             baseFee: BigInt(relayerInfo.baseFee).toString(),
             liquidityFeeRate: relayerInfo.liquidityFeeRate,
           };
-          updateData.baseFee = (BigInt(record.baseFee) + BigInt(symbol.protocolFee)).toString();
+          updateData.baseFee = BigInt(record.baseFee).toString();
           updateData.liquidityFeeRate = Number(record.liquidityFeeRate);
           await this.aggregationService.updateLnv20RelayInfo({
             where: { id: id },
@@ -695,7 +695,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           };
           if (record.updateType == RelayUpdateType.PROVIDER_UPDATE) {
             updateData.margin = record.margin;
-            updateData.baseFee = (BigInt(record.baseFee) + BigInt(symbol.protocolFee)).toString();
+            updateData.baseFee = BigInt(record.baseFee).toString();
             updateData.liquidityFeeRate = Number(record.liquidityFeeRate);
           } else if (record.updateType == RelayUpdateType.WITHDRAW) {
             updateData.margin = record.margin;
