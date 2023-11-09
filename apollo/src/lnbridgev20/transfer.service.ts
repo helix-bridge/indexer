@@ -35,6 +35,9 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly lnPolygonDefaultEndpoint = this.configService.get<string>(
     'LN_POLYGON_DEFAULT_ENDPOINT'
   );
+  private readonly lnScrollDefaultEndpoint = this.configService.get<string>(
+    'LN_SCROLL_DEFAULT_ENDPOINT'
+  );
 
   formalChainTransfers: PartnerT2[] = [
     {
@@ -136,6 +139,20 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           symbol: 'USDT',
           address: '0x493257fd37edb34451f62edf8d2a0c418852ba4c',
+          protocolFee: 100000,
+          decimals: 6,
+        },
+      ],
+    },
+    {
+      chainId: 534352,
+      chain: 'scroll',
+      url: this.lnScrollDefaultEndpoint,
+      bridge: 'default',
+      symbols: [
+        {
+          symbol: 'USDT',
+          address: '0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df',
           protocolFee: 100000,
           decimals: 6,
         },
@@ -438,13 +455,19 @@ export class TransferService extends BaseTransferServiceT2 {
     'mantle': {
       arbitrum: 'layerzero',
       zksync: 'layerzero',
+      scroll: 'layerzero',
     },
     'zksync': {
       arbitrum: 'layerzero',
       mantle: 'layerzero',
+      scroll: 'layerzero',
     },
     'polygon': {
       arbitrum: 'layerzero',
+    },
+    'scroll': {
+      zksync: 'layerzero',
+      mantle: 'layerzero',
     },
   };
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
