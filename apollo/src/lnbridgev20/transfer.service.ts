@@ -38,6 +38,9 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly lnScrollDefaultEndpoint = this.configService.get<string>(
     'LN_SCROLL_DEFAULT_ENDPOINT'
   );
+  private readonly lnBaseDefaultEndpoint = this.configService.get<string>(
+    'LN_BASE_DEFAULT_ENDPOINT'
+  );
 
   formalChainTransfers: PartnerT2[] = [
     {
@@ -407,6 +410,20 @@ export class TransferService extends BaseTransferServiceT2 {
         },
       ],
     },
+    {
+      chainId: 84531,
+      chain: 'base-goerli',
+      url: this.lnBaseDefaultEndpoint,
+      bridge: 'default',
+      symbols: [
+        {
+          symbol: 'USDT',
+          address: '0x876A4f6eCF13EEb101F9E75FCeF58f19Ff383eEB',
+          protocolFee: 10000000000000000000,
+          decimals: 18,
+        },
+      ],
+    },
   ];
 
   addressToTokenInfo: { [key: string]: AddressTokenMap } = {};
@@ -418,6 +435,10 @@ export class TransferService extends BaseTransferServiceT2 {
       'linea-goerli': 'linea-l2',
       'mantle-goerli': 'axelar',
       'zksync-goerli': 'layerzero',
+      'base-goerli': 'layerzero',
+    },
+    'base-goerli': {
+       goerli: 'layerzero',
     },
     'arbitrum-goerli': {
       goerli: 'arbitrum-l2',
