@@ -14,6 +14,14 @@ export class AggregationResolver {
     });
   }
 
+  // query by source tx hash
+  @Query()
+  async historyRecordByTxHash(@Args('txHash') txHash: string) {
+    return this.aggregationService.queryHistoryRecordFirst({
+      requestTxHash: txHash,
+    });
+  }
+
   @Query()
   async firstHistoryRecord(
     @Args('fromChain') fromChain: string,
