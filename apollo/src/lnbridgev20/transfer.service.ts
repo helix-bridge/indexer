@@ -41,6 +41,9 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly lnBaseDefaultEndpoint = this.configService.get<string>(
     'LN_BASE_DEFAULT_ENDPOINT'
   );
+  private readonly lnDarwiniaDefaultEndpoint = this.configService.get<string>(
+    'LN_DARWINIA_DEFAULT_ENDPOINT'
+  );
 
   formalChainTransfers: PartnerT2[] = [
     {
@@ -158,6 +161,20 @@ export class TransferService extends BaseTransferServiceT2 {
           address: '0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df',
           protocolFee: 100000,
           decimals: 6,
+        },
+      ],
+    },
+    {
+      chainId: 46,
+      chain: 'darwinia',
+      url: this.lnDarwiniaDefaultEndpoint,
+      bridge: 'default',
+      symbols: [
+        {
+          symbol: 'RING',
+          address: '0x0000000000000000000000000000000000000000',
+          protocolFee: 100000000000000000000,
+          decimals: 18,
         },
       ],
     },
@@ -469,6 +486,7 @@ export class TransferService extends BaseTransferServiceT2 {
       mantle: 'layerzero',
       zksync: 'layerzero',
       polygon: 'layerzero',
+      darwinia: 'msgline',
     },
     'ethereum': {
       arbitrum: 'arbitrum-l2',
@@ -489,6 +507,9 @@ export class TransferService extends BaseTransferServiceT2 {
     'scroll': {
       zksync: 'layerzero',
       mantle: 'layerzero',
+    },
+    'darwinia': {
+      arbitrum: 'msgline',
     },
   };
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';
