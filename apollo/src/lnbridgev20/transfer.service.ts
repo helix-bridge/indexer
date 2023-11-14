@@ -166,7 +166,7 @@ export class TransferService extends BaseTransferServiceT2 {
     },
     {
       chainId: 46,
-      chain: 'darwinia',
+      chain: 'darwinia-dvm',
       url: this.lnDarwiniaDefaultEndpoint,
       bridge: 'default',
       symbols: [
@@ -486,7 +486,7 @@ export class TransferService extends BaseTransferServiceT2 {
       mantle: 'layerzero',
       zksync: 'layerzero',
       polygon: 'layerzero',
-      darwinia: 'msgline',
+      'darwinia-dvm': 'msgline',
     },
     'ethereum': {
       arbitrum: 'arbitrum-l2',
@@ -508,7 +508,7 @@ export class TransferService extends BaseTransferServiceT2 {
       zksync: 'layerzero',
       mantle: 'layerzero',
     },
-    'darwinia': {
+    'darwinia-dvm': {
       arbitrum: 'msgline',
     },
   };
