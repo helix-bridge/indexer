@@ -63,7 +63,7 @@ export function handleLnProviderUpdated(event: LnProviderUpdated): void {
   relayEntity.remoteChainId = event.params.remoteChainId.toI32();
   relayEntity.nonce = counter.count;
   relayEntity.updateType = PROVIDER_UPDATE;
-  relayEntity.provider = event.transaction.from;
+  relayEntity.provider = event.params.provider;
   relayEntity.sourceToken = event.params.sourceToken;
   relayEntity.targetToken = event.params.targetToken;
   relayEntity.transactionHash = event.transaction.hash;
