@@ -443,7 +443,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         );
         latestNonce = firstRecord ? Number(firstRecord.targetNonce) : 0;
       }
-      const query = `query { lnv2RelayUpdateRecords(first: 10, orderBy: nonce, orderDirection: asc, where: {updateType_in: [${RelayUpdateType.SLASH}, ${RelayUpdateType.WITHDRAW}]}, skip: ${latestNonce}) { id, remoteChainId, provider, margin, withdrawNonce, transactionHash, timestamp, sourceToken, targetToken } }`;
+      const query = `query { lnv2RelayUpdateRecords(first: 10, orderBy: nonce, orderDirection: asc, where: {updateType_in: [${RelayUpdateType.SLASH}, ${RelayUpdateType.WITHDRAW}]}, skip: ${latestNonce}) { id, remoteChainId, provider, margin, updateType, withdrawNonce, transactionHash, timestamp, sourceToken, targetToken } }`;
       const records = await axios
         .post(transfer.url, {
           query: query,
@@ -507,7 +507,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           latestNonce += 1;
           this.fetchCache[index].latestRelayerInfoTargetNonce = latestNonce;
           this.logger.log(
-            `update lnv20 relay margin, id ${id}, margin ${record.margin}, withdrawNonce ${updateData.withdrawNonce}, nonce ${latestNonce}`
+            `update lnv20 relay margin, id ${id}, margin ${record.margin}, withdrawNonce ${updateData.withdrawNonce}, nonce ${latestNonce}, type ${record.updateType}`
           );
         }
       }
