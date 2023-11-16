@@ -304,8 +304,8 @@ export class AggregationResolver {
       sortedRelayers.push({ record, point });
     }
     return {
-        maxMargin: maxMargin,
-        records: sortedRelayers.sort((l, r) => l.point - r.point).map((item) => item.record)
+      maxMargin: maxMargin,
+      records: sortedRelayers.sort((l, r) => l.point - r.point).map((item) => item.record),
     };
   }
 }

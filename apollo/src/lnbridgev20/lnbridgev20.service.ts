@@ -75,35 +75,35 @@ export class Lnbridgev20Service implements OnModuleInit {
 
   async onModuleInit() {
     this.transferService.transfers.forEach((item, index) => {
-        if (item.defaultEndpoint !== null) {
-            this.taskService.addInterval(
-                `${this.baseConfigure.name}-${item.chainName}-default`,
-                this.baseConfigure.fetchSendDataInterval,
-                async () => {
-                    const indexInfo: BridgeIndexInfo = {
-                        bridgeType: 'default',
-                        url: item.defaultEndpoint,
-                        index: index,
-                    };
-                    this.schedule(item, indexInfo);
-                }
-            );
-        }
-        if (item.oppositeEndpoint !== null) {
-            this.taskService.addInterval(
-                `${this.baseConfigure.name}-${item.chainName}-opposite`,
-                this.baseConfigure.fetchSendDataInterval,
-                async () => {
-                    const indexInfo: BridgeIndexInfo = {
-                        bridgeType: 'default',
-                        url: item.defaultEndpoint,
-                        index: index + 1,
-                    };
-                    this.schedule(item, indexInfo);
-                }
-            );
-        }
-      });
+      if (item.defaultEndpoint !== null) {
+        this.taskService.addInterval(
+          `${this.baseConfigure.name}-${item.chainName}-default`,
+          this.baseConfigure.fetchSendDataInterval,
+          async () => {
+            const indexInfo: BridgeIndexInfo = {
+              bridgeType: 'default',
+              url: item.defaultEndpoint,
+              index: index,
+            };
+            this.schedule(item, indexInfo);
+          }
+        );
+      }
+      if (item.oppositeEndpoint !== null) {
+        this.taskService.addInterval(
+          `${this.baseConfigure.name}-${item.chainName}-opposite`,
+          this.baseConfigure.fetchSendDataInterval,
+          async () => {
+            const indexInfo: BridgeIndexInfo = {
+              bridgeType: 'default',
+              url: item.defaultEndpoint,
+              index: index + 1,
+            };
+            this.schedule(item, indexInfo);
+          }
+        );
+      }
+    });
   }
 
   protected async schedule(item: PartnerT3, indexInfo: BridgeIndexInfo) {
@@ -134,7 +134,12 @@ export class Lnbridgev20Service implements OnModuleInit {
     return (100000000 + nonce).toString();
   }
 
-  async updateLastTransferId(transfer: PartnerT3, indexInfo: BridgeIndexInfo, toChain: string, toChainId: number) {
+  async updateLastTransferId(
+    transfer: PartnerT3,
+    indexInfo: BridgeIndexInfo,
+    toChain: string,
+    toChainId: number
+  ) {
     // query the last transfer
     const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
       {
@@ -234,7 +239,12 @@ export class Lnbridgev20Service implements OnModuleInit {
             confirmedBlocks: '',
           });
           // update last id
-          await this.updateLastTransferId(transfer, indexInfo, toPartner.chainName, toPartner.chainId);
+          await this.updateLastTransferId(
+            transfer,
+            indexInfo,
+            toPartner.chainName,
+            toPartner.chainId
+          );
         }
       }
     }
@@ -272,12 +282,17 @@ export class Lnbridgev20Service implements OnModuleInit {
       var ignored = 0;
       if (records && records.length > 0) {
         for (const record of records) {
-          const tokenPair = this.findTokenPair(transfer, record.sourceToken, record.remoteChainId, record.targetToken);
+          const tokenPair = this.findTokenPair(
+            transfer,
+            record.sourceToken,
+            record.remoteChainId,
+            record.targetToken
+          );
           if (tokenPair === null) {
-              // add nonce to skip this record
-              latestNonce += 1;
-              ignored += 1;
-              continue;
+            // add nonce to skip this record
+            latestNonce += 1;
+            ignored += 1;
+            continue;
           }
 
           const toPartner = this.findPartnerByChainId(record.remoteChainId);
@@ -329,7 +344,9 @@ export class Lnbridgev20Service implements OnModuleInit {
         }
         if (records && records.length > 0) {
           this.logger.log(
-            `lnbridgev2 new records, from ${transfer.chainId}, latest nonce ${latestNonce}, added ${records.length - ignored}, ignored ${ignored}`
+            `lnbridgev2 new records, from ${transfer.chainId}, latest nonce ${latestNonce}, added ${
+              records.length - ignored
+            }, ignored ${ignored}`
           );
         }
         this.fetchCache[index].latestNonce = latestNonce;
@@ -374,7 +391,10 @@ export class Lnbridgev20Service implements OnModuleInit {
         if (txStatus === RecordStatus.pending) {
           const toPartner = this.findPartnerByChainName(record.toChain);
           const query = `query { lnv2RelayRecord(id: "${transferId}") { id, timestamp, transactionHash, slasher, fee }}`;
-          const toUrl = (indexInfo.bridgeType === 'default' ? toPartner.defaultEndpoint : toPartner.oppositeEndpoint);
+          const toUrl =
+            indexInfo.bridgeType === 'default'
+              ? toPartner.defaultEndpoint
+              : toPartner.oppositeEndpoint;
           const relayRecord = await axios
             .post(toUrl, {
               query: query,
@@ -440,49 +460,47 @@ export class Lnbridgev20Service implements OnModuleInit {
   }
 
   private findPartnerByChainId(chainId: number) {
-    return (
-      this.transferService.transfers.find(
-        (item) => item.chainId === chainId
-      ) ?? null
-    );
+    return this.transferService.transfers.find((item) => item.chainId === chainId) ?? null;
   }
 
   private findPartnerByChainName(chainName: string) {
-    return (
-      this.transferService.transfers.find(
-        (item) => item.chainName === chainName
-      ) ?? null
-    );
+    return this.transferService.transfers.find((item) => item.chainName === chainName) ?? null;
   }
 
   private findTokenPair(
-      transfer: PartnerT3,
-      sourceAddress: string,
-      targetChainId: number,
-      targetAddress: string
+    transfer: PartnerT3,
+    sourceAddress: string,
+    targetChainId: number,
+    targetAddress: string
   ): TokenPairInfo | null {
-      const sourceInfo = transfer.tokens.find(
-          (item) => item.fromAddress.toLowerCase() === sourceAddress.toLowerCase()
+    const sourceInfo =
+      transfer.tokens.find(
+        (item) => item.fromAddress.toLowerCase() === sourceAddress.toLowerCase()
       ) ?? null;
-      if (sourceInfo === null) {
-          this.logger.warn(`source info not find ${transfer.chainName}-${sourceAddress}`);
-          return null
-      }
-      const targetInfo = sourceInfo.remoteInfos.find(
-          (item) => item.toChain === targetChainId && item.toAddress.toLowerCase() === targetAddress.toLowerCase()
+    if (sourceInfo === null) {
+      this.logger.warn(`source info not find ${transfer.chainName}-${sourceAddress}`);
+      return null;
+    }
+    const targetInfo =
+      sourceInfo.remoteInfos.find(
+        (item) =>
+          item.toChain === targetChainId &&
+          item.toAddress.toLowerCase() === targetAddress.toLowerCase()
       ) ?? null;
-      if (targetInfo === null) {
-          this.logger.warn(`target info not find ${transfer.chainName}-${sourceAddress}->${targetChainId}-${targetAddress}`);
-          return null
-      }
-      return {
-          fromSymbol: sourceInfo.fromSymbol,
-          fromDecimals: sourceInfo.decimals,
-          toSymbol: targetInfo?.toSymbol,
-          toDecimals: targetInfo?.decimals,
-          channel: targetInfo?.channel,
-          protocolFee: targetInfo?.protocolFee
-      }
+    if (targetInfo === null) {
+      this.logger.warn(
+        `target info not find ${transfer.chainName}-${sourceAddress}->${targetChainId}-${targetAddress}`
+      );
+      return null;
+    }
+    return {
+      fromSymbol: sourceInfo.fromSymbol,
+      fromDecimals: sourceInfo.decimals,
+      toSymbol: targetInfo?.toSymbol,
+      toDecimals: targetInfo?.decimals,
+      channel: targetInfo?.channel,
+      protocolFee: targetInfo?.protocolFee,
+    };
   }
 
   async fetchMarginInfoFromTarget(transfer: PartnerT3, indexInfo: BridgeIndexInfo) {
@@ -521,23 +539,28 @@ export class Lnbridgev20Service implements OnModuleInit {
         );
         const sourcePartner = this.findPartnerByChainId(record.remoteChainId);
         if (sourcePartner === null) {
-            this.logger.warn(`can't find partner chain id ${record.remoteChainId}`);
-            latestNonce += 1;
-            this.fetchCache[index].latestRelayerInfoTargetNonce = latestNonce;
-            return;
+          this.logger.warn(`can't find partner chain id ${record.remoteChainId}`);
+          latestNonce += 1;
+          this.fetchCache[index].latestRelayerInfoTargetNonce = latestNonce;
+          return;
         }
-        const tokenPair = this.findTokenPair(sourcePartner, record.sourceToken, transfer.chainId, record.targetToken);
+        const tokenPair = this.findTokenPair(
+          sourcePartner,
+          record.sourceToken,
+          transfer.chainId,
+          record.targetToken
+        );
         if (tokenPair === null) {
-            // add nonce to skip this record
-            latestNonce += 1;
-            this.fetchCache[index].latestRelayerInfoTargetNonce = latestNonce;
-            return;
+          // add nonce to skip this record
+          latestNonce += 1;
+          this.fetchCache[index].latestRelayerInfoTargetNonce = latestNonce;
+          return;
         }
         const relayerInfo = await this.aggregationService.queryLnv20RelayInfoById({
           id: id,
         });
         const sourceMargin =
-            Number(record.margin) * Math.pow(10, tokenPair.fromDecimals - tokenPair.toDecimals);
+          Number(record.margin) * Math.pow(10, tokenPair.fromDecimals - tokenPair.toDecimals);
         if (relayerInfo) {
           // transfer target margin to source margin
           const updateData = {
@@ -581,7 +604,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             heartbeatTimestamp: 0,
             lastTransferId: '0x0000000000000000000000000000000000000000000000000000000000000000',
             messageChannel: tokenPair.channel,
-          })
+          });
         }
         latestNonce += 1;
         this.fetchCache[index].latestRelayerInfoTargetNonce = latestNonce;
@@ -632,12 +655,17 @@ export class Lnbridgev20Service implements OnModuleInit {
         const relayerInfo = await this.aggregationService.queryLnv20RelayInfoById({
           id: id,
         });
-        const tokenPair = this.findTokenPair(transfer, record.sourceToken, record.remoteChainId, record.targetToken);
+        const tokenPair = this.findTokenPair(
+          transfer,
+          record.sourceToken,
+          record.remoteChainId,
+          record.targetToken
+        );
         if (tokenPair === null) {
-            // add nonce to skip this record
-            latestNonce += 1;
-            this.fetchCache[index].latestRelayerInfoNonce = latestNonce;
-            continue;
+          // add nonce to skip this record
+          latestNonce += 1;
+          this.fetchCache[index].latestRelayerInfoNonce = latestNonce;
+          continue;
         }
         const toPartner = this.findPartnerByChainId(record.remoteChainId);
         if (!relayerInfo) {
@@ -730,11 +758,16 @@ export class Lnbridgev20Service implements OnModuleInit {
         const relayerInfo = await this.aggregationService.queryLnv20RelayInfoById({
           id: id,
         });
-        const tokenPair = this.findTokenPair(transfer, record.sourceToken, record.remoteChainId, record.targetToken);
+        const tokenPair = this.findTokenPair(
+          transfer,
+          record.sourceToken,
+          record.remoteChainId,
+          record.targetToken
+        );
         if (tokenPair === null) {
-            // add nonce to skip this record
-            latestNonce += 1;
-            continue;
+          // add nonce to skip this record
+          latestNonce += 1;
+          continue;
         }
         const toPartner = this.findPartnerByChainId(record.remoteChainId);
         if (!relayerInfo) {

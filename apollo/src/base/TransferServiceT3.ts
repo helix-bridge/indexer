@@ -31,28 +31,28 @@ export interface BridgeBaseConfigure {
 }
 
 export interface RemoteInfo {
-    toChain: number;
-    toSymbol: string;
-    toAddress: string;
-    protocolFee: number;
-    decimals: number;
-    bridgeType: string;
-    channel: string;
+  toChain: number;
+  toSymbol: string;
+  toAddress: string;
+  protocolFee: number;
+  decimals: number;
+  bridgeType: string;
+  channel: string;
 }
 
 export interface Token {
-    fromSymbol: string;
-    fromAddress: string;
-    decimals: number;
-    remoteInfos: RemoteInfo[];
+  fromSymbol: string;
+  fromAddress: string;
+  decimals: number;
+  remoteInfos: RemoteInfo[];
 }
 
 export interface PartnerT3 {
-    chainId: number;
-    chainName: string;
-    defaultEndpoint: string;
-    oppositeEndpoint: string;
-    tokens: Token[];
+  chainId: number;
+  chainName: string;
+  defaultEndpoint: string;
+  oppositeEndpoint: string;
+  tokens: Token[];
 }
 
 export abstract class BaseTransferServiceT3 {
