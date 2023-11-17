@@ -83,7 +83,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             const indexInfo: BridgeIndexInfo = {
               bridgeType: 'default',
               url: item.defaultEndpoint,
-              index: index,
+              index: 2 * index,
             };
             this.schedule(item, indexInfo);
           }
@@ -95,9 +95,9 @@ export class Lnbridgev20Service implements OnModuleInit {
           this.baseConfigure.fetchSendDataInterval,
           async () => {
             const indexInfo: BridgeIndexInfo = {
-              bridgeType: 'default',
-              url: item.defaultEndpoint,
-              index: index + 1,
+              bridgeType: 'opposite',
+              url: item.oppositeEndpoint,
+              index: 2 * index + 1,
             };
             this.schedule(item, indexInfo);
           }
