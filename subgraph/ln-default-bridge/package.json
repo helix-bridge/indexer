@@ -16,6 +16,8 @@
     "build-polygon": "sh generate.sh polygon 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 49443762 && graph codegen && graph build",
     "build-zksync": "sh generate.sh zksync 0x767Bc046c989f5e63683fB530f939DD34b91ceAC 17763103 && graph codegen && graph build",
     "build-scroll": "sh generate.sh scroll 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 660609 && graph codegen && graph build",
+    "build-darwinia": "sh generate.sh darwinia2 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 1423237 && graph codegen && graph build",
+    "build-crab": "sh generate.sh crab2 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 1718910 && graph codegen && graph build",
     "create-remote-dev": "graph create --access-token ${KEY} --node https://thegraph-g2.darwinia.network/helix/deploy/ lndefault/${NETWORK}",
     "deploy-remote-dev": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs http://g2.generic.darwinia.network:5001/ lndefault/$NETWORK",
     "create-remote-pro": "graph create --access-token ${KEY} --node https://thegraph.darwinia.network/helix/deploy/ lndefault/${NETWORK}",
