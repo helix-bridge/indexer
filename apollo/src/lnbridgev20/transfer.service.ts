@@ -49,6 +49,9 @@ export class TransferService extends BaseTransferServiceT3 {
   private readonly lnBscDefaultEndpoint = this.configService.get<string>(
     'LN_BSC_DEFAULT_ENDPOINT'
   );
+  private readonly lnOpDefaultEndpoint = this.configService.get<string>(
+    'LN_OP_DEFAULT_ENDPOINT'
+  );
 
   formalChainTransfers: PartnerT3[] = [
     {
@@ -401,6 +404,15 @@ export class TransferService extends BaseTransferServiceT3 {
               bridgeType: 'default',
               channel: 'layerzero',
             },
+            {
+              toChain: 10,
+              toSymbol: 'USDT',
+              toAddress: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
+              protocolFee: 100000000000000000,
+              decimals: 6,
+              bridgeType: 'default',
+              channel: 'layerzero',
+            },
           ],
         },
         {
@@ -436,6 +448,30 @@ export class TransferService extends BaseTransferServiceT3 {
               toChain: 56,
               toSymbol: 'USDC',
               toAddress: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
+              protocolFee: 100000,
+              decimals: 18,
+              bridgeType: 'default',
+              channel: 'layerzero',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      chainId: 10,
+      chainName: 'op',
+      defaultEndpoint: this.lnOpDefaultEndpoint,
+      oppositeEndpoint: null,
+      tokens: [
+        {
+          fromSymbol: 'USDT',
+          fromAddress: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
+          decimals: 6,
+          remoteInfos: [
+            {
+              toChain: 56,
+              toSymbol: 'USDT',
+              toAddress: '0x55d398326f99059fF775485246999027B3197955',
               protocolFee: 100000,
               decimals: 18,
               bridgeType: 'default',
