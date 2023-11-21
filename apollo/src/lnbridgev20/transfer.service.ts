@@ -46,6 +46,9 @@ export class TransferService extends BaseTransferServiceT3 {
   private readonly lnCrabDefaultEndpoint = this.configService.get<string>(
     'LN_CRAB_DEFAULT_ENDPOINT'
   );
+  private readonly lnBscDefaultEndpoint = this.configService.get<string>(
+    'LN_BSC_DEFAULT_ENDPOINT'
+  );
 
   formalChainTransfers: PartnerT3[] = [
     {
@@ -132,6 +135,15 @@ export class TransferService extends BaseTransferServiceT3 {
               toAddress: '0x493257fd37edb34451f62edf8d2a0c418852ba4c',
               protocolFee: 100000,
               decimals: 6,
+              bridgeType: 'default',
+              channel: 'layerzero',
+            },
+            {
+              toChain: 56,
+              toSymbol: 'USDT',
+              toAddress: '0x55d398326f99059fF775485246999027B3197955',
+              protocolFee: 100000,
+              decimals: 18,
               bridgeType: 'default',
               channel: 'layerzero',
             },
@@ -364,6 +376,70 @@ export class TransferService extends BaseTransferServiceT3 {
               decimals: 18,
               bridgeType: 'default',
               channel: 'sub2sub',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      chainId: 56,
+      chainName: 'bsc',
+      defaultEndpoint: this.lnBscDefaultEndpoint,
+      oppositeEndpoint: null,
+      tokens: [
+        {
+          fromSymbol: 'USDT',
+          fromAddress: '0x55d398326f99059fF775485246999027B3197955',
+          decimals: 18,
+          remoteInfos: [
+            {
+              toChain: 42161,
+              toSymbol: 'USDT',
+              toAddress: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
+              protocolFee: 100000000000000000,
+              decimals: 6,
+              bridgeType: 'default',
+              channel: 'layerzero',
+            },
+          ],
+        },
+        {
+          fromSymbol: 'USDC',
+          fromAddress: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
+          decimals: 18,
+          remoteInfos: [
+            {
+              toChain: 8453,
+              toSymbol: 'USDC',
+              toAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+              protocolFee: 100000000000000000,
+              decimals: 6,
+              bridgeType: 'default',
+              channel: 'layerzero',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      chainId: 8453,
+      chainName: 'base',
+      defaultEndpoint: this.lnBaseDefaultEndpoint,
+      oppositeEndpoint: null,
+      tokens: [
+        {
+          fromSymbol: 'USDC',
+          fromAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+          decimals: 6,
+          remoteInfos: [
+            {
+              toChain: 56,
+              toSymbol: 'USDC',
+              toAddress: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
+              protocolFee: 100000,
+              decimals: 18,
+              bridgeType: 'default',
+              channel: 'layerzero',
             },
           ],
         },
