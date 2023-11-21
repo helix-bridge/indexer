@@ -46,12 +46,8 @@ export class TransferService extends BaseTransferServiceT3 {
   private readonly lnCrabDefaultEndpoint = this.configService.get<string>(
     'LN_CRAB_DEFAULT_ENDPOINT'
   );
-  private readonly lnBscDefaultEndpoint = this.configService.get<string>(
-    'LN_BSC_DEFAULT_ENDPOINT'
-  );
-  private readonly lnOpDefaultEndpoint = this.configService.get<string>(
-    'LN_OP_DEFAULT_ENDPOINT'
-  );
+  private readonly lnBscDefaultEndpoint = this.configService.get<string>('LN_BSC_DEFAULT_ENDPOINT');
+  private readonly lnOpDefaultEndpoint = this.configService.get<string>('LN_OP_DEFAULT_ENDPOINT');
 
   formalChainTransfers: PartnerT3[] = [
     {

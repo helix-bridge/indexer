@@ -2,6 +2,8 @@ import { INestApplication, Injectable, Logger, OnModuleInit } from '@nestjs/comm
 import { DailyStatistics, HistoryRecord, Prisma, PrismaClient } from '@prisma/client';
 import { HistoryRecords, Lnv20RelayInfo, Lnv20RelayInfos } from '../graphql';
 import { GuardService } from '../guard/guard.service';
+// export lnbridge service configure
+import { TransferService } from '../lnbridgev20/transfer.service';
 
 @Injectable()
 export class AggregationService extends PrismaClient implements OnModuleInit {
@@ -11,7 +13,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     await this.$connect();
   }
 
-  constructor(private guardService: GuardService) {
+  constructor(private guardService: GuardService, private lnService: TransferService) {
     super();
   }
 
@@ -233,6 +235,30 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       where,
       orderBy: { timestamp: 'desc' },
     });
+  }
+
+  checkLnBridgeConfigure(params: {
+    sourceChainId: number;
+    targetChainId: number;
+    sourceToken: string;
+    targetToken: string;
+  }): boolean {
+    const { sourceChainId, targetChainId, sourceToken, targetToken } = params;
+    const bridge = this.lnService.transfers.find((item) => item.chainId === sourceChainId);
+    if (bridge === undefined) {
+      return false;
+    }
+    const tokenBridge = bridge.tokens.find(
+      (item) => item.fromAddress.toLowerCase() === sourceToken.toLowerCase()
+    );
+    if (tokenBridge === undefined) {
+      return false;
+    }
+    const targetInfo = tokenBridge.remoteInfos.find(
+      (item) =>
+        item.toChain === targetChainId && item.toAddress.toLowerCase() === targetToken.toLowerCase()
+    );
+    return targetInfo !== undefined;
   }
 
   async queryDailyStatisticsFirst(

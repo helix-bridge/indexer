@@ -181,6 +181,21 @@ export class AggregationResolver {
   }
 
   @Query()
+  checkLnBridgeExist(
+    @Args('fromChainId') fromChainId: number,
+    @Args('toChainId') toChainId: number,
+    @Args('fromToken') fromToken: string,
+    @Args('toToken') toToken: string
+  ) {
+    return this.aggregationService.checkLnBridgeConfigure({
+      sourceChainId: fromChainId,
+      targetChainId: toChainId,
+      sourceToken: fromToken,
+      targetToken: toToken,
+    });
+  }
+
+  @Query()
   async queryGuardNeedSignature(
     @Args('fromChain') fromChain: string,
     @Args('toChain') toChain: string,
