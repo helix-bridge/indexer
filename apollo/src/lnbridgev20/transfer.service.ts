@@ -148,6 +148,31 @@ export class TransferService extends BaseTransferServiceT3 {
             },
           ],
         },
+        {
+          fromSymbol: 'USDC',
+          fromAddress: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
+          decimals: 6,
+          remoteInfos: [
+            {
+              toChain: 5000,
+              toSymbol: 'USDC',
+              toAddress: '0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9',
+              protocolFee: 100000,
+              decimals: 6,
+              bridgeType: 'default',
+              channel: 'layerzero',
+            },
+            {
+              toChain: 534352,
+              toSymbol: 'USDC',
+              toAddress: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
+              protocolFee: 100000,
+              decimals: 6,
+              bridgeType: 'default',
+              channel: 'layerzero',
+            },
+          ]
+        },
       ],
     },
     {
@@ -189,6 +214,31 @@ export class TransferService extends BaseTransferServiceT3 {
               channel: 'layerzero',
             },
           ],
+        },
+        {
+          fromSymbol: 'USDC',
+          fromAddress: '0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9',
+          decimals: 6,
+          remoteInfos: [
+            {
+              toChain: 42161,
+              toSymbol: 'USDC',
+              toAddress: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
+              protocolFee: 100000,
+              decimals: 6,
+              bridgeType: 'default',
+              channel: 'layerzero',
+            },
+            {
+              toChain: 534352,
+              toSymbol: 'USDC',
+              toAddress: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
+              protocolFee: 100000,
+              decimals: 6,
+              bridgeType: 'default',
+              channel: 'layerzero',
+            },
+          ]
         },
       ],
     },
@@ -288,6 +338,31 @@ export class TransferService extends BaseTransferServiceT3 {
               channel: 'layerzero',
             },
           ],
+        },
+        {
+          fromSymbol: 'USDC',
+          fromAddress: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
+          decimals: 6,
+          remoteInfos: [
+            {
+              toChain: 5000,
+              toSymbol: 'USDC',
+              toAddress: '0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9',
+              protocolFee: 100000,
+              decimals: 6,
+              bridgeType: 'default',
+              channel: 'layerzero',
+            },
+            {
+              toChain: 42161,
+              toSymbol: 'USDC',
+              toAddress: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
+              protocolFee: 100000,
+              decimals: 6,
+              bridgeType: 'default',
+              channel: 'layerzero',
+            },
+          ]
         },
       ],
     },
