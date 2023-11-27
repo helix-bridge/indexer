@@ -46,7 +46,7 @@ export class Lnbridgev20Service implements OnModuleInit {
   baseConfigure: BridgeBaseConfigure = {
     name: 'lnBridgeV20',
     fetchHistoryDataFirst: 10,
-    fetchSendDataInterval: 3000,
+    fetchSendDataInterval: 10000,
     takeEachTime: 3,
   };
 
