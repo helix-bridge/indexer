@@ -23,9 +23,9 @@
     "build-op": "sh generate.sh op 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 112469188 && graph codegen && graph build",
     "build-linea": "sh generate.sh linea 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 927064 && graph codegen && graph build",
     "create-remote-dev": "graph create --access-token ${KEY} --node https://thegraph-g2.darwinia.network/helix/deploy/ lndefault/${NETWORK}",
-    "deploy-remote-dev": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs http://g2.generic.darwinia.network:5001/ lndefault/$NETWORK",
+    "deploy-remote-dev": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com lndefault/$NETWORK",
     "create-remote-pro": "graph create --access-token ${KEY} --node https://thegraph.darwinia.network/helix/deploy/ lndefault/${NETWORK}",
-    "deploy-remote-pro": "graph deploy --access-token $KEY --node https://thegraph.darwinia.network/helix/deploy/ --ipfs http://g1.generic.darwinia.network:5001/ lndefault/$NETWORK"
+    "deploy-remote-pro": "graph deploy --access-token $KEY --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com lndefault/$NETWORK"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.31.1",

@@ -11,9 +11,9 @@
     "build-ethereum": "sh generate.sh mainnet 0x48d769d5C7ff75703cDd1543A1a2ed9bC9044A23 18381361 && graph codegen && graph build",
     "build-arbitrum": "sh generate.sh arbitrum-one 0x48d769d5C7ff75703cDd1543A1a2ed9bC9044A23 141864870 && graph codegen && graph build",
     "create-remote-dev": "graph create --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ lnopposite/$NETWORK",
-    "deploy-remote-dev": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs http://g2.generic.darwinia.network:5001/ lnopposite/$NETWORK",
+    "deploy-remote-dev": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com lnopposite/$NETWORK",
     "create-remote-pro": "graph create --access-token $KEY --node https://thegraph.darwinia.network/helix/deploy/ lnopposite/$NETWORK",
-    "deploy-remote-pro": "graph deploy --access-token $KEY --node https://thegraph.darwinia.network/helix/deploy/ --ipfs http://g1.generic.darwinia.network:5001/ lnopposite/$NETWORK"
+    "deploy-remote-pro": "graph deploy --access-token $KEY --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com lnopposite/$NETWORK"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.31.1",
