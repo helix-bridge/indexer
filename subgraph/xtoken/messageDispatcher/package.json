@@ -1,0 +1,18 @@
+{
+  "name": "Bridge",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "build-crab": "sh generate.sh dispatch crab 1877745 0x000000000EFcBAdA3793cC59c62D79b9f56Ae48F 0xCAb1f69C671f1548fd3dE5d63852E9B9181a0D0E && graph codegen && graph build",
+    "build-sepolia": "sh generate.sh dispatch sepolia 4865695 0x000000000EFcBAdA3793cC59c62D79b9f56Ae48F 0x527B67a61C6E1344C359Af2e241aAFeb0c3a9DE9 && sh generate.sh guard sepolia 0x2e8B5408Ec891AbdeE9CDeDCe407217c5e47196d 4865695 && graph codegen && graph build",
+    "create-remote-dev": "graph create --access-token ${KEY} --node https://thegraph-g2.darwinia.network/helix/deploy/ xtokendispatch/${NETWORK}",
+    "deploy-remote-dev": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com xtokendispatch/$NETWORK",
+    "create-remote-pro": "graph create --access-token ${KEY} --node https://thegraph.darwinia.network/helix/deploy/ xtokendispatch/${NETWORK}",
+    "deploy-remote-pro": "graph deploy --access-token $KEY --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com xtokendispatch/$NETWORK"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.31.1",
+    "@graphprotocol/graph-ts": "0.31.0"
+  }
+}

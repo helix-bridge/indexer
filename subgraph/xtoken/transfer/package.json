@@ -1,0 +1,18 @@
+{
+  "name": "Bridge",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "build-crab": "sh generate.sh init && sh generate.sh backing crab 0xb137BDf1Ad5392027832f54a4409685Ef52Aa9dA 1878016 && graph codegen && graph build",
+    "build-sepolia": "sh generate.sh init && sh generate.sh issuing sepolia 0x44A001aF6AcD2d5f5cB82FCB14Af3d497D56faB4 4865955 && graph codegen && graph build",
+    "create-remote-dev": "graph create --access-token ${KEY} --node https://thegraph-g2.darwinia.network/helix/deploy/ xtokentransfer/${NETWORK}",
+    "deploy-remote-dev": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com xtokentransfer/$NETWORK",
+    "create-remote-pro": "graph create --access-token ${KEY} --node https://thegraph.darwinia.network/helix/deploy/ xtokentransfer/${NETWORK}",
+    "deploy-remote-pro": "graph deploy --access-token $KEY --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com xtokentransfer/$NETWORK"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.31.1",
+    "@graphprotocol/graph-ts": "0.31.0"
+  }
+}
