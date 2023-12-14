@@ -205,7 +205,7 @@ export class xTokenService implements OnModuleInit {
             variables: null,
           })
           .then((res) => res.data?.data?.messageDispatchedResult);
-        if (node === null || node.result === null) {
+        if (node === undefined || node.result === null) {
           continue;
         }
         let result = uncheckedRecord.result;
@@ -226,20 +226,28 @@ export class xTokenService implements OnModuleInit {
           result = RecordStatus.success;
           responseTxHash = node.transactionHash;
         }
-        if (result !== uncheckedRecord.result) {
-          this.logger.log(
-            `${this.baseConfigure.name} [${uncheckedRecord.fromChain}-${uncheckedRecord.toChain}] status updated, id: ${id}, status ${uncheckedRecord.result}->${result}`
-          );
-          await this.aggregationService.updateHistoryRecord({
-            where: { id: uncheckedRecord.id },
-            data: {
-              responseTxHash,
-              result,
-              endTime: Number(node.timestamp),
-            },
-          });
+        // only pending status for the transfer need to be updated by this dispatch result
+        if (uncheckedRecord.result === RecordStatus.pending || uncheckedRecord.result === RecordStatus.pendingToClaim) {
+          if (result !== uncheckedRecord.result) {
+            this.logger.log(
+              `${this.baseConfigure.name} [${uncheckedRecord.fromChain}-${uncheckedRecord.toChain}] status updated, id: ${id}, status ${uncheckedRecord.result}->${result}`
+            );
+            await this.aggregationService.updateHistoryRecord({
+              where: { id: uncheckedRecord.id },
+              data: {
+                responseTxHash,
+                result,
+                endTime: Number(node.timestamp),
+              },
+            });
+            uncheckedRecord.result = result;
+          }
         }
 
+        // update refund status
+        // 1. pendingToRefund -> pendingToConfirmRefund: refund request sent, no result found
+        // 2. pendingToRefund/pendingToConfirmRefund -> refunded: any refund request's result confirmed and successed
+        // 3. pendingToConfirmRefund -> pendingToRefund: all refund request confirmed but failed
         if (
           uncheckedRecord.result === RecordStatus.pendingToRefund ||
           uncheckedRecord.result === RecordStatus.pendingToConfirmRefund
@@ -290,7 +298,7 @@ export class xTokenService implements OnModuleInit {
               // some tx not confirmed -> RecordStatus.pendingToConfirmRefund
               if (uncheckedRecord.result != RecordStatus.pendingToConfirmRefund) {
                 this.logger.log(
-                  `${this.baseConfigure.name} waiting for refund confirmed, id: ${uncheckedRecord.id} old status ${uncheckedRecord.result}`
+                  `${this.baseConfigure.name} [${uncheckedRecord.fromChain}->${uncheckedRecord.toChain}] waiting for refund confirmed, id: ${uncheckedRecord.id} old status ${uncheckedRecord.result}`
                 );
                 uncheckedRecord.result = RecordStatus.pendingToConfirmRefund;
                 // update db
