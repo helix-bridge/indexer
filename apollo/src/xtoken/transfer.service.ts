@@ -19,6 +19,7 @@ export class TransferService extends BaseTransferServiceT2 {
       bridge: 'xtokenbridge',
       symbols: [
         {
+          originalSymbol: 'CRAB',
           symbol: 'CRAB',
           address: '0x0000000000000000000000000000000000000000',
           protocolFee: 0,
@@ -33,6 +34,7 @@ export class TransferService extends BaseTransferServiceT2 {
       bridge: 'xtokenbridge',
       symbols: [
         {
+          originalSymbol: 'CRAB',
           symbol: 'xCRAB',
           address: '0xe8835bB0735fbfD5ECAC1e20835D5B7C39622ba3',
           protocolFee: 0,

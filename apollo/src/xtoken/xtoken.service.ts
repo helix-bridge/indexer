@@ -81,7 +81,7 @@ export class xTokenService implements OnModuleInit {
     return (
       chain.symbols.find(
         (item) =>
-          item.symbol === symbolOrAddress ||
+          item.originalSymbol === symbolOrAddress ||
           symbolOrAddress.toLowerCase() === item.address.toLowerCase()
       ) ?? null
     );
@@ -122,10 +122,10 @@ export class xTokenService implements OnModuleInit {
 
           if (record.direction === 'lock') {
             sendTokenInfo = this.getToken(transfer, record.token);
-            recvTokenInfo = this.getToken(toChain, 'x' + sendTokenInfo.symbol);
+            recvTokenInfo = this.getToken(toChain, sendTokenInfo.originalSymbol);
           } else {
             recvTokenInfo = this.getToken(toChain, record.token);
-            sendTokenInfo = this.getToken(transfer, 'x' + recvTokenInfo.symbol);
+            sendTokenInfo = this.getToken(transfer, recvTokenInfo.originalSymbol);
           }
 
           if (sendTokenInfo == null) {

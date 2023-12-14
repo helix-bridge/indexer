@@ -32,6 +32,7 @@ export interface BridgeBaseConfigure {
 }
 
 export interface PartnerSymbol {
+  originalSymbol: string;
   symbol: string;
   address: string;
   protocolFee: number;
