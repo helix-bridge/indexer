@@ -28,7 +28,7 @@ export class AggregationResolver {
     @Args('toChain') toChain: string,
     @Args('bridge') bridge: string,
     @Args('results') results: number[],
-    @Args('provider') provider: string,
+    @Args('relayer') relayer: string,
     @Args('token') token: string,
     @Args('order') order: string
   ) {
@@ -44,7 +44,7 @@ export class AggregationResolver {
           fromChain: fromChain,
           toChain: toChain,
           bridge: bridge,
-          relayer: provider,
+          relayer: relayer,
           sendTokenAddress: token,
           ...resultCondition,
         },
