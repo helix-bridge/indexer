@@ -7,7 +7,8 @@ import { AddressTokenMap } from '../base/AddressToken';
 export class TransferService extends BaseTransferServiceT2 {
   private readonly darwainiaUrl = this.configService.get<string>('XTOKEN_DARWINIA');
   private readonly ethereumUrl = this.configService.get<string>('XTOKEN_ETHEREUM');
-  private readonly dispatchSubgraph = this.configService.get<string>('XTOKEN_DISPATCH');
+  private readonly darwiniaDispatchSubgraph = this.configService.get<string>('XTOKEN_DISPATCH_DARWINIA');
+  private readonly ethereumDispatchSubgraph = this.configService.get<string>('XTOKEN_DISPATCH_ETHEREUM');
 
   formalChainTransfers: PartnerT2[] = [];
 
@@ -45,10 +46,10 @@ export class TransferService extends BaseTransferServiceT2 {
   ];
 
   dispatchEndPoints = {
-    'crab-dvm': this.dispatchSubgraph + '/crab',
-    sepolia: this.dispatchSubgraph + '/sepolia',
-    darwinia: this.dispatchSubgraph + '/darwinia',
-    ethereum: this.dispatchSubgraph + '/ethereum',
+    'crab-dvm': this.darwiniaDispatchSubgraph,
+    sepolia: this.ethereumDispatchSubgraph,
+    darwinia: this.darwiniaDispatchSubgraph,
+    ethereum: this.ethereumDispatchSubgraph,
   };
   addressToTokenInfo: { [key: string]: AddressTokenMap } = {};
 

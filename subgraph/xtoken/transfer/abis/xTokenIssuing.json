@@ -11,6 +11,12 @@
         {
           "indexed": false,
           "internalType": "uint256",
+          "name": "nonce",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
           "name": "remoteChainId",
           "type": "uint256"
         },
@@ -30,12 +36,6 @@
           "indexed": false,
           "internalType": "address",
           "name": "originalToken",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "xToken",
           "type": "address"
         },
         {
@@ -158,12 +158,6 @@
     {
       "anonymous": false,
       "inputs": [
-        {
-          "indexed": false,
-          "internalType": "bytes32",
-          "name": "refundId",
-          "type": "bytes32"
-        },
         {
           "indexed": false,
           "internalType": "bytes32",
@@ -324,6 +318,45 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "TRANSFER_DELIVERED",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "TRANSFER_REFUNDED",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "TRANSFER_UNFILLED",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -355,6 +388,19 @@
           "internalType": "address",
           "name": "_xToken",
           "type": "address"
+        }
+      ],
+      "name": "acceptxTokenOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_xToken",
+          "type": "address"
         },
         {
           "internalType": "address",
@@ -367,6 +413,11 @@
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
+          "name": "_nonce",
+          "type": "uint256"
+        },
+        {
           "internalType": "bytes",
           "name": "_extParams",
           "type": "bytes"
@@ -375,30 +426,6 @@
       "name": "burnAndRemoteUnlock",
       "outputs": [],
       "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "name": "burnMessages",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "hash",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bool",
-          "name": "hasRefundForFailed",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -455,11 +482,6 @@
     {
       "inputs": [
         {
-          "internalType": "bytes32",
-          "name": "_transferId",
-          "type": "bytes32"
-        },
-        {
           "internalType": "address",
           "name": "_originalToken",
           "type": "address"
@@ -470,8 +492,18 @@
           "type": "address"
         },
         {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
           "internalType": "uint256",
           "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_nonce",
           "type": "uint256"
         }
       ],
@@ -495,12 +527,22 @@
         },
         {
           "internalType": "address",
+          "name": "_originalSender",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
           "name": "_recipient",
           "type": "address"
         },
         {
           "internalType": "uint256",
           "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_nonce",
           "type": "uint256"
         }
       ],
@@ -513,6 +555,69 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "filledTransfers",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_nonce",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_targetChainId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_originalToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_originalSender",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "getTransferId",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
       "type": "function"
     },
     {
@@ -536,11 +641,6 @@
           "type": "uint256"
         },
         {
-          "internalType": "bytes32",
-          "name": "_transferId",
-          "type": "bytes32"
-        },
-        {
           "internalType": "address",
           "name": "_originalToken",
           "type": "address"
@@ -551,8 +651,18 @@
           "type": "address"
         },
         {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
           "internalType": "uint256",
           "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_nonce",
           "type": "uint256"
         }
       ],
@@ -582,25 +692,6 @@
     {
       "inputs": [
         {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "name": "issueTransferIds",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "uint256",
           "name": "_remoteChainId",
           "type": "uint256"
@@ -612,12 +703,22 @@
         },
         {
           "internalType": "address",
+          "name": "_originalSender",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
           "name": "_recipient",
           "type": "address"
         },
         {
           "internalType": "uint256",
           "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_nonce",
           "type": "uint256"
         }
       ],
@@ -799,9 +900,28 @@
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "_transferId",
+          "name": "",
           "type": "bytes32"
+        }
+      ],
+      "name": "requestInfos",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "isRequested",
+          "type": "bool"
         },
+        {
+          "internalType": "bool",
+          "name": "hasRefundForFailed",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
         {
           "internalType": "uint256",
           "name": "_originalChainId",
@@ -818,8 +938,18 @@
           "type": "address"
         },
         {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
           "internalType": "uint256",
           "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_nonce",
           "type": "uint256"
         },
         {
@@ -951,6 +1081,24 @@
         }
       ],
       "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_xToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferxTokenOwnership",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

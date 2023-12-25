@@ -5,6 +5,7 @@ type xTokenNonceOrder @entity {
 
 type TransferRecord @entity {
   id: ID!
+  messageId: String!
   direction: String!
   remoteChainId: Int!
   nonce: BigInt!

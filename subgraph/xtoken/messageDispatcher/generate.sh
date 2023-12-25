@@ -40,8 +40,9 @@ dataSources:
         - name: MsglineMessager
           file: ./abis/MsglineMessager.json
       eventHandlers:
-        - event: CallResult(uint256,bytes32,bool)
+        - event: CallResult(uint256,bool)
           handler: handleCallResult
+          receipt: true
       file: ./src/dispatch.ts" > subgraph.yaml
 }
 
@@ -64,7 +65,7 @@ echo "  - kind: ethereum/contract
         - name: Guard
           file: ./abis/Guard.json
       eventHandlers:
-        - event: TokenDeposit(uint256,address,address,uint256)
+        - event: TokenDeposit(address,uint256,uint256,address,address,uint256)
           handler: handleTokenDeposit
         - event: TokenClaimed(uint256)
           handler: handleTokenClaimed

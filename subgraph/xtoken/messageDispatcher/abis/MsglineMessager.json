@@ -26,12 +26,6 @@
         },
         {
           "indexed": false,
-          "internalType": "bytes32",
-          "name": "transferId",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
           "internalType": "bool",
           "name": "result",
           "type": "bool"
@@ -48,12 +42,6 @@
           "internalType": "uint256",
           "name": "srcAppChainId",
           "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes32",
-          "name": "transferId",
-          "type": "bytes32"
         },
         {
           "indexed": false,
@@ -80,51 +68,6 @@
           "internalType": "address",
           "name": "",
           "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "latestRecvMessageId",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "latestSentMessageId",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "messageId",
-          "type": "bytes32"
-        }
-      ],
-      "name": "messageDelivered",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
         }
       ],
       "stateMutability": "view",

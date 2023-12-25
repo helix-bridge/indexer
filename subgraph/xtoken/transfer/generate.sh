@@ -24,10 +24,12 @@ echo "  - kind: ethereum/contract
         - name: xTokenBacking
           file: ./abis/xTokenBacking.json
       eventHandlers:
-        - event: TokenLocked(bytes32,uint256,address,address,address,uint256,uint256)
+        - event: TokenLocked(bytes32,uint256,uint256,address,address,address,uint256,uint256)
           handler: handleTokenLocked
-        - event: RemoteIssuingFailure(bytes32,bytes32,address,address,uint256,uint256)
+          receipt: true
+        - event: RemoteIssuingFailure(bytes32,address,address,uint256,uint256)
           handler: handleRemoteIssuingFailure
+          receipt: true
       file: ./src/xTokenBacking.ts" >> subgraph.yaml
 }
 
@@ -50,10 +52,12 @@ echo "  - kind: ethereum/contract
         - name: xTokenIssuing
           file: ./abis/xTokenIssuing.json
       eventHandlers:
-        - event: BurnAndRemoteUnlocked(bytes32,uint256,address,address,address,address,uint256,uint256)
+        - event: BurnAndRemoteUnlocked(bytes32,uint256,uint256,address,address,address,uint256,uint256)
           handler: handleBurnAndRemoteUnlocked
-        - event: RemoteUnlockForIssuingFailureRequested(bytes32,bytes32,address,address,uint256,uint256)
+          receipt: true
+        - event: RemoteUnlockForIssuingFailureRequested(bytes32,address,address,uint256,uint256)
           handler: handleRemoteUnlockForIssuingFailureRequested
+          receipt: true
       file: ./src/xTokenIssuing.ts" >> subgraph.yaml
 }
 

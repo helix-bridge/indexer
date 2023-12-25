@@ -106,7 +106,7 @@ export class xTokenService implements OnModuleInit {
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { transferRecords(first: ${this.baseConfigure.fetchHistoryDataFirst}, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, direction, remoteChainId, nonce, sender, receiver, token, amount, timestamp, transactionHash, fee } }`;
+      const query = `query { transferRecords(first: ${this.baseConfigure.fetchHistoryDataFirst}, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, direction, remoteChainId, nonce, messageId, sender, receiver, token, amount, timestamp, transactionHash, fee } }`;
 
       const records = await axios
         .post(transfer.url, {
@@ -143,7 +143,7 @@ export class xTokenService implements OnModuleInit {
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: 'xtoken-' + transfer.chain,
-            messageNonce: record.nonce,
+            messageNonce: record.messageId,
             nonce: latestNonce + 1,
             requestTxHash: record.transactionHash,
             sender: record.sender,
@@ -197,14 +197,15 @@ export class xTokenService implements OnModuleInit {
       }
 
       for (const uncheckedRecord of uncheckedRecords) {
-        const id = this.nodeIdToTransferId(uncheckedRecord.id);
+        const sourceId = this.nodeIdToTransferId(uncheckedRecord.id);
+        const messageId = uncheckedRecord.messageNonce;
         const node = await axios
           .post(this.transferService.dispatchEndPoints[uncheckedRecord.toChain], {
-            query: `query { messageDispatchedResult (id: \"${id}\") { id, token, transactionHash, result, timestamp }}`,
+            query: `query { messageDispatchedResult (id: \"${messageId}\") { id, token, transactionHash, result, timestamp }}`,
             variables: null,
           })
           .then((res) => res.data?.data?.messageDispatchedResult);
-        if (node === undefined || node.result === null) {
+        if (node === undefined || node === null || node.result === null) {
           continue;
         }
         let result = uncheckedRecord.result;
@@ -229,7 +230,7 @@ export class xTokenService implements OnModuleInit {
         if (uncheckedRecord.result === RecordStatus.pending || uncheckedRecord.result === RecordStatus.pendingToClaim) {
           if (result !== uncheckedRecord.result) {
             this.logger.log(
-              `${this.baseConfigure.name} [${uncheckedRecord.fromChain}-${uncheckedRecord.toChain}] status updated, id: ${id}, status ${uncheckedRecord.result}->${result}`
+              `${this.baseConfigure.name} [${uncheckedRecord.fromChain}-${uncheckedRecord.toChain}] status updated, id: ${sourceId}, status ${uncheckedRecord.result}->${result}`
             );
             await this.aggregationService.updateHistoryRecord({
               where: { id: uncheckedRecord.id },
@@ -255,7 +256,7 @@ export class xTokenService implements OnModuleInit {
           // all refund requests
           const nodes = await axios
             .post(destChain.url, {
-              query: `query { refundTransferRecords (where: {sourceId: "${id}"}) { id, sourceId, transactionHash, timestamp }}`,
+              query: `query { refundTransferRecords (where: {sourceId: "${sourceId}"}) { id, sourceId, transactionHash, timestamp }}`,
               variables: null,
             })
             .then((res) => res.data?.data?.refundTransferRecords);
