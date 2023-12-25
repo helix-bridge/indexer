@@ -77,6 +77,14 @@ export class xTokenService implements OnModuleInit {
     );
   }
 
+  private toMessageNonce(messageId: string, nonce: string): string {
+      return `${nonce}-${messageId}`;
+  }
+
+  private toMessageId(messageNonce: string): string {
+    return last(messageNonce.split('-'));
+  }
+
   private getToken(chain: PartnerT2, symbolOrAddress: string): PartnerSymbol | null {
     return (
       chain.symbols.find(
@@ -106,7 +114,7 @@ export class xTokenService implements OnModuleInit {
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { transferRecords(first: ${this.baseConfigure.fetchHistoryDataFirst}, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, direction, remoteChainId, nonce, messageId, sender, receiver, token, amount, timestamp, transactionHash, fee } }`;
+      const query = `query { transferRecords(first: ${this.baseConfigure.fetchHistoryDataFirst}, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, direction, remoteChainId, nonce, userNonce, messageId, sender, receiver, token, amount, timestamp, transactionHash, fee } }`;
 
       const records = await axios
         .post(transfer.url, {
@@ -143,7 +151,7 @@ export class xTokenService implements OnModuleInit {
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: 'xtoken-' + transfer.chain,
-            messageNonce: record.messageId,
+            messageNonce: this.toMessageNonce(record.messageId, record.userNonce),
             nonce: latestNonce + 1,
             requestTxHash: record.transactionHash,
             sender: record.sender,
@@ -198,7 +206,7 @@ export class xTokenService implements OnModuleInit {
 
       for (const uncheckedRecord of uncheckedRecords) {
         const sourceId = this.nodeIdToTransferId(uncheckedRecord.id);
-        const messageId = uncheckedRecord.messageNonce;
+        const messageId = this.toMessageId(uncheckedRecord.messageNonce);
         const node = await axios
           .post(this.transferService.dispatchEndPoints[uncheckedRecord.toChain], {
             query: `query { messageDispatchedResult (id: \"${messageId}\") { id, token, transactionHash, result, timestamp }}`,

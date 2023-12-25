@@ -47,6 +47,7 @@ export function handleBurnAndRemoteUnlocked(event: BurnAndRemoteUnlocked): void 
   entity.transactionHash = event.transaction.hash;
   entity.timestamp = event.block.timestamp;
   entity.fee = event.params.fee;
+  entity.userNonce = event.params.nonce.toHexString();
 
   var messageId: string;
   // find the messageId

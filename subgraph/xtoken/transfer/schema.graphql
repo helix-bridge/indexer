@@ -16,6 +16,7 @@ type TransferRecord @entity {
   timestamp: BigInt!
   transactionHash: Bytes!
   fee: BigInt
+  userNonce: String!
 }
 
 type RefundTransferRecord @entity {
