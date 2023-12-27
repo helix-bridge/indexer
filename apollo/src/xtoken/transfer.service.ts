@@ -37,7 +37,7 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           originalSymbol: 'CRAB',
           symbol: 'xCRAB',
-          address: '0xe8835bB0735fbfD5ECAC1e20835D5B7C39622ba3',
+          address: '0x9Da7E18441f26515CC713290BE846E726d41781d',
           protocolFee: 0,
           decimals: 18,
         },

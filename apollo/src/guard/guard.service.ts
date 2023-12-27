@@ -6,6 +6,7 @@ class GuardInfo {
   toChain: string;
   bridge: string;
   chainId: number;
+  depositor: string;
   contract: string;
 }
 
@@ -14,18 +15,12 @@ export class GuardService {
 
   private readonly guardConfig: GuardInfo[] = [
     {
-      fromChain: 'pangolin-dvm',
-      toChain: 'goerli',
-      bridge: 'helix-sub2ethv2(lock)',
-      chainId: 5,
-      contract: '0x8C986EC362A38cA4A6a3fd4188C5318c689A187d',
-    },
-    {
-      fromChain: 'darwinia-dvm',
-      toChain: 'ethereum',
-      bridge: 'helix-sub2ethv2(lock)',
-      chainId: 1,
-      contract: '0x61B6B8c7C00aA7F060a2BEDeE6b11927CC9c3eF1',
+      fromChain: 'crab-dvm',
+      toChain: 'sepolia',
+      bridge: 'xtoken-crab-dvm',
+      chainId: 11155111,
+      depositor: '0xf22D0bb66b39745Ae6e3fEa3E5859d7f0b367Fd1',
+      contract: '0xcc357d5A8E5dBD52bC508E0FE491137d912F6bc8',
     },
   ];
 
@@ -47,6 +42,7 @@ export class GuardService {
       return null;
     }
     const dataHash = this.generateDataHash(
+      info.depositor,
       transferId,
       timestamp,
       token,
@@ -59,6 +55,7 @@ export class GuardService {
   }
 
   private generateDataHash(
+    depositor: string,
     transferId: string,
     timestamp: string,
     token: string,
@@ -68,11 +65,11 @@ export class GuardService {
     contractAddress: string
   ): string {
     const claimSign = this.web3.eth.abi.encodeFunctionSignature(
-      'claim(uint256,uint256,address,address,uint256,bytes[])'
+      'claim(address,uint256,uint256,address,address,uint256,bytes[])'
     );
     const param = this.web3.eth.abi.encodeParameters(
-      ['uint256', 'uint256', 'address', 'address', 'uint256'],
-      [transferId, timestamp, token, recipient, amount]
+      ['address', 'uint256', 'uint256', 'address', 'address', 'uint256'],
+      [depositor, transferId, timestamp, token, recipient, amount]
     );
     const message = this.web3.eth.abi.encodeParameters(['bytes4', 'bytes'], [claimSign, param]);
     const structHash = this.web3.utils.keccak256(message);

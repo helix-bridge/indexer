@@ -159,7 +159,7 @@ export class xTokenService implements OnModuleInit {
             sendToken: sendTokenInfo.symbol,
             recvToken: recvTokenInfo.symbol,
             sendAmount: record.amount,
-            recvAmount: '0',
+            recvAmount: record.amount,
             startTime: Number(record.timestamp),
             endTime: endTime,
             result: result,

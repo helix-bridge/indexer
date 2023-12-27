@@ -4,6 +4,7 @@ import { HistoryRecords, Lnv20RelayInfo, Lnv20RelayInfos } from '../graphql';
 import { GuardService } from '../guard/guard.service';
 // export lnbridge service configure
 import { TransferService } from '../lnbridgev20/transfer.service';
+import { last } from 'lodash';
 
 @Injectable()
 export class AggregationService extends PrismaClient implements OnModuleInit {
@@ -115,7 +116,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
         record.fromChain,
         record.toChain,
         record.bridge,
-        BigInt(record.messageNonce).toString(),
+        BigInt(last(record.id.split('-'))).toString(),
         record.endTime.toString(),
         record.recvTokenAddress,
         record.recipient,
