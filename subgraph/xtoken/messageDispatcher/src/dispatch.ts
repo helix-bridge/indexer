@@ -26,6 +26,10 @@ function isMsglineDispatchEvent(event: ethereum.Log): boolean {
         isMsglineContract(event);
 }
 
+function isGuardDepositEvent(event: ethereum.Log): boolean {
+    return event.topics[0].toHexString() == '0xe15a305c9965c563f86d698c22d072ae55c831930e4bcfc3cacf9050bbdc69d2';
+}
+
 export function handleMessageDispatched(event: MessageDispatched): void {
   let message_id = event.params.msgHash.toHexString();
   let entity = MessageDispatchedResult.load(message_id);
@@ -42,6 +46,7 @@ export function handleMessageDispatched(event: MessageDispatched): void {
 
 export function handleCallResult(event: CallResult): void {
   var messageId = '';
+  var usingGuard = false;
   // find the messageId
   if (event.receipt == null) {
       return;
@@ -50,7 +55,8 @@ export function handleCallResult(event: CallResult): void {
       for (var idx = 0; idx < logs.length; idx++) {
           if (isMsglineDispatchEvent(logs[idx])) {
               messageId = logs[idx].topics[1].toHexString();
-              break;
+          } else if (isGuardDepositEvent(logs[idx])) {
+              usingGuard = true;
           }
       }
   }
@@ -67,7 +73,7 @@ export function handleCallResult(event: CallResult): void {
   entity.transactionHash = event.transaction.hash;
   if (!event.params.result) {
       entity.result = STATUS_FAILED;
-  } else if(entity.result < STATUS_DELIVERED_SUCCESSED) {
+  } else if(entity.result < STATUS_DELIVERED_SUCCESSED && !usingGuard) {
       entity.result = STATUS_DELIVERED_SUCCESSED;
   }
   entity.save();

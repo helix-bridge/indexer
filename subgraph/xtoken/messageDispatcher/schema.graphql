@@ -6,3 +6,7 @@ type MessageDispatchedResult @entity {
   result: Int
 }
 
+type TransferId2MessageId @entity {
+  id: ID!
+  messageId: String!
+}
