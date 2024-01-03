@@ -113,6 +113,7 @@ export class Lnv3Service implements OnModuleInit {
           const endTime = 0;
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, transfer.chainId.toString(), record.remoteChainId, record.id),
+            relayer: record.provider,
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: `lnv3`,

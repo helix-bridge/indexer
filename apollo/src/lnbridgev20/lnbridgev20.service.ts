@@ -70,7 +70,7 @@ export class Lnbridgev20Service implements OnModuleInit {
   ) {}
 
   protected genID(bridgeType: string, transferId: string): string {
-    return `lnbridgev2-${bridgeType}-${transferId}`;
+    return `lnv2-${bridgeType}-${transferId}`;
   }
 
   async onModuleInit() {
@@ -127,7 +127,7 @@ export class Lnbridgev20Service implements OnModuleInit {
   }
 
   private bridgeName(indexInfo: BridgeIndexInfo): string {
-    return 'lnbridgev2-' + indexInfo.bridgeType;
+    return 'lnv2-' + indexInfo.bridgeType;
   }
 
   private formatSortedMessageNonce(nonce: number): string {
@@ -344,7 +344,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         }
         if (records && records.length > 0) {
           this.logger.log(
-            `lnbridgev2 new records, from ${transfer.chainId}, latest nonce ${latestNonce}, added ${
+            `lnv2 new records, from ${transfer.chainId}, latest nonce ${latestNonce}, added ${
               records.length - ignored
             }, ignored ${ignored}`
           );
@@ -352,7 +352,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         this.fetchCache[index].latestNonce = latestNonce;
       }
     } catch (error) {
-      this.logger.warn(`lnbridgev2 fetch record failed, from ${transfer.chainId}, ${error}`);
+      this.logger.warn(`lnv2 fetch record failed, from ${transfer.chainId}, ${error}`);
     }
   }
 
@@ -440,13 +440,13 @@ export class Lnbridgev20Service implements OnModuleInit {
             });
 
             this.logger.log(
-              `[${record.fromChain}->${record.toChain}]lnv2bridge new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
+              `[${record.fromChain}->${record.toChain}]lnv2 new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
             );
           }
         }
       }
     } catch (error) {
-      this.logger.warn(`fetch lnv2bridge status failed, error ${error}`);
+      this.logger.warn(`fetch lnv2 status failed, error ${error}`);
     }
   }
 
@@ -616,7 +616,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         );
       }
     } catch (error) {
-      this.logger.warn(`fetch lnv2bridge relay records failed, error ${error}`);
+      this.logger.warn(`fetch lnv2 relay records failed, error ${error}`);
     }
   }
 
@@ -721,7 +721,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         );
       }
     } catch (error) {
-      this.logger.warn(`fetch lnv2bridge relay records failed, error ${error}`);
+      this.logger.warn(`fetch lnv2 relay records failed, error ${error}`);
     }
   }
 
@@ -837,7 +837,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         );
       }
     } catch (error) {
-      this.logger.warn(`fetch lnv2bridge relay records failed, error ${error}`);
+      this.logger.warn(`fetch lnv2 relay records failed, error ${error}`);
     }
   }
 }
