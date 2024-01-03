@@ -289,11 +289,10 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       },
       orderBy,
     });
-    const { total, records } = pendingRecords;
 
     if (relayerInfo.version == 'lnv2') {
       var marginUsed = BigInt(0);
-      for (const pendingRecord of records) {
+      for (const pendingRecord of pendingRecords.records) {
         marginUsed += BigInt(pendingRecord.sendAmount);
       }
       // margin not enough, todo add finefund
