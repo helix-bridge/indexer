@@ -5,7 +5,7 @@
     "codegen": "graph codegen",
     "build": "graph build",
     "build-goerli": "sh generate.sh goerli 0x7e101911E5FB461d78FBde3992f76F3Bf8BbA829 9844814 && graph codegen && graph build",
-    "build-arbigoerli": "sh generate.sh arbigoerli 0x7e101911E5FB461d78FBde3992f76F3Bf8BbA829 46913401 && graph codegen && graph build",
+    "build-arbigoerli": "sh generate.sh arbitrum-goerli 0x7e101911E5FB461d78FBde3992f76F3Bf8BbA829 46913401 && graph codegen && graph build",
     "build-lineagoerli": "sh generate.sh lineagoerli 0x7e101911E5FB461d78FBde3992f76F3Bf8BbA829 1698146 && graph codegen && graph build",
     "build-mantlegoerli": "sh generate.sh mantlegoerli 0x7e101911E5FB461d78FBde3992f76F3Bf8BbA829 23364372 && graph codegen && graph build",
     "build-zkgoerli": "sh generate.sh zkgoerli 0xe8d55759c32fb608fD092aB2C0ef8A1F52B254d4 12529843 && graph codegen && graph build",

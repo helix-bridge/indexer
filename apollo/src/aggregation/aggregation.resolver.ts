@@ -163,12 +163,13 @@ export class AggregationResolver {
   async lnBridgeHeartBeat(
     @Args('fromChainId') fromChainId: string,
     @Args('toChainId') toChainId: string,
+    @Args('version') version: string,
     @Args('relayer') relayer: string,
     @Args('tokenAddress') tokenAddress: string
   ) {
-    const id = `lnv20-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
+    const id = `${version}-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
     try {
-      await this.aggregationService.updateLnv20RelayInfo({
+      await this.aggregationService.updateLnBridgeRelayInfo({
         where: { id: id },
         data: {
           heartbeatTimestamp: Math.floor(Date.now() / 1000),
@@ -247,7 +248,7 @@ export class AggregationResolver {
   }
 
   @Query()
-  async queryLnv20RelayInfos(
+  async queryLnBridgeRelayInfos(
     @Args('fromChain') fromChain: string,
     @Args('toChain') toChain: string,
     @Args('bridge') bridge: string,
@@ -263,7 +264,7 @@ export class AggregationResolver {
       ...baseFilters,
     };
 
-    const records = await this.aggregationService.queryLnv20RelayInfos({
+    const records = await this.aggregationService.queryLnBridgeRelayInfos({
       skip,
       take,
       where,
@@ -272,7 +273,7 @@ export class AggregationResolver {
   }
 
   @Query()
-  async sortedLnv20RelayInfos(
+  async sortedLnBridgeRelayInfos(
     @Args('fromChain') fromChain: string,
     @Args('toChain') toChain: string,
     @Args('bridge') bridge: string,
@@ -289,7 +290,7 @@ export class AggregationResolver {
       ...baseFilters,
     };
 
-    const records = await this.aggregationService.queryLnv20RelayInfos({
+    const records = await this.aggregationService.queryLnBridgeRelayInfos({
       skip: 0,
       take,
       where,
@@ -298,16 +299,16 @@ export class AggregationResolver {
     //const validRecords = records.records.filter((record) => BigInt(record.margin) > BigInt(amount));
     // query all pending txs
     var sortedRelayers = [];
-    var maxMargin = BigInt(0);
+    var transferLimit = BigInt(0);
     for (const record of records.records) {
-      const margin = BigInt(record.margin);
-      if (margin > maxMargin) {
-        maxMargin = margin;
+      const limit = record.version == 'lnv2' ? BigInt(record.margin) : BigInt(record.transferLimit);
+      if (limit > transferLimit) {
+        transferLimit = limit;
       }
-      if (margin < BigInt(amount)) {
+      if (limit < BigInt(amount) || record.paused) {
         continue;
       }
-      const point = await this.aggregationService.calculateLnv20RelayerPoint(
+      const point = await this.aggregationService.calculateLnBridgeRelayerPoint(
         token,
         BigInt(amount),
         decimals,
@@ -319,7 +320,7 @@ export class AggregationResolver {
       sortedRelayers.push({ record, point });
     }
     return {
-      maxMargin: maxMargin,
+      transferLimit: transferLimit,
       records: sortedRelayers.sort((l, r) => l.point - r.point).map((item) => item.record),
     };
   }

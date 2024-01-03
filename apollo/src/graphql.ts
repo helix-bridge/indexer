@@ -31,9 +31,9 @@ export abstract class IQuery {
 
     abstract queryRelayRecords(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, relayer?: Nullable<string>, row?: Nullable<number>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
 
-    abstract queryLnv20RelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, relayer?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<Lnv20RelayInfos> | Promise<Nullable<Lnv20RelayInfos>>;
+    abstract queryLnBridgeRelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, relayer?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<LnBridgeRelayInfos> | Promise<Nullable<LnBridgeRelayInfos>>;
 
-    abstract sortedLnv20RelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>, row?: Nullable<number>, amount?: Nullable<string>, decimals?: Nullable<number>): Nullable<SortedLnv20RelayInfos> | Promise<Nullable<SortedLnv20RelayInfos>>;
+    abstract sortedLnBridgeRelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>, row?: Nullable<number>, amount?: Nullable<string>, decimals?: Nullable<number>): Nullable<SortedLnBridgeRelayInfos> | Promise<Nullable<SortedLnBridgeRelayInfos>>;
 }
 
 export class HistoryRecord {
@@ -80,8 +80,9 @@ export class HistoryRecords {
     records?: Nullable<Nullable<HistoryRecord>[]>;
 }
 
-export class Lnv20RelayInfo {
+export class LnBridgeRelayInfo {
     id: string;
+    version: string;
     nonce: BigInt;
     targetNonce?: Nullable<BigInt>;
     fromChain: string;
@@ -89,7 +90,7 @@ export class Lnv20RelayInfo {
     bridge: string;
     relayer: string;
     sendToken?: Nullable<string>;
-    transaction_hash: string;
+    transactionHash: string;
     timestamp: number;
     margin?: Nullable<string>;
     protocolFee?: Nullable<string>;
@@ -102,16 +103,18 @@ export class Lnv20RelayInfo {
     profit?: Nullable<string>;
     heartbeatTimestamp?: Nullable<number>;
     messageChannel?: Nullable<string>;
+    transferLimit?: Nullable<string>;
+    paused?: Nullable<boolean>;
 }
 
-export class Lnv20RelayInfos {
+export class LnBridgeRelayInfos {
     total: number;
-    records?: Nullable<Nullable<Lnv20RelayInfo>[]>;
+    records?: Nullable<Nullable<LnBridgeRelayInfo>[]>;
 }
 
-export class SortedLnv20RelayInfos {
-    maxMargin: BigInt;
-    records?: Nullable<Nullable<Lnv20RelayInfo>[]>;
+export class SortedLnBridgeRelayInfos {
+    transferLimit: BigInt;
+    records?: Nullable<Nullable<LnBridgeRelayInfo>[]>;
 }
 
 export abstract class IMutation {

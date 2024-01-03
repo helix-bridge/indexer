@@ -32,10 +32,16 @@ export interface BridgeBaseConfigure {
 }
 
 export interface PartnerSymbol {
+  key: string;
   symbol: string;
   address: string;
   protocolFee: number;
   decimals: number;
+}
+
+export interface Channel {
+  chain: string;
+  channel: string;
 }
 
 export interface PartnerT2 {
@@ -44,6 +50,7 @@ export interface PartnerT2 {
   url: string; // record api endpoint
   bridge: string;
   symbols: PartnerSymbol[];
+  channels: Channel[];
 }
 
 export abstract class BaseTransferServiceT2 extends AddressToken {

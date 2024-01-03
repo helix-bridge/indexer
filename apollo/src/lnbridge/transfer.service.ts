@@ -41,6 +41,7 @@ export class TransferService extends BaseTransferServiceT2 {
       url: this.ethereumSub2EthLnEndpoint,
       bridge: 'sub2ethlp',
       symbols: [],
+      channels: [],
     },
     {
       chainId: 46,
@@ -48,6 +49,7 @@ export class TransferService extends BaseTransferServiceT2 {
       url: this.darwiniaSub2EthLnEndpoint,
       bridge: 'sub2ethlp',
       symbols: [],
+      channels: [],
     },
   ];
 

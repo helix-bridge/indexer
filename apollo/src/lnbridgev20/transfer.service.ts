@@ -180,7 +180,7 @@ export class TransferService extends BaseTransferServiceT3 {
               bridgeType: 'default',
               channel: 'layerzero',
             },
-          ]
+          ],
         },
       ],
     },
@@ -247,7 +247,7 @@ export class TransferService extends BaseTransferServiceT3 {
               bridgeType: 'default',
               channel: 'layerzero',
             },
-          ]
+          ],
         },
       ],
     },
@@ -371,7 +371,7 @@ export class TransferService extends BaseTransferServiceT3 {
               bridgeType: 'default',
               channel: 'layerzero',
             },
-          ]
+          ],
         },
       ],
     },

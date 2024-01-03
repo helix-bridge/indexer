@@ -52,27 +52,30 @@ model DailyStatistics {
   @@unique([fromChain, toChain, bridge, timestamp, token], name: "daily_statistics_id")
 }
 
-model Lnv20RelayInfo {
+model LnBridgeRelayInfo {
   id String @id
+  version String
+  nonce BigInt
+  targetNonce BigInt
   fromChain String
   toChain String
   bridge String
-  nonce BigInt
-  targetNonce BigInt
-  withdrawNonce BigInt
   relayer String
   sendToken String
-  transaction_hash String
+  transactionHash String
   timestamp Int
   margin String
   protocolFee String
   baseFee String
   liquidityFeeRate Int
   slashCount Int
+  withdrawNonce BigInt
   lastTransferId String
   cost String
   profit String
   heartbeatTimestamp Int
   messageChannel String
+  transferLimit String
+  paused Boolean
 }
 
