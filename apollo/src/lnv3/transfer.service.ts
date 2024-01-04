@@ -33,7 +33,7 @@ export class TransferService extends BaseTransferServiceT2 {
         },
         {
           key: 'ETH',
-          symbol: 'goerliETH',
+          symbol: 'ETH',
           address: '0x0000000000000000000000000000000000000000',
           protocolFee: 1000000000000000,
           decimals: 18,
@@ -68,7 +68,7 @@ export class TransferService extends BaseTransferServiceT2 {
         },
         {
           key: 'ETH',
-          symbol: 'zkGoerliETH',
+          symbol: 'ETH',
           address: '0x0000000000000000000000000000000000000000',
           protocolFee: 1000000000000000,
           decimals: 18,
