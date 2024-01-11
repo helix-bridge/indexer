@@ -61,7 +61,7 @@ export function handleTokenLocked(event: TokenLocked): void {
   counter.save();
 
   entity.nonce = counter.count;
-  entity.messageNonce = event.params.params.nonce;
+  entity.messageNonce = event.params.params.timestamp;
   entity.remoteChainId = event.params.params.remoteChainId.toI32();
   entity.provider = event.params.params.provider;
   entity.sourceToken = event.params.params.sourceToken;
@@ -70,11 +70,10 @@ export function handleTokenLocked(event: TokenLocked): void {
   entity.targetAmount = event.params.targetAmount;
   entity.sender = event.transaction.from;
   entity.receiver = event.params.params.receiver;
-  entity.timestamp = event.params.timestamp;
+  entity.timestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
   entity.fee = event.params.fee;
   entity.transferId = event.params.transferId;
-  entity.idWithTimestamp = event.params.idWithTimestamp;
   entity.save();
 }
 

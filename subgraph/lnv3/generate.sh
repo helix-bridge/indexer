@@ -23,7 +23,7 @@ dataSources:
         - name: HelixLnBridgeV3
           file: ./abis/HelixLnBridgeV3.json
       eventHandlers:
-        - event: TokenLocked((uint256,address,address,address,uint112,uint112,address,uint256),bytes32,bytes32,uint112,uint112,uint64)
+        - event: TokenLocked((uint256,address,address,address,uint112,uint112,address,uint256),bytes32,uint112,uint112)
           handler: handleTokenLocked
         - event: LnProviderUpdated(uint256,address,address,address,uint112,uint16,uint112)
           handler: handleLnProviderUpdated

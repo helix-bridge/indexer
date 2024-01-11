@@ -6,30 +6,30 @@ import { AddressTokenMap } from '../base/AddressToken';
 @Injectable()
 export class TransferService extends BaseTransferServiceT2 {
   private readonly ethereumEndpoint = this.configService.get<string>('ETHEREUM_LNV3_ENDPOINT');
-  private readonly zkSyncEndpoint = this.configService.get<string>('ZKSYNC_LNV3_ENDPOINT');
+  private readonly arbitrumEndpoint = this.configService.get<string>('ARBITRUM_LNV3_ENDPOINT');
 
   formalChainTransfers: PartnerT2[] = [];
 
   testChainTransfers: PartnerT2[] = [
     {
-      chainId: 5,
-      chain: 'goerli',
+      chainId: 11155111,
+      chain: 'sepolia',
       url: this.ethereumEndpoint,
       bridge: 'lnv3',
       symbols: [
         {
           key: 'USDC',
           symbol: 'USDC',
-          address: '0xe9784E0d9A939dbe966b021DE3cd877284DB1B99',
-          protocolFee: 100000000,
-          decimals: 6,
+          address: '0x0ac58Df0cc3542beC4cDa71B16D06C3cCc39f405',
+          protocolFee: 100000000000000000000,
+          decimals: 18,
         },
         {
           key: 'USDT',
           symbol: 'USDT',
-          address: '0xa39cffE89567eBfb5c306a07dfb6e5B3ba41F358',
-          protocolFee: 100000000,
-          decimals: 6,
+          address: '0x876A4f6eCF13EEb101F9E75FCeF58f19Ff383eEB',
+          protocolFee: 100000000000000000000,
+          decimals: 18,
         },
         {
           key: 'ETH',
@@ -41,30 +41,30 @@ export class TransferService extends BaseTransferServiceT2 {
       ],
       channels: [
         {
-          chain: 'zksync-goerli',
+          chain: 'arbitrum-sepolia',
           channel: 'layerzero',
         },
       ],
     },
     {
-      chainId: 280,
-      chain: 'zksync-goerli',
-      url: this.zkSyncEndpoint,
+      chainId: 421614,
+      chain: 'arbitrum-sepolia',
+      url: this.arbitrumEndpoint,
       bridge: 'lnv3',
       symbols: [
         {
           key: 'USDC',
           symbol: 'USDC',
-          address: '0xAe60e005C560E869a2bad271e38e3C9D78381aFF',
-          protocolFee: 100000000,
+          address: '0x8A87497488073307E1a17e8A12475a94Afcb413f',
+          protocolFee: 100000000000000000000,
           decimals: 18,
         },
         {
           key: 'USDT',
           symbol: 'USDT',
-          address: '0xb5372ed3bb2CbA63e7908066ac10ee94d30eA839',
-          protocolFee: 100000000,
-          decimals: 6,
+          address: '0x3b8Bb7348D4F581e67E2498574F73e4B9Fc51855',
+          protocolFee: 100000000000000000000,
+          decimals: 18,
         },
         {
           key: 'ETH',
@@ -76,7 +76,7 @@ export class TransferService extends BaseTransferServiceT2 {
       ],
       channels: [
         {
-          chain: 'goerli',
+          chain: 'sepolia',
           channel: 'layerzero',
         },
       ],

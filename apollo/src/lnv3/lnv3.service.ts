@@ -91,7 +91,7 @@ export class Lnv3Service implements OnModuleInit {
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { lnv3TransferRecords(first: 10, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, idWithTimestamp } }`;
+      const query = `query { lnv3TransferRecords(first: 10, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId } }`;
       const records = await axios
         .post(transfer.url, {
           query: query,
@@ -329,11 +329,11 @@ export class Lnv3Service implements OnModuleInit {
         latestNonce += 1;
         this.fetchCache[index].latestRelayerInfoNonce = latestNonce;
         this.logger.log(
-          `update lnv3 relay info, id ${id}, type ${record.updateType}, margin ${record.penalty}, basefee ${record.baseFee}, liquidityFee ${record.liquidityFeeRate}`
+          `update lnv3 relayer info, id ${id}, type ${record.updateType}, margin ${record.penalty}, basefee ${record.baseFee}, liquidityFee ${record.liquidityFeeRate}`
         );
       }
     } catch (error) {
-      this.logger.warn(`fetch lnv3bridge relay records failed, error ${error}`);
+      this.logger.warn(`fetch lnv3bridge relayer records failed, error ${error}`);
     }
   }
 }

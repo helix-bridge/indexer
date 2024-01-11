@@ -42,9 +42,9 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "bytes32",
-          "name": "transferId",
-          "type": "bytes32"
+          "internalType": "bytes32[]",
+          "name": "transferIds",
+          "type": "bytes32[]"
         },
         {
           "indexed": false,
@@ -54,9 +54,9 @@
         },
         {
           "indexed": false,
-          "internalType": "uint112",
+          "internalType": "uint256",
           "name": "amount",
-          "type": "uint112"
+          "type": "uint256"
         }
       ],
       "name": "LiquidityWithdrawn",
@@ -308,7 +308,7 @@
             },
             {
               "internalType": "uint256",
-              "name": "nonce",
+              "name": "timestamp",
               "type": "uint256"
             }
           ],
@@ -325,12 +325,6 @@
         },
         {
           "indexed": false,
-          "internalType": "bytes32",
-          "name": "idWithTimestamp",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
           "internalType": "uint112",
           "name": "targetAmount",
           "type": "uint112"
@@ -340,12 +334,6 @@
           "internalType": "uint112",
           "name": "fee",
           "type": "uint112"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint64",
-          "name": "timestamp",
-          "type": "uint64"
         }
       ],
       "name": "TokenLocked",
@@ -517,6 +505,19 @@
     },
     {
       "inputs": [],
+      "name": "LOCK_TIME_DISTANCE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "MAX_TRANSFER_AMOUNT",
       "outputs": [
         {
@@ -546,43 +547,6 @@
       "name": "acceptOwnership",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "appAddress",
-          "type": "address"
-        },
-        {
-          "internalType": "bool",
-          "name": "enable",
-          "type": "bool"
-        }
-      ],
-      "name": "authoriseAppCaller",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "callerWhiteList",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -804,7 +768,7 @@
             },
             {
               "internalType": "uint256",
-              "name": "nonce",
+              "name": "timestamp",
               "type": "uint256"
             }
           ],
@@ -883,7 +847,7 @@
             },
             {
               "internalType": "uint256",
-              "name": "nonce",
+              "name": "timestamp",
               "type": "uint256"
             }
           ],
@@ -911,11 +875,6 @@
           "internalType": "uint112",
           "name": "amountWithFeeAndPenalty",
           "type": "uint112"
-        },
-        {
-          "internalType": "uint64",
-          "name": "timestamp",
-          "type": "uint64"
         },
         {
           "internalType": "uint32",
@@ -1193,7 +1152,7 @@
             },
             {
               "internalType": "uint256",
-              "name": "nonce",
+              "name": "timestamp",
               "type": "uint256"
             }
           ],
@@ -1258,7 +1217,7 @@
             },
             {
               "internalType": "uint256",
-              "name": "nonce",
+              "name": "timestamp",
               "type": "uint256"
             }
           ],
@@ -1267,19 +1226,14 @@
           "type": "tuple"
         },
         {
-          "internalType": "uint64",
-          "name": "_timestamp",
-          "type": "uint64"
-        },
-        {
           "internalType": "bytes32",
           "name": "_expectedTransferId",
           "type": "bytes32"
         },
         {
-          "internalType": "bytes32",
-          "name": "_expectedIdWithTimestamp",
-          "type": "bytes32"
+          "internalType": "uint256",
+          "name": "_feePrepaid",
+          "type": "uint256"
         },
         {
           "internalType": "bytes",
@@ -1410,19 +1364,9 @@
           "type": "bytes32"
         },
         {
-          "internalType": "uint112",
-          "name": "_sourceAmount",
-          "type": "uint112"
-        },
-        {
           "internalType": "address",
           "name": "_lnProvider",
           "type": "address"
-        },
-        {
-          "internalType": "uint64",
-          "name": "_timestamp",
-          "type": "uint64"
         },
         {
           "internalType": "address",
@@ -1449,16 +1393,6 @@
           "internalType": "uint256",
           "name": "remoteChainId",
           "type": "uint256"
-        },
-        {
-          "internalType": "uint64",
-          "name": "lockTimestamp",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint112",
-          "name": "sourceAmount",
-          "type": "uint112"
         },
         {
           "internalType": "address",
