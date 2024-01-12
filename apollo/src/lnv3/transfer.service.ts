@@ -7,6 +7,7 @@ import { AddressTokenMap } from '../base/AddressToken';
 export class TransferService extends BaseTransferServiceT2 {
   private readonly ethereumEndpoint = this.configService.get<string>('ETHEREUM_LNV3_ENDPOINT');
   private readonly arbitrumEndpoint = this.configService.get<string>('ARBITRUM_LNV3_ENDPOINT');
+  private readonly zksyncEndpoint = this.configService.get<string>('ZKSYNC_LNV3_ENDPOINT');
 
   formalChainTransfers: PartnerT2[] = [];
 
@@ -44,6 +45,10 @@ export class TransferService extends BaseTransferServiceT2 {
           chain: 'arbitrum-sepolia',
           channel: 'layerzero',
         },
+        {
+          chain: 'zksync-sepolia',
+          channel: 'layerzero',
+        },
       ],
     },
     {
@@ -77,6 +82,49 @@ export class TransferService extends BaseTransferServiceT2 {
       channels: [
         {
           chain: 'sepolia',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'zksync-sepolia',
+          channel: 'layerzero',
+        },
+      ],
+    },
+    {
+      chainId: 300,
+      chain: 'zksync-sepolia',
+      url: this.zksyncEndpoint,
+      bridge: 'lnv3',
+      symbols: [
+        {
+          key: 'USDC',
+          symbol: 'USDC',
+          address: '0x253adBFE99Fcd096B9b5502753F96CF78D42eaD0',
+          protocolFee: 100000000,
+          decimals: 6,
+        },
+        {
+          key: 'USDT',
+          symbol: 'USDT',
+          address: '0x3350f1ef046e21E052dCbA60Fc575919CCaFEdeb',
+          protocolFee: 100000000,
+          decimals: 6,
+        },
+        {
+          key: 'ETH',
+          symbol: 'ETH',
+          address: '0x0000000000000000000000000000000000000000',
+          protocolFee: 1000000000000000,
+          decimals: 18,
+        },
+      ],
+      channels: [
+        {
+          chain: 'arbitrum-sepolia',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'zksync-sepolia',
           channel: 'layerzero',
         },
       ],

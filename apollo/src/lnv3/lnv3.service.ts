@@ -130,7 +130,7 @@ export class Lnv3Service implements OnModuleInit {
             endTime: endTime,
             result: result,
             fee: record.fee,
-            feeToken: record.sourceToken,
+            feeToken: fromToken.symbol,
             responseTxHash: responseHash,
             reason: '',
             sendTokenAddress: record.sourceToken,

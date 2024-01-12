@@ -4,12 +4,9 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "build-goerli": "sh generate.sh goerli 0x7e101911E5FB461d78FBde3992f76F3Bf8BbA829 9844814 && graph codegen && graph build",
-    "build-arbigoerli": "sh generate.sh arbitrum-goerli 0x7e101911E5FB461d78FBde3992f76F3Bf8BbA829 46913401 && graph codegen && graph build",
-    "build-lineagoerli": "sh generate.sh lineagoerli 0x7e101911E5FB461d78FBde3992f76F3Bf8BbA829 1698146 && graph codegen && graph build",
-    "build-mantlegoerli": "sh generate.sh mantlegoerli 0x7e101911E5FB461d78FBde3992f76F3Bf8BbA829 23364372 && graph codegen && graph build",
-    "build-zkgoerli": "sh generate.sh zkgoerli 0xe8d55759c32fb608fD092aB2C0ef8A1F52B254d4 12529843 && graph codegen && graph build",
-    "build-basegoerli": "sh generate.sh basegoerli 0x7e101911E5FB461d78FBde3992f76F3Bf8BbA829 12244330 && graph codegen && graph build",
+    "build-sepolia": "sh generate.sh sepolia 0x7e101911E5FB461d78FBde3992f76F3Bf8BbA829 4607131 && graph codegen && graph build",
+    "build-arbisepolia": "sh generate.sh arbitrum-sepolia 0x7e101911E5FB461d78FBde3992f76F3Bf8BbA829 639445 && graph codegen && graph build",
+    "build-zksepolia": "sh generate.sh zksync-era-sepolia 0xbd8434d7d330329364590822ca2D2Fae630C1424 77153 && graph codegen && graph build",
     "build-ethereum": "sh generate.sh mainnet 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 18411160 && graph codegen && graph build",
     "build-arbitrum": "sh generate.sh arbitrum-one 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 143123443 && graph codegen && graph build",
     "build-mantle": "sh generate.sh mantle 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 17119189 && graph codegen && graph build",
@@ -28,7 +25,7 @@
     "deploy-remote-pro": "graph deploy --access-token $KEY --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com lndefault/$NETWORK"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.31.1",
+    "@graphprotocol/graph-cli": "0.64.0",
     "@graphprotocol/graph-ts": "0.31.0"
   }
 }
