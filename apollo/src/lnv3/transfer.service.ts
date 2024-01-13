@@ -124,7 +124,7 @@ export class TransferService extends BaseTransferServiceT2 {
           channel: 'layerzero',
         },
         {
-          chain: 'zksync-sepolia',
+          chain: 'sepolia',
           channel: 'layerzero',
         },
       ],

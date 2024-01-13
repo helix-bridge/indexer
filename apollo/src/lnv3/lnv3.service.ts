@@ -266,6 +266,9 @@ export class Lnv3Service implements OnModuleInit {
         });
         const toChain = this.getDestChain(record.remoteChainId.toString());
         if (toChain === null) {
+          latestNonce += 1;
+          this.fetchCache[index].latestRelayerInfoNonce = latestNonce;
+          this.logger.warn(`cannot find toChain, id ${record.remoteChainId}`);
           continue;
         }
         const penalty = record.penalty ?? '0';
@@ -273,6 +276,9 @@ export class Lnv3Service implements OnModuleInit {
           const fromToken = this.getTokenInfo(transfer, record.sourceToken);
           const channel = this.getMessageChannel(transfer, toChain.chain);
           if (fromToken === null || channel === null) {
+            latestNonce += 1;
+            this.fetchCache[index].latestRelayerInfoNonce = latestNonce;
+            this.logger.warn(`cannot find fromToken or channel, channel ${channel}`);
             continue;
           }
           // if not exist create
@@ -282,7 +288,7 @@ export class Lnv3Service implements OnModuleInit {
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: `lnv3`,
-            nonce: latestNonce,
+            nonce: latestNonce + 1,
             relayer: record.provider,
             sendToken: record.sourceToken,
             transactionHash: record.transactionHash,
