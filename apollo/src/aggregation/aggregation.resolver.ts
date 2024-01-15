@@ -251,6 +251,7 @@ export class AggregationResolver {
   async queryLnBridgeRelayInfos(
     @Args('fromChain') fromChain: string,
     @Args('toChain') toChain: string,
+    @Args('version') version: string,
     @Args('bridge') bridge: string,
     @Args('relayer') relayer: string,
     @Args('row') row: number,
@@ -258,7 +259,7 @@ export class AggregationResolver {
   ) {
     const skip = row * page || 0;
     const take = row || 10;
-    const baseFilters = { fromChain, toChain, bridge, relayer };
+    const baseFilters = { fromChain, toChain, bridge, relayer, version };
 
     const where = {
       ...baseFilters,
@@ -276,6 +277,7 @@ export class AggregationResolver {
   async sortedLnBridgeRelayInfos(
     @Args('fromChain') fromChain: string,
     @Args('toChain') toChain: string,
+    @Args('version') version: string,
     @Args('bridge') bridge: string,
     @Args('token') token: string,
     @Args('row') row: number,
@@ -284,7 +286,7 @@ export class AggregationResolver {
   ) {
     const take = row || 128;
     const sendToken = token?.toLowerCase();
-    const baseFilters = { fromChain, toChain, sendToken, bridge };
+    const baseFilters = { fromChain, toChain, sendToken, bridge, version };
 
     const where = {
       ...baseFilters,

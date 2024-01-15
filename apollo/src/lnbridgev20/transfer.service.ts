@@ -610,7 +610,7 @@ export class TransferService extends BaseTransferServiceT3 {
       chainId: 11155111,
       chainName: 'sepolia',
       defaultEndpoint: this.lnEthereumDefaultEndpoint,
-      oppositeEndpoint: null,
+      oppositeEndpoint: this.lnEthereumOppositeEndpoint,
       tokens: [
         {
           fromSymbol: 'USDC',
@@ -623,7 +623,7 @@ export class TransferService extends BaseTransferServiceT3 {
               toAddress: '0x8A87497488073307E1a17e8A12475a94Afcb413f',
               protocolFee: 100000000,
               decimals: 18,
-              bridgeType: 'default',
+              bridgeType: 'opposite',
               channel: 'layerzero',
             },
             {
@@ -648,7 +648,7 @@ export class TransferService extends BaseTransferServiceT3 {
               toAddress: '0x3b8Bb7348D4F581e67E2498574F73e4B9Fc51855',
               protocolFee: 100000000,
               decimals: 18,
-              bridgeType: 'default',
+              bridgeType: 'opposite',
               channel: 'layerzero',
             },
             {
@@ -673,7 +673,7 @@ export class TransferService extends BaseTransferServiceT3 {
               toAddress: '0x0000000000000000000000000000000000000000',
               protocolFee: 1000000000000000,
               decimals: 18,
-              bridgeType: 'default',
+              bridgeType: 'opposite',
               channel: 'layerzero',
             },
             {
@@ -693,7 +693,7 @@ export class TransferService extends BaseTransferServiceT3 {
       chainId: 421614,
       chainName: 'arbitrum-sepolia',
       defaultEndpoint: this.lnArbitrumDefaultEndpoint,
-      oppositeEndpoint: null,
+      oppositeEndpoint: this.lnArbitrumOppositeEndpoint,
       tokens: [
         {
           fromSymbol: 'USDC',
@@ -706,7 +706,7 @@ export class TransferService extends BaseTransferServiceT3 {
               toAddress: '0x0ac58Df0cc3542beC4cDa71B16D06C3cCc39f405',
               protocolFee: 100000000000000000000,
               decimals: 18,
-              bridgeType: 'default',
+              bridgeType: 'opposite',
               channel: 'layerzero',
             },
             {
@@ -717,7 +717,7 @@ export class TransferService extends BaseTransferServiceT3 {
               decimals: 6,
               bridgeType: 'default',
               channel: 'layerzero',
-            },
+            }
           ],
         },
         {
@@ -731,7 +731,7 @@ export class TransferService extends BaseTransferServiceT3 {
               toAddress: '0x876A4f6eCF13EEb101F9E75FCeF58f19Ff383eEB',
               protocolFee: 100000000000000000000,
               decimals: 18,
-              bridgeType: 'default',
+              bridgeType: 'opposite',
               channel: 'layerzero',
             },
             {
@@ -756,7 +756,7 @@ export class TransferService extends BaseTransferServiceT3 {
               toAddress: '0x0000000000000000000000000000000000000000',
               protocolFee: 1000000000000000,
               decimals: 18,
-              bridgeType: 'default',
+              bridgeType: 'opposite',
               channel: 'layerzero',
             },
             {
@@ -854,7 +854,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
       ],
-    },
+    }
   ];
 
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';

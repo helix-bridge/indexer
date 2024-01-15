@@ -31,9 +31,9 @@ export abstract class IQuery {
 
     abstract queryRelayRecords(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, relayer?: Nullable<string>, row?: Nullable<number>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
 
-    abstract queryLnBridgeRelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, relayer?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<LnBridgeRelayInfos> | Promise<Nullable<LnBridgeRelayInfos>>;
+    abstract queryLnBridgeRelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, version?: Nullable<string>, bridge?: Nullable<string>, relayer?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<LnBridgeRelayInfos> | Promise<Nullable<LnBridgeRelayInfos>>;
 
-    abstract sortedLnBridgeRelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>, row?: Nullable<number>, amount?: Nullable<string>, decimals?: Nullable<number>): Nullable<SortedLnBridgeRelayInfos> | Promise<Nullable<SortedLnBridgeRelayInfos>>;
+    abstract sortedLnBridgeRelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, version?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>, row?: Nullable<number>, amount?: Nullable<string>, decimals?: Nullable<number>): Nullable<SortedLnBridgeRelayInfos> | Promise<Nullable<SortedLnBridgeRelayInfos>>;
 }
 
 export class HistoryRecord {

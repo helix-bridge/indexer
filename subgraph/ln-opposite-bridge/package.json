@@ -4,10 +4,8 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "build-goerli": "sh generate.sh goerli 0x4C538EfA6e3f9Dfb939AA4F0B224577DA665923a 9844813 && graph codegen && graph build",
-    "build-arbigoerli": "sh generate.sh arbitrum-goerli 0x4C538EfA6e3f9Dfb939AA4F0B224577DA665923a 46913317 && graph codegen && graph build",
-    "build-lineagoerli": "sh generate.sh lineagoerli 0x4C538EfA6e3f9Dfb939AA4F0B224577DA665923a 1698144 && graph codegen && graph build",
-    "build-mantlegoerli": "sh generate.sh mantlegoerli 0x4C538EfA6e3f9Dfb939AA4F0B224577DA665923a 23363565 && graph codegen && graph build",
+    "build-sepolia": "sh generate.sh sepolia 0xbA96d83E2A04c4E50F2D6D7eCA03D70bA2426e5f 5088301 && graph codegen && graph build",
+    "build-arbisepolia": "sh generate.sh arbitrum-sepolia 0xbA96d83E2A04c4E50F2D6D7eCA03D70bA2426e5f 7188705 && graph codegen && graph build",
     "build-ethereum": "sh generate.sh mainnet 0x48d769d5C7ff75703cDd1543A1a2ed9bC9044A23 18381361 && graph codegen && graph build",
     "build-arbitrum": "sh generate.sh arbitrum-one 0x48d769d5C7ff75703cDd1543A1a2ed9bC9044A23 141864870 && graph codegen && graph build",
     "create-remote-dev": "graph create --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ lnopposite/$NETWORK",
@@ -16,7 +14,7 @@
     "deploy-remote-pro": "graph deploy --access-token $KEY --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com lnopposite/$NETWORK"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.31.1",
+    "@graphprotocol/graph-cli": "0.64.1",
     "@graphprotocol/graph-ts": "0.30.0"
   }
 }

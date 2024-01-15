@@ -4,9 +4,9 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "build-sepolia": "sh generate.sh sepolia 0x7e101911E5FB461d78FBde3992f76F3Bf8BbA829 4607131 && graph codegen && graph build",
-    "build-arbisepolia": "sh generate.sh arbitrum-sepolia 0x7e101911E5FB461d78FBde3992f76F3Bf8BbA829 639445 && graph codegen && graph build",
-    "build-zksepolia": "sh generate.sh zksync-era-sepolia 0xbd8434d7d330329364590822ca2D2Fae630C1424 77153 && graph codegen && graph build",
+    "build-sepolia": "sh generate.sh sepolia 0x8429D7Dfd91D6F970ba89fFC005e67D15f1E4739 5088292 && graph codegen && graph build",
+    "build-arbisepolia": "sh generate.sh arbitrum-sepolia 0x8429D7Dfd91D6F970ba89fFC005e67D15f1E4739 7187613 && graph codegen && graph build",
+    "build-zksepolia": "sh generate.sh zksync-era-sepolia 0xBe23e871318E49C747CB909AC65aCCFAEAac3a37 97433 && graph codegen && graph build",
     "build-ethereum": "sh generate.sh mainnet 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 18411160 && graph codegen && graph build",
     "build-arbitrum": "sh generate.sh arbitrum-one 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 143123443 && graph codegen && graph build",
     "build-mantle": "sh generate.sh mantle 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 17119189 && graph codegen && graph build",

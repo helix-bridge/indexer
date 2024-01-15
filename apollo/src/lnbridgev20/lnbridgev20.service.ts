@@ -539,7 +539,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         );
         const sourcePartner = this.findPartnerByChainId(record.remoteChainId);
         if (sourcePartner === null) {
-          this.logger.warn(`can't find partner chain id ${record.remoteChainId}`);
+          this.logger.warn(`can't find partner chain source:${transfer.chainId} remote:${record.remoteChainId}`);
           latestNonce += 1;
           this.fetchCache[index].latestRelayerInfoTargetNonce = latestNonce;
           return;

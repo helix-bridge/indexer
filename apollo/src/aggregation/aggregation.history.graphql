@@ -91,8 +91,8 @@ type Query {
   checkLnBridgeExist(fromChainId: Int, toChainId: Int, fromToken: String, toToken: String): Boolean
   queryGuardNeedSignature(fromChain: String, toChain: String, bridge: String, guardAddress: String, row: Int): HistoryRecords
   queryRelayRecords(fromChain: String, toChain: String, bridge: String, relayer: String, row: Int): HistoryRecords
-  queryLnBridgeRelayInfos(fromChain: String, toChain: String, bridge: String, relayer: String, row: Int, page: Int): LnBridgeRelayInfos
-  sortedLnBridgeRelayInfos(fromChain: String, toChain: String, bridge: String, token: String, row: Int, amount: String, decimals: Int): SortedLnBridgeRelayInfos
+  queryLnBridgeRelayInfos(fromChain: String, toChain: String, version: String, bridge: String, relayer: String, row: Int, page: Int): LnBridgeRelayInfos
+  sortedLnBridgeRelayInfos(fromChain: String, toChain: String, version: String, bridge: String, token: String, row: Int, amount: String, decimals: Int): SortedLnBridgeRelayInfos
 }
 
 type Mutation {
