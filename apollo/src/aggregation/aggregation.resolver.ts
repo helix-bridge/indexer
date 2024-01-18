@@ -307,7 +307,8 @@ export class AggregationResolver {
       if (limit > transferLimit) {
         transferLimit = limit;
       }
-      if (limit < BigInt(amount) * BigInt(1 + record.liquidityFeeRate) + BigInt(record.baseFee) || record.paused) {
+      const providerFee = BigInt(amount) * BigInt(1 + record.liquidityFeeRate) + BigInt(record.baseFee);
+      if (limit < providerFee + BigInt(record.protocolFee) || record.paused) {
         continue;
       }
       const point = await this.aggregationService.calculateLnBridgeRelayerPoint(
