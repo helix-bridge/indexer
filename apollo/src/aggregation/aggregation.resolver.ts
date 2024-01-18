@@ -5,6 +5,7 @@ import { Prisma } from '@prisma/client';
 
 @Resolver()
 export class AggregationResolver {
+  private readonly heartbeatTimeout = 300;
   constructor(private aggregationService: AggregationService) {}
 
   @Query()
@@ -302,6 +303,7 @@ export class AggregationResolver {
     // query all pending txs
     var sortedRelayers = [];
     var transferLimit = BigInt(0);
+    const now = Math.floor(Date.now() / 1000);
     for (const record of records.records) {
       const limit = record.version == 'lnv2' ? BigInt(record.margin) : BigInt(record.transferLimit);
       if (limit > transferLimit) {
@@ -309,6 +311,10 @@ export class AggregationResolver {
       }
       const providerFee = BigInt(amount) * BigInt(record.liquidityFeeRate) / BigInt(100000) + BigInt(record.baseFee);
       if (limit < BigInt(amount) + providerFee + BigInt(record.protocolFee) || record.paused) {
+        continue;
+      }
+      // offline
+      if (record.heartbeatTimestamp + this.heartbeatTimeout < now) {
         continue;
       }
       const point = await this.aggregationService.calculateLnBridgeRelayerPoint(
