@@ -58,6 +58,8 @@ export class AggregationResolver {
   async historyRecords(
     @Args('sender') sender: string,
     @Args('recipient') recipient: string,
+    @Args('relayer') relayer: string,
+    @Args('needWithdrawLiquidity') needWithdrawLiquidity: boolean,
     @Args('fromChains') fromChains: string[],
     @Args('toChains') toChains: string[],
     @Args('bridges') bridges: string,
@@ -78,7 +80,9 @@ export class AggregationResolver {
       !Object.values(item).some((value) => isUndefined(value) || isNull(value) || value === '');
 
     const accFilters = [{ sender }, { recipient }].filter(isValid);
+    const relayerFilters = [{ relayer }, { needWithdrawLiquidity }].filter(isValid); 
     const accountCondition = accFilters.length ? { OR: accFilters } : {};
+    const relayerCondition = relayerFilters.length ? { AND: relayerFilters } : {};
     const resultCondition = results && results.length ? { result: { in: results } } : {};
     const fromChainCondition =
       fromChains && fromChains.length ? { fromChain: { in: fromChains } } : {};
@@ -99,6 +103,7 @@ export class AggregationResolver {
     const conditions = {
       ...accountCondition,
       ...chainConditions,
+      ...relayerCondition,
     };
 
     const where = isEmpty(conditions) ? undefined : conditions;

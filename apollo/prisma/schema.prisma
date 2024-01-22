@@ -39,6 +39,8 @@ model HistoryRecord {
   relayer String?
   endTxHash String?
   confirmedBlocks String?
+  needWithdrawLiquidity Boolean?
+  lastRequestWithdraw BigInt?
 }
 
 model DailyStatistics {

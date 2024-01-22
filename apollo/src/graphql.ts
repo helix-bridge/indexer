@@ -23,7 +23,7 @@ export abstract class IQuery {
 
     abstract queryDailyStatistics(timepast: number, first?: Nullable<number>, from?: Nullable<string>, to?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>): Nullable<Nullable<DailyStatistics>[]> | Promise<Nullable<Nullable<DailyStatistics>[]>>;
 
-    abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, fromChains?: Nullable<Nullable<string>[]>, toChains?: Nullable<Nullable<string>[]>, bridges?: Nullable<Nullable<string>[]>, row?: Nullable<number>, page?: Nullable<number>, results?: Nullable<Nullable<number>[]>, recvTokenAddress?: Nullable<string>, order?: Nullable<string>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
+    abstract historyRecords(sender?: Nullable<string>, recipient?: Nullable<string>, relayer?: Nullable<string>, needWithdrawLiquidity?: Nullable<boolean>, fromChains?: Nullable<Nullable<string>[]>, toChains?: Nullable<Nullable<string>[]>, bridges?: Nullable<Nullable<string>[]>, row?: Nullable<number>, page?: Nullable<number>, results?: Nullable<Nullable<number>[]>, recvTokenAddress?: Nullable<string>, order?: Nullable<string>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
 
     abstract checkLnBridgeExist(fromChainId?: Nullable<number>, toChainId?: Nullable<number>, fromToken?: Nullable<string>, toToken?: Nullable<string>): Nullable<boolean> | Promise<Nullable<boolean>>;
 
@@ -63,6 +63,8 @@ export class HistoryRecord {
     relayer?: Nullable<string>;
     endTxHash?: Nullable<string>;
     confirmedBlocks?: Nullable<string>;
+    needWithdrawLiquidity?: Nullable<boolean>;
+    lastRequestWithdraw?: Nullable<BigInt>;
 }
 
 export class DailyStatistics {

@@ -91,13 +91,14 @@ export class Lnv3Service implements OnModuleInit {
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { lnv3TransferRecords(first: 10, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId } }`;
+      const query = `query { lnv3TransferRecords(first: 10, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }`;
       const records = await axios
         .post(transfer.url, {
           query: query,
           variables: null,
         })
         .then((res) => res.data?.data?.lnv3TransferRecords);
+
 
       if (records && records.length > 0) {
         for (const record of records) {
@@ -137,18 +138,20 @@ export class Lnv3Service implements OnModuleInit {
             recvTokenAddress: record.targetToken,
             endTxHash: '',
             confirmedBlocks: '',
+            needWithdrawLiquidity: !record.hasWithdrawn,
+            lastRequestWithdraw: 0,
           });
           latestNonce += 1;
+          this.logger.log(
+            `lnv3 [${transfer.chain}->${toChain.chain}] save new send record succeeded nonce: ${latestNonce}, id: ${record.id}`
+          );
         }
 
-        this.logger.log(
-          `lnv3 save new send record succeeded ${transfer.chain}, nonce: ${latestNonce}, added: ${records.length}`
-        );
         this.fetchCache[index].latestNonce = latestNonce;
       }
     } catch (error) {
       this.logger.warn(
-        `lnv3 save new send record failed ${transfer.chain}, ${latestNonce}, ${error}`
+        `lnv3 [${transfer.chain}->] save new send record failed ${latestNonce}, ${error}`
       );
     }
   }
@@ -178,9 +181,9 @@ export class Lnv3Service implements OnModuleInit {
         const transferId = last(recordSplitted);
         const dstChainId = recordSplitted[2];
 
-        if (record.result === RecordStatus.pending) {
+        if (record.endTxHash === '') {
           const toChain = this.getDestChain(dstChainId);
-          const query = `query { lnv3RelayRecord(id: "${transferId}") { id, relayer, timestamp, transactionHash, slashed }}`;
+          const query = `query { lnv3RelayRecord(id: "${transferId}") { id, relayer, timestamp, transactionHash, slashed, requestWithdrawTimestamp }}`;
           const relayRecord = await axios
             .post(toChain.url, {
               query: query,
@@ -189,22 +192,60 @@ export class Lnv3Service implements OnModuleInit {
             .then((res) => res.data?.data?.lnv3RelayRecord);
 
           if (relayRecord) {
-            const updateData = {
-              result: RecordStatus.success,
-              responseTxHash: relayRecord.transactionHash,
-              endTxHash: relayRecord.transactionHash,
-              endTime: Number(relayRecord.timestamp),
-              relayer: relayRecord.relayer,
-            };
+            let needWithdrawLiquidity = record.needWithdrawLiquidity;
+            let requestWithdrawTimestamp = Number(relayRecord.requestWithdrawTimestamp);
+            let endTxHash = record.endTxHash;
+            if (record.result !== RecordStatus.success) {
+              if (relayRecord.slashed) {
+                needWithdrawLiquidity = false;
+              }
+              if (!needWithdrawLiquidity) {
+                endTxHash = relayRecord.transactionHash;
+              }
+              const updateData = {
+                result: RecordStatus.success,
+                responseTxHash: relayRecord.transactionHash,
+                endTxHash: endTxHash,
+                endTime: Number(relayRecord.timestamp),
+                relayer: relayRecord.relayer,
+                needWithdrawLiquidity: needWithdrawLiquidity,
+                lastRequestWithdraw: requestWithdrawTimestamp,
+              };
 
-            await this.aggregationService.updateHistoryRecord({
-              where: { id: record.id },
-              data: updateData,
-            });
+              await this.aggregationService.updateHistoryRecord({
+                where: { id: record.id },
+                data: updateData,
+              });
 
-            this.logger.log(
-              `lnv3 new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
-            );
+              this.logger.log(
+                `lnv3 [${transfer.chain}->${toChain.chain}] new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
+              );
+            }
+            // query withdrawLiquidity result
+            if (needWithdrawLiquidity && requestWithdrawTimestamp > 0) {
+              // query result on source
+              const query = `query { lnv3TransferRecord(id: "${transferId}") { id, hasWithdrawn }}`;
+              const transferRecord = await axios
+              .post(transfer.url, {
+                query: query,
+                variables: null,
+              })
+              .then((res) => res.data?.data?.lnv3TransferRecord);
+              if (transferRecord) {
+                await this.aggregationService.updateHistoryRecord({
+                  where: { id: record.id },
+                  data: {
+                    needWithdrawLiquidity: !transferRecord.hasWithdrawn,
+                    endTxHash: transferRecord.responseTxHash,
+                  },
+                });
+                if (transferRecord.hasWithdrawn) {
+                  this.logger.log(
+                    `lnv3 [${transfer.chain}->${toChain.chain}] tx withdrawn id: ${record.id}`
+                  );
+                }
+              }
+            }
           }
         }
       }
@@ -335,7 +376,7 @@ export class Lnv3Service implements OnModuleInit {
         latestNonce += 1;
         this.fetchCache[index].latestRelayerInfoNonce = latestNonce;
         this.logger.log(
-          `update lnv3 relayer info, id ${id}, type ${record.updateType}, margin ${record.penalty}, basefee ${record.baseFee}, liquidityFee ${record.liquidityFeeRate}`
+          `lnv3 [${transfer.chain}->${toChain.chain}] update relayer info, id ${id}, type ${record.updateType}, margin ${record.penalty}, basefee ${record.baseFee}, liquidityFee ${record.liquidityFeeRate}`
         );
       }
     } catch (error) {
