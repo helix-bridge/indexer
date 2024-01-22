@@ -6,6 +6,8 @@ import {
     SlashRequest,
     TransferFilled,
     LnProviderPaused,
+    LiquidityWithdrawn,
+    LiquidityWithdrawRequested,
 } from "../generated/HelixLnBridgeV3/HelixLnBridgeV3"
 import { Lnv3TransferRecord, Lnv3RelayRecord, LnNonceOrder, Lnv3RelayUpdateRecord, Lnv3PenaltyReserve } from "../generated/schema"
 
@@ -42,6 +44,18 @@ export function handleSlashRequest(event: SlashRequest): void {
   entity.slashed = true;
   entity.save();
 }
+
+export function handleLiquidityWithdrawRequested(event: LiquidityWithdrawRequested): void {
+  for (let i = 0; i < event.params.transferIds.length; i++) {
+    const transferId = event.params.transferIds[i];
+    let entity = Lnv3RelayRecord.load(transferId.toHexString());
+    if (entity == null) {
+      return;
+    }
+    entity.requestWithdrawTimestamp = event.block.timestamp;
+    entity.save();
+  }
+}
 // **************** target chain end ******************
 
 // **************** source chain start ****************
@@ -75,6 +89,18 @@ export function handleTokenLocked(event: TokenLocked): void {
   entity.fee = event.params.fee;
   entity.transferId = event.params.transferId;
   entity.save();
+}
+
+export function handleLiquidityWithdrawn(event: LiquidityWithdrawn): void {
+  for (let i = 0; i < event.params.transferIds.length; i++) {
+    const transferId = event.params.transferIds[i];
+    let entity = Lnv3TransferRecord.load(transferId.toHexString());
+    if (entity == null) {
+      return;
+    }
+    entity.hasWithdrawn = true;
+    entity.save();
+  }
 }
 
 export function handleLnProviderUpdated(event: LnProviderUpdated): void {

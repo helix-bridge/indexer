@@ -19,6 +19,7 @@ type Lnv3TransferRecord @entity {
   transactionHash: Bytes!
   fee: BigInt
   transferId: Bytes!
+  hasWithdrawn: Boolean
 }
 
 type Lnv3RelayRecord @entity {
@@ -27,6 +28,7 @@ type Lnv3RelayRecord @entity {
   transactionHash: Bytes!
   timestamp: BigInt!
   slashed: Boolean!
+  requestWithdrawTimestamp: BigInt
 }
 
 type Lnv3RelayUpdateRecord @entity {

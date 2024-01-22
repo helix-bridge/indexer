@@ -19,6 +19,8 @@ dataSources:
         - PenaltyReserveUpdated
         - SlashRequest
         - TransferFilled
+        - LiquidityWithdrawn
+        - LiquidityWithdrawRequested
       abis:
         - name: HelixLnBridgeV3
           file: ./abis/HelixLnBridgeV3.json
@@ -35,5 +37,9 @@ dataSources:
           handler: handleTransferFilled
         - event: LnProviderPaused(address,uint256,address,address,bool)
           handler: handleLnProviderPaused
+        - event: LiquidityWithdrawn(bytes32[],address,uint256)
+          handler: handleLiquidityWithdrawn
+        - event: LiquidityWithdrawRequested(bytes32[],uint256)
+          handler: handleLiquidityWithdrawRequested
       file: ./src/HelixLnBridgeV3.ts
 " > subgraph.yaml

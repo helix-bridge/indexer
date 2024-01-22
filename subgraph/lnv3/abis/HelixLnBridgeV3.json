@@ -48,6 +48,25 @@
         },
         {
           "indexed": false,
+          "internalType": "uint256",
+          "name": "remoteChainId",
+          "type": "uint256"
+        }
+      ],
+      "name": "LiquidityWithdrawRequested",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes32[]",
+          "name": "transferIds",
+          "type": "bytes32[]"
+        },
+        {
+          "indexed": false,
           "internalType": "address",
           "name": "provider",
           "type": "address"
