@@ -15,10 +15,6 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly darwiniaSub2EthLnEndpoint = this.configService.get<string>(
     'DARWINIA_S2E_LN_ENDPOINT'
   );
-  private readonly goerliArb2EthEndpoint = this.configService.get<string>('GOERLI_A2E_LN_ENDPOINT');
-  private readonly arbitrumArb2EthEndpoint = this.configService.get<string>(
-    'ARBITRUM_A2E_LN_ENDPOINT'
-  );
 
   formalChainTransfers: PartnerT2[] = [
     /*

@@ -4,7 +4,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: Erc20Sub2EthMappingTokenFactory
-    network: ethereum
+    network: mainnet
     source:
       address: "0xFBAD806Bdf9cEC2943be281FB355Da05068DE925"
       abi: Erc20Sub2EthMappingTokenFactory

@@ -15,7 +15,6 @@ import { XcmModule } from './xcm/xcm.module';
 import { Sub2ethv2Module } from './sub2ethv2/sub2ethv2.module';
 import { S2sv21Module } from './s2sv21/s2sv21.module';
 import { LnbridgeModule } from './lnbridge/lnbridge.module';
-import { L2arbitrumModule } from './l2arbitrum/l2arbitrum.module';
 import { Lnbridgev20Module } from './lnbridgev20/lnbridgev20.module';
 
 const chainEnvFilePath = `.env.${process.env.NODE_ENV || 'prod'}`;
@@ -46,7 +45,6 @@ export class BigIntScalar extends BigInt {}
     Sub2ethv2Module,
     LnbridgeModule,
     S2sv21Module,
-    L2arbitrumModule,
     Lnbridgev20Module,
   ],
   controllers: [AppController],
