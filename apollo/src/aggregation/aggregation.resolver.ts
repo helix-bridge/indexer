@@ -97,13 +97,13 @@ export class AggregationResolver {
         ...toChainCondition,
         ...bridgeCondition,
         ...recvTokenCondition,
+        ...relayerCondition,
       },
     };
 
     const conditions = {
       ...accountCondition,
       ...chainConditions,
-      ...relayerCondition,
     };
 
     const where = isEmpty(conditions) ? undefined : conditions;
