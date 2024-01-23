@@ -17,7 +17,7 @@
     "build-crab": "sh generate.sh crab2 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 1718910 && graph codegen && graph build",
     "build-bsc": "sh generate.sh bsc 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 33646764 && graph codegen && graph build",
     "build-base": "sh generate.sh base 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 6837827 && graph codegen && graph build",
-    "build-op": "sh generate.sh op 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 112469188 && graph codegen && graph build",
+    "build-op": "sh generate.sh optimism 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 112469188 && graph codegen && graph build",
     "build-linea": "sh generate.sh linea 0x94C614DAeFDbf151E1BB53d6A201ae5fF56A9337 927064 && graph codegen && graph build",
     "create-remote-dev": "graph create --access-token ${KEY} --node https://thegraph-g2.darwinia.network/helix/deploy/ lndefault/${NETWORK}",
     "deploy-remote-dev": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com lndefault/$NETWORK",
