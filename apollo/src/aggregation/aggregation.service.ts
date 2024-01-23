@@ -4,6 +4,7 @@ import { HistoryRecords, Lnv20RelayInfo, Lnv20RelayInfos } from '../graphql';
 import { GuardService } from '../guard/guard.service';
 // export lnbridge service configure
 import { TransferService } from '../lnbridgev20/transfer.service';
+import { TasksService } from '../tasks/tasks.service';
 
 @Injectable()
 export class AggregationService extends PrismaClient implements OnModuleInit {
@@ -13,7 +14,11 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     await this.$connect();
   }
 
-  constructor(private guardService: GuardService, private lnService: TransferService) {
+  constructor(
+      private guardService: GuardService,
+      private lnService: TransferService,
+      private tasksService: TasksService
+  ) {
     super();
   }
 
@@ -235,6 +240,10 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       where,
       orderBy: { timestamp: 'desc' },
     });
+  }
+  
+  tasksHealthCheck() {
+      return this.tasksService.queryHealthChecks();
   }
 
   checkLnBridgeConfigure(params: {

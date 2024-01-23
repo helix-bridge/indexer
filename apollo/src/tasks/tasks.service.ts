@@ -5,11 +5,22 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
+  public healthChecks = new Map();
+
   constructor(private schedulerRegistry: SchedulerRegistry) {}
 
   addInterval(name: string, milliseconds: number, callback: () => void) {
     this.logger.log(`new interval task added name:${name}, ms: ${milliseconds}`);
-    const interval = setInterval(callback, milliseconds);
+    this.healthChecks.set(name, 0);
+    const interval = setInterval(async () => {
+        var callTimes: number = this.healthChecks.get(name);
+        await callback();
+        this.healthChecks.set(name, callTimes + 1);
+    }, milliseconds);
     this.schedulerRegistry.addInterval(name, interval);
+  }
+
+  queryHealthChecks() {
+    return this.healthChecks;
   }
 }

@@ -196,6 +196,22 @@ export class AggregationResolver {
   }
 
   @Query()
+  tasksHealthCheck(
+    @Args('name') name: string
+  ) {
+     const healthChecks = this.aggregationService.tasksHealthCheck();
+     if (name !== null) {
+       return [
+         {
+           name: name,
+           callTimes: healthChecks[name]
+         }
+       ];
+     }
+     return Array.from(healthChecks, ([name, callTimes]) => ({ name, callTimes }));
+  }
+
+  @Query()
   async queryGuardNeedSignature(
     @Args('fromChain') fromChain: string,
     @Args('toChain') toChain: string,

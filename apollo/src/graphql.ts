@@ -27,6 +27,8 @@ export abstract class IQuery {
 
     abstract checkLnBridgeExist(fromChainId?: Nullable<number>, toChainId?: Nullable<number>, fromToken?: Nullable<string>, toToken?: Nullable<string>): Nullable<boolean> | Promise<Nullable<boolean>>;
 
+    abstract tasksHealthCheck(name?: Nullable<string>): Nullable<Nullable<HealthInfo>[]> | Promise<Nullable<Nullable<HealthInfo>[]>>;
+
     abstract queryGuardNeedSignature(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, guardAddress?: Nullable<string>, row?: Nullable<number>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
 
     abstract queryRelayRecords(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, relayer?: Nullable<string>, row?: Nullable<number>): Nullable<HistoryRecords> | Promise<Nullable<HistoryRecords>>;
@@ -112,6 +114,11 @@ export class Lnv20RelayInfos {
 export class SortedLnv20RelayInfos {
     maxMargin: BigInt;
     records?: Nullable<Nullable<Lnv20RelayInfo>[]>;
+}
+
+export class HealthInfo {
+    name?: Nullable<string>;
+    callTimes?: Nullable<number>;
 }
 
 export abstract class IMutation {
