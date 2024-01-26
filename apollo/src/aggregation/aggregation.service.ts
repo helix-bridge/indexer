@@ -304,7 +304,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       }
     }
     const F =
-      BigInt(relayerInfo.baseFee) +
+      BigInt(relayerInfo.baseFee) + BigInt(relayerInfo.protocolFee) +
       (BigInt(relayerInfo.liquidityFeeRate) * amount) / BigInt(100000);
     const R = relayerInfo.slashCount;
     const w = 1 + R * 0.1;
