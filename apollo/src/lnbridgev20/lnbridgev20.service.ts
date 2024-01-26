@@ -41,10 +41,10 @@ export interface TokenPairInfo {
 
 @Injectable()
 export class Lnbridgev20Service implements OnModuleInit {
-  private readonly logger = new Logger('lnbridgev2.0');
+  private readonly logger = new Logger('lnv2');
   private readonly reorgTime = 900;
   baseConfigure: BridgeBaseConfigure = {
-    name: 'lnBridgeV20',
+    name: 'lnBridgeV2',
     fetchHistoryDataFirst: 10,
     fetchSendDataInterval: 10000,
     takeEachTime: 3,
@@ -70,7 +70,7 @@ export class Lnbridgev20Service implements OnModuleInit {
   ) {}
 
   protected genID(bridgeType: string, transferId: string): string {
-    return `lnbridgev20-${bridgeType}-${transferId}`;
+    return `lnv2-${bridgeType}-${transferId}`;
   }
 
   async onModuleInit() {
@@ -127,7 +127,7 @@ export class Lnbridgev20Service implements OnModuleInit {
   }
 
   private bridgeName(indexInfo: BridgeIndexInfo): string {
-    return 'lnbridgev20-' + indexInfo.bridgeType;
+    return 'lnv2-' + indexInfo.bridgeType;
   }
 
   private formatSortedMessageNonce(nonce: number): string {
@@ -157,7 +157,7 @@ export class Lnbridgev20Service implements OnModuleInit {
     );
     const recordSplitted = firstRecord.id.split('-');
     const transferId = last(recordSplitted);
-    await this.aggregationService.updateLnv20RelayInfo({
+    await this.aggregationService.updateLnBridgeRelayInfo({
       where: { id: providerId },
       data: { lastTransferId: transferId },
     });
@@ -336,7 +336,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             record.provider,
             record.sourceToken
           );
-          await this.aggregationService.updateLnv20RelayInfo({
+          await this.aggregationService.updateLnBridgeRelayInfo({
             where: { id: providerId },
             data: { lastTransferId: record.id },
           });
@@ -344,7 +344,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         }
         if (records && records.length > 0) {
           this.logger.log(
-            `lnbridgev2 new records, from ${transfer.chainId}, latest nonce ${latestNonce}, added ${
+            `lnv2 new records, from ${transfer.chainId}, latest nonce ${latestNonce}, added ${
               records.length - ignored
             }, ignored ${ignored}`
           );
@@ -352,7 +352,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         this.fetchCache[index].latestNonce = latestNonce;
       }
     } catch (error) {
-      this.logger.warn(`lnbridgev2 fetch record failed, from ${transfer.chainId}, ${error}`);
+      this.logger.warn(`lnv2 fetch record failed, from ${transfer.chainId}, ${error}`);
     }
   }
 
@@ -428,10 +428,10 @@ export class Lnbridgev20Service implements OnModuleInit {
               record.relayer,
               record.sendTokenAddress
             );
-            const relayerInfo = await this.aggregationService.queryLnv20RelayInfoById({
+            const relayerInfo = await this.aggregationService.queryLnBridgeRelayInfoById({
               id: providerId,
             });
-            await this.aggregationService.updateLnv20RelayInfo({
+            await this.aggregationService.updateLnBridgeRelayInfo({
               where: { id: providerId },
               data: {
                 cost: (BigInt(relayerInfo.cost) + BigInt(cost)).toString(),
@@ -440,13 +440,13 @@ export class Lnbridgev20Service implements OnModuleInit {
             });
 
             this.logger.log(
-              `[${record.fromChain}->${record.toChain}]lnv2bridge new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
+              `[${record.fromChain}->${record.toChain}]lnv2 new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
             );
           }
         }
       }
     } catch (error) {
-      this.logger.warn(`fetch lnv20bridge status failed, error ${error}`);
+      this.logger.warn(`fetch lnv2 status failed, error ${error}`);
     }
   }
 
@@ -456,7 +456,7 @@ export class Lnbridgev20Service implements OnModuleInit {
     provider: string,
     sourceToken: string
   ): string {
-    return `lnv20-${fromChainId}-${toChainId}-${provider}-${sourceToken}`;
+    return `lnv2-${fromChainId}-${toChainId}-${provider}-${sourceToken}`;
   }
 
   private findPartnerByChainId(chainId: number) {
@@ -508,7 +508,7 @@ export class Lnbridgev20Service implements OnModuleInit {
     let latestNonce = this.fetchCache[index].latestRelayerInfoTargetNonce;
     try {
       if (latestNonce == -1) {
-        const firstRecord = await this.aggregationService.queryLnv20RelayInfoFirst(
+        const firstRecord = await this.aggregationService.queryLnBridgeRelayInfoFirst(
           {
             toChain: transfer.chainName,
             bridge: this.bridgeName(indexInfo),
@@ -539,7 +539,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         );
         const sourcePartner = this.findPartnerByChainId(record.remoteChainId);
         if (sourcePartner === null) {
-          this.logger.warn(`can't find partner chain id ${record.remoteChainId}`);
+          this.logger.warn(`can't find partner chain source:${transfer.chainId} remote:${record.remoteChainId}`);
           latestNonce += 1;
           this.fetchCache[index].latestRelayerInfoTargetNonce = latestNonce;
           return;
@@ -556,7 +556,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           this.fetchCache[index].latestRelayerInfoTargetNonce = latestNonce;
           return;
         }
-        const relayerInfo = await this.aggregationService.queryLnv20RelayInfoById({
+        const relayerInfo = await this.aggregationService.queryLnBridgeRelayInfoById({
           id: id,
         });
         const sourceMargin =
@@ -577,13 +577,14 @@ export class Lnbridgev20Service implements OnModuleInit {
               updateData.withdrawNonce = relayerInfo.withdrawNonce;
             }
           }
-          await this.aggregationService.updateLnv20RelayInfo({
+          await this.aggregationService.updateLnBridgeRelayInfo({
             where: { id: id },
             data: updateData,
           });
         } else {
-          await this.aggregationService.createLnv20RelayInfo({
+          await this.aggregationService.createLnBridgeRelayInfo({
             id: id,
+            version: 'lnv2',
             fromChain: sourcePartner.chainName,
             toChain: transfer.chainName,
             bridge: this.bridgeName(indexInfo),
@@ -591,7 +592,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             withdrawNonce: Number(record.withdrawNonce),
             relayer: record.provider,
             sendToken: record.sourceToken,
-            transaction_hash: record.transactionHash,
+            transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),
             margin: BigInt(sourceMargin).toString(),
             protocolFee: BigInt(tokenPair.protocolFee).toString(),
@@ -604,16 +605,18 @@ export class Lnbridgev20Service implements OnModuleInit {
             heartbeatTimestamp: 0,
             lastTransferId: '0x0000000000000000000000000000000000000000000000000000000000000000',
             messageChannel: tokenPair.channel,
+            transferLimit: '0',
+            paused: false,
           });
         }
         latestNonce += 1;
         this.fetchCache[index].latestRelayerInfoTargetNonce = latestNonce;
         this.logger.log(
-          `update lnv20 relay margin, id ${id}, margin ${record.margin}, withdrawNonce ${record.withdrawNonce}, nonce ${latestNonce}, type ${record.updateType}`
+          `update lnv2 relay margin, id ${id}, margin ${record.margin}, withdrawNonce ${record.withdrawNonce}, nonce ${latestNonce}, type ${record.updateType}`
         );
       }
     } catch (error) {
-      this.logger.warn(`fetch lnv20bridge relay records failed, error ${error}`);
+      this.logger.warn(`fetch lnv2 relay records failed, error ${error}`);
     }
   }
 
@@ -622,7 +625,7 @@ export class Lnbridgev20Service implements OnModuleInit {
     let latestNonce = this.fetchCache[index].latestRelayerInfoNonce;
     try {
       if (latestNonce == -1) {
-        const firstRecord = await this.aggregationService.queryLnv20RelayInfoFirst(
+        const firstRecord = await this.aggregationService.queryLnBridgeRelayInfoFirst(
           {
             fromChain: transfer.chainName,
             bridge: this.bridgeName(indexInfo),
@@ -652,7 +655,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           record.provider,
           record.sourceToken
         );
-        const relayerInfo = await this.aggregationService.queryLnv20RelayInfoById({
+        const relayerInfo = await this.aggregationService.queryLnBridgeRelayInfoById({
           id: id,
         });
         const tokenPair = this.findTokenPair(
@@ -670,8 +673,9 @@ export class Lnbridgev20Service implements OnModuleInit {
         const toPartner = this.findPartnerByChainId(record.remoteChainId);
         if (!relayerInfo) {
           // if not exist create
-          await this.aggregationService.createLnv20RelayInfo({
+          await this.aggregationService.createLnBridgeRelayInfo({
             id: id,
+            version: 'lnv2',
             fromChain: transfer.chainName,
             toChain: toPartner.chainName,
             bridge: this.bridgeName(indexInfo),
@@ -679,7 +683,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             withdrawNonce: 0,
             relayer: record.provider,
             sendToken: record.sourceToken,
-            transaction_hash: record.transactionHash,
+            transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),
             margin: '0',
             protocolFee: BigInt(tokenPair.protocolFee).toString(),
@@ -692,6 +696,8 @@ export class Lnbridgev20Service implements OnModuleInit {
             heartbeatTimestamp: 0,
             lastTransferId: '0x0000000000000000000000000000000000000000000000000000000000000000',
             messageChannel: tokenPair.channel,
+            transferLimit: '0',
+            paused: false,
           });
         } else {
           // else update
@@ -703,7 +709,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           };
           updateData.baseFee = BigInt(record.baseFee).toString();
           updateData.liquidityFeeRate = Number(record.liquidityFeeRate);
-          await this.aggregationService.updateLnv20RelayInfo({
+          await this.aggregationService.updateLnBridgeRelayInfo({
             where: { id: id },
             data: updateData,
           });
@@ -711,11 +717,11 @@ export class Lnbridgev20Service implements OnModuleInit {
         latestNonce += 1;
         this.fetchCache[index].latestRelayerInfoNonce = latestNonce;
         this.logger.log(
-          `update lnv20 relay info, id ${id}, type ${record.updateType}, basefee ${record.baseFee}, liquidityFee ${record.liquidityFeeRate}`
+          `update lnv2 relay info, id ${id}, type ${record.updateType}, basefee ${record.baseFee}, liquidityFee ${record.liquidityFeeRate}`
         );
       }
     } catch (error) {
-      this.logger.warn(`fetch lnv20bridge relay records failed, error ${error}`);
+      this.logger.warn(`fetch lnv2 relay records failed, error ${error}`);
     }
   }
 
@@ -725,7 +731,7 @@ export class Lnbridgev20Service implements OnModuleInit {
     let latestNonce = this.fetchCache[index].latestRelayerInfoNonce;
     try {
       if (latestNonce == -1) {
-        const firstRecord = await this.aggregationService.queryLnv20RelayInfoFirst(
+        const firstRecord = await this.aggregationService.queryLnBridgeRelayInfoFirst(
           {
             fromChain: transfer.chainName,
             bridge: this.bridgeName(indexInfo),
@@ -755,7 +761,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           record.provider,
           record.sourceToken
         );
-        const relayerInfo = await this.aggregationService.queryLnv20RelayInfoById({
+        const relayerInfo = await this.aggregationService.queryLnBridgeRelayInfoById({
           id: id,
         });
         const tokenPair = this.findTokenPair(
@@ -773,15 +779,16 @@ export class Lnbridgev20Service implements OnModuleInit {
         if (!relayerInfo) {
           // if not exist create
           const margin = record.margin === null ? '0' : record.margin;
-          await this.aggregationService.createLnv20RelayInfo({
+          await this.aggregationService.createLnBridgeRelayInfo({
             id: id,
+            version: 'lnv2',
             fromChain: transfer.chainName,
             toChain: toPartner.chainName,
             bridge: this.bridgeName(indexInfo),
             nonce: latestNonce,
             relayer: record.provider,
             sendToken: record.sourceToken,
-            transaction_hash: record.transactionHash,
+            transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),
             margin: margin,
             protocolFee: BigInt(tokenPair.protocolFee).toString(),
@@ -795,6 +802,8 @@ export class Lnbridgev20Service implements OnModuleInit {
             profit: '0',
             heartbeatTimestamp: 0,
             messageChannel: tokenPair.channel,
+            transferLimit: '0',
+            paused: false,
           });
         } else {
           // else update
@@ -816,7 +825,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             updateData.margin = record.margin;
             updateData.slashCount = relayerInfo.slashCount + 1;
           }
-          await this.aggregationService.updateLnv20RelayInfo({
+          await this.aggregationService.updateLnBridgeRelayInfo({
             where: { id: id },
             data: updateData,
           });
@@ -824,11 +833,11 @@ export class Lnbridgev20Service implements OnModuleInit {
         latestNonce += 1;
         this.fetchCache[index].latestRelayerInfoNonce = latestNonce;
         this.logger.log(
-          `update lnv20 relay info, id ${id}, type ${record.updateType}, margin ${record.margin}, basefee ${record.baseFee}, liquidityFee ${record.liquidityFeeRate}`
+          `update lnv2 relay info, id ${id}, type ${record.updateType}, margin ${record.margin}, basefee ${record.baseFee}, liquidityFee ${record.liquidityFeeRate}`
         );
       }
     } catch (error) {
-      this.logger.warn(`fetch lnv20bridge relay records failed, error ${error}`);
+      this.logger.warn(`fetch lnv2 relay records failed, error ${error}`);
     }
   }
 }
