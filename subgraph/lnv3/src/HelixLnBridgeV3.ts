@@ -29,6 +29,7 @@ export function handleTransferFilled(event: TransferFilled): void {
   entity.relayer = event.params.provider;
   entity.transactionHash = event.transaction.hash;
   entity.slashed = false;
+  entity.fee = event.receipt!.gasUsed * event.transaction.gasPrice;
   entity.save();
 }
 

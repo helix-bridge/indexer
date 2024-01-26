@@ -27,6 +27,7 @@ type Lnv3RelayRecord @entity {
   relayer: Bytes!
   transactionHash: Bytes!
   timestamp: BigInt!
+  fee: BigInt
   slashed: Boolean!
   requestWithdrawTimestamp: BigInt
 }

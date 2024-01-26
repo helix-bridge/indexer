@@ -79,8 +79,8 @@ export class AggregationResolver {
     const isValid = (item) =>
       !Object.values(item).some((value) => isUndefined(value) || isNull(value) || value === '');
 
-    const accFilters = [{ sender: sender.toLowerCase() }, { recipient }].filter(isValid);
-    const relayerFilters = [{ relayer: relayer.toLowerCase() }, { needWithdrawLiquidity }].filter(isValid); 
+    const accFilters = [{ sender: sender?.toLowerCase() }, { recipient }].filter(isValid);
+    const relayerFilters = [{ relayer: relayer?.toLowerCase() }, { needWithdrawLiquidity }].filter(isValid); 
     const accountCondition = accFilters.length ? { OR: accFilters } : {};
     const relayerCondition = relayerFilters.length ? { AND: relayerFilters } : {};
     const resultCondition = results && results.length ? { result: { in: results } } : {};
@@ -89,7 +89,7 @@ export class AggregationResolver {
     const toChainCondition = toChains && toChains.length ? { toChain: { in: toChains } } : {};
     const bridgeCondition = bridges && bridges.length ? { bridge: { in: bridges } } : {};
     const recvTokenCondition =
-      recvTokenAddress && recvTokenAddress.length ? { recvTokenAddress: recvTokenAddress.toLowerCase() } : {};
+      recvTokenAddress && recvTokenAddress.length ? { recvTokenAddress: recvTokenAddress?.toLowerCase() } : {};
     const chainConditions = {
       AND: {
         ...resultCondition,

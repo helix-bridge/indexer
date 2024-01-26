@@ -35,6 +35,7 @@ dataSources:
           handler: handleSlashRequest
         - event: TransferFilled(bytes32,address)
           handler: handleTransferFilled
+          receipt: true
         - event: LnProviderPaused(address,uint256,address,address,bool)
           handler: handleLnProviderPaused
         - event: LiquidityWithdrawn(bytes32[],address,uint256)
