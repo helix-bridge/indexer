@@ -196,6 +196,23 @@ export class Lnv3Service implements OnModuleInit {
             let requestWithdrawTimestamp = Number(relayRecord.requestWithdrawTimestamp);
             let endTxHash = record.endTxHash;
             if (record.result !== RecordStatus.success) {
+              const providerId = this.genRelayInfoID(
+                transfer.chainId,
+                toChain.chainId,
+                record.relayer,
+                record.sendTokenAddress
+              );
+              const relayerInfo = await this.aggregationService.queryLnBridgeRelayInfoById({
+                id: providerId,
+              });
+              // waiting for relayer info update
+              if (!relayerInfo) {
+                this.logger.log(
+                  `lnv3 [${transfer.chain}->${toChain.chain}] waiting for relayer info update, id: ${providerId}`
+                );
+                continue;
+              }
+
               if (relayRecord.slashed) {
                 needWithdrawLiquidity = false;
               }
@@ -217,17 +234,9 @@ export class Lnv3Service implements OnModuleInit {
                 data: updateData,
               });
               
-              const cost = relayRecord.slashed ? relayRecord.fee : 0;
-              const profit = relayRecord.slashed ? record.fee : 0;
-              const providerId = this.genRelayInfoID(
-                transfer.chainId,
-                toChain.chainId,
-                record.relayer,
-                record.sendTokenAddress
-              );
-              const relayerInfo = await this.aggregationService.queryLnBridgeRelayInfoById({
-                id: providerId,
-              });
+              const cost = relayRecord.slashed ? 0 : relayRecord.fee;
+              const profit = relayRecord.slashed ? 0 : record.fee;
+              
               await this.aggregationService.updateLnBridgeRelayInfo({
                 where: { id: providerId },
                 data: {
