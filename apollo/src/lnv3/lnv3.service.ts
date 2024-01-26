@@ -183,7 +183,7 @@ export class Lnv3Service implements OnModuleInit {
 
         if (record.endTxHash === '') {
           const toChain = this.getDestChain(dstChainId);
-          const query = `query { lnv3RelayRecord(id: "${transferId}") { id, relayer, timestamp, transactionHash, slashed, requestWithdrawTimestamp }}`;
+          const query = `query { lnv3RelayRecord(id: "${transferId}") { id, relayer, timestamp, transactionHash, slashed, requestWithdrawTimestamp, fee }}`;
           const relayRecord = await axios
             .post(toChain.url, {
               query: query,
@@ -215,6 +215,25 @@ export class Lnv3Service implements OnModuleInit {
               await this.aggregationService.updateHistoryRecord({
                 where: { id: record.id },
                 data: updateData,
+              });
+              
+              const cost = relayRecord.slashed ? relayRecord.fee : 0;
+              const profit = relayRecord.slashed ? record.fee : 0;
+              const providerId = this.genRelayInfoID(
+                transfer.chainId,
+                toChain.chainId,
+                record.relayer,
+                record.sendTokenAddress
+              );
+              const relayerInfo = await this.aggregationService.queryLnBridgeRelayInfoById({
+                id: providerId,
+              });
+              await this.aggregationService.updateLnBridgeRelayInfo({
+                where: { id: providerId },
+                data: {
+                  cost: (BigInt(relayerInfo.cost) + BigInt(cost)).toString(),
+                  profit: (BigInt(relayerInfo.profit) + BigInt(profit)).toString(),
+                },
               });
 
               this.logger.log(
