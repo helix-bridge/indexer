@@ -192,13 +192,15 @@ export class AggregationResolver {
     @Args('fromChainId') fromChainId: number,
     @Args('toChainId') toChainId: number,
     @Args('fromToken') fromToken: string,
-    @Args('toToken') toToken: string
+    @Args('toToken') toToken: string,
+    @Args('version') version: string
   ) {
     return this.aggregationService.checkLnBridgeConfigure({
       sourceChainId: fromChainId,
       targetChainId: toChainId,
       sourceToken: fromToken,
       targetToken: toToken,
+      version: version,
     });
   }
 
