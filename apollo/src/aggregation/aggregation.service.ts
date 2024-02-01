@@ -291,7 +291,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       const targetSymbol = lnv3TargetBridge.symbols.find(
           (item) => item.address.toLowerCase() === targetToken.toLowerCase()
       );
-      return targetSymbol === undefined;
+      return targetSymbol !== undefined;
     }
   }
 

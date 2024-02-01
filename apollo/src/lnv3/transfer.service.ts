@@ -11,6 +11,10 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly polygonEndpoint = this.configService.get<string>('POLYGON_LNV3_ENDPOINT');
   private readonly bscEndpoint = this.configService.get<string>('BSC_LNV3_ENDPOINT');
   private readonly lineaEndpoint = this.configService.get<string>('LINEA_LNV3_ENDPOINT');
+  private readonly opEndpoint = this.configService.get<string>('OP_LNV3_ENDPOINT');
+  private readonly gnosisEndpoint = this.configService.get<string>('GNOSIS_LNV3_ENDPOINT');
+  private readonly mantleEndpoint = this.configService.get<string>('MANTLE_LNV3_ENDPOINT');
+  private readonly scrollEndpoint = this.configService.get<string>('SCROLL_LNV3_ENDPOINT');
 
   formalChainTransfers: PartnerT2[] = [
     {
@@ -45,6 +49,22 @@ export class TransferService extends BaseTransferServiceT2 {
         },
         {
           chain: 'linea',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'op',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'gnosis',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'mantle',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'scroll',
           channel: 'layerzero',
         }
       ]
@@ -82,6 +102,22 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           chain: 'linea',
           channel: 'layerzero',
+        },
+        {
+          chain: 'op',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'gnosis',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'mantle',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'scroll',
+          channel: 'layerzero',
         }
       ]
     },
@@ -111,6 +147,22 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           chain: 'linea',
           channel: 'layerzero',
+        },
+        {
+          chain: 'op',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'gnosis',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'mantle',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'scroll',
+          channel: 'layerzero',
         }
       ]
     },
@@ -139,6 +191,202 @@ export class TransferService extends BaseTransferServiceT2 {
         },
         {
           chain: 'arbitrum',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'op',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'gnosis',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'mantle',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'scroll',
+          channel: 'layerzero',
+        }
+      ]
+    },
+    {
+      chainId: 10,
+      chain: 'op',
+      url: this.opEndpoint,
+      bridge: 'lnv3',
+      symbols: [
+        {
+          key: 'USDT',
+          symbol: 'USDT',
+          address: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
+          protocolFee: 100000,
+          decimals: 6,
+        }
+      ],
+      channels: [
+        {
+          chain: 'polygon',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'bsc',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'arbitrum',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'linea',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'gnosis',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'mantle',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'scroll',
+          channel: 'layerzero',
+        }
+      ]
+    },
+    {
+      chainId: 100,
+      chain: 'gnosis',
+      url: this.gnosisEndpoint,
+      bridge: 'lnv3',
+      symbols: [
+        {
+          key: 'USDT',
+          symbol: 'USDT',
+          address: '0x4ECaBa5870353805a9F068101A40E0f32ed605C6',
+          protocolFee: 100000,
+          decimals: 6,
+        }
+      ],
+      channels: [
+        {
+          chain: 'polygon',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'bsc',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'arbitrum',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'linea',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'op',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'mantle',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'scroll',
+          channel: 'layerzero',
+        }
+      ]
+    },
+    {
+      chainId: 5000,
+      chain: 'mantle',
+      url: this.mantleEndpoint,
+      bridge: 'lnv3',
+      symbols: [
+        {
+          key: 'USDT',
+          symbol: 'USDT',
+          address: '0x201EBa5CC46D216Ce6DC03F6a759e8E766e956aE',
+          protocolFee: 100000,
+          decimals: 6,
+        }
+      ],
+      channels: [
+        {
+          chain: 'polygon',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'bsc',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'arbitrum',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'linea',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'op',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'gnosis',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'scroll',
+          channel: 'layerzero',
+        }
+      ]
+    },
+    {
+      chainId: 534352,
+      chain: 'scroll',
+      url: this.scrollEndpoint,
+      bridge: 'lnv3',
+      symbols: [
+        {
+          key: 'USDT',
+          symbol: 'USDT',
+          address: '0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df',
+          protocolFee: 100000,
+          decimals: 6,
+        }
+      ],
+      channels: [
+        {
+          chain: 'polygon',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'bsc',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'arbitrum',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'linea',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'op',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'gnosis',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'mantle',
           channel: 'layerzero',
         }
       ]
