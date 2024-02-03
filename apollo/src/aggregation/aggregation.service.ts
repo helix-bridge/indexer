@@ -3,7 +3,8 @@ import { DailyStatistics, HistoryRecord, Prisma, PrismaClient } from '@prisma/cl
 import { HistoryRecords, LnBridgeRelayInfo, LnBridgeRelayInfos } from '../graphql';
 import { GuardService } from '../guard/guard.service';
 // export lnbridge service configure
-import { TransferService } from '../lnbridgev20/transfer.service';
+import { TransferService as Lnv2Service } from '../lnbridgev20/transfer.service';
+import { TransferService as Lnv3Service} from '../lnv3/transfer.service';
 import { TasksService } from '../tasks/tasks.service';
 
 @Injectable()
@@ -16,7 +17,8 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
 
   constructor(
       private guardService: GuardService,
-      private lnService: TransferService,
+      private lnv2Service: Lnv2Service,
+      private lnv3Service: Lnv3Service,
       private tasksService: TasksService
   ) {
     super();
@@ -252,23 +254,45 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     targetChainId: number;
     sourceToken: string;
     targetToken: string;
+    version: string;
   }): boolean {
-    const { sourceChainId, targetChainId, sourceToken, targetToken } = params;
-    const bridge = this.lnService.transfers.find((item) => item.chainId === sourceChainId);
-    if (bridge === undefined) {
-      return false;
+    const { sourceChainId, targetChainId, sourceToken, targetToken, version } = params;
+    if (version === 'lnv2') {
+      const bridge = this.lnv2Service.transfers.find((item) => item.chainId === sourceChainId);
+      if (bridge === undefined) {
+        return false;
+      }
+      const tokenBridge = bridge.tokens.find(
+        (item) => item.fromAddress.toLowerCase() === sourceToken.toLowerCase()
+      );
+      if (tokenBridge === undefined) {
+        return false;
+      }
+      const targetInfo = tokenBridge.remoteInfos.find(
+        (item) =>
+          item.toChain === targetChainId && item.toAddress.toLowerCase() === targetToken.toLowerCase()
+      );
+      return targetInfo !== undefined;
+    } else {
+      const lnv3SourceBridge = this.lnv3Service.transfers.find((item) => item.chainId === sourceChainId);
+      if (lnv3SourceBridge === undefined) {
+        return false;
+      }
+      const sourceSymbol = lnv3SourceBridge.symbols.find(
+          (item) => item.address.toLowerCase() === sourceToken.toLowerCase()
+      );
+      if (sourceSymbol === undefined) {
+        return false;
+      }
+      const lnv3TargetBridge = this.lnv3Service.transfers.find((item) => item.chainId === targetChainId);
+      if (lnv3TargetBridge === undefined) {
+        return false;
+      }
+      const targetSymbol = lnv3TargetBridge.symbols.find(
+          (item) => item.address.toLowerCase() === targetToken.toLowerCase()
+      );
+      return targetSymbol !== undefined;
     }
-    const tokenBridge = bridge.tokens.find(
-      (item) => item.fromAddress.toLowerCase() === sourceToken.toLowerCase()
-    );
-    if (tokenBridge === undefined) {
-      return false;
-    }
-    const targetInfo = tokenBridge.remoteInfos.find(
-      (item) =>
-        item.toChain === targetChainId && item.toAddress.toLowerCase() === targetToken.toLowerCase()
-    );
-    return targetInfo !== undefined;
   }
 
   async queryDailyStatisticsFirst(
