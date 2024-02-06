@@ -4,8 +4,8 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "build-crab": "sh generate.sh init && sh generate.sh backing crab 0xbdC7bbF408931C5d666b4F0520E0D9E9A0B04e99 1962560 && graph codegen && graph build",
-    "build-sepolia": "sh generate.sh init && sh generate.sh issuing sepolia 0xf22D0bb66b39745Ae6e3fEa3E5859d7f0b367Fd1 4952560 && graph codegen && graph build",
+    "build-pangolin": "sh generate.sh init && sh generate.sh backing pangolin 0x94eAb0CB67AB7edaf9A280aCa097F70e4BD780ac 2298437 && graph codegen && graph build",
+    "build-sepolia": "sh generate.sh init && sh generate.sh issuing sepolia 0x371019523b25Ff4F26d977724f976566b08bf741 5230232 && graph codegen && graph build",
     "create-remote-dev": "graph create --access-token ${KEY} --node https://thegraph-g2.darwinia.network/helix/deploy/ xtokentransfer/${NETWORK}",
     "deploy-remote-dev": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com xtokentransfer/$NETWORK",
     "create-remote-pro": "graph create --access-token ${KEY} --node https://thegraph.darwinia.network/helix/deploy/ xtokentransfer/${NETWORK}",
