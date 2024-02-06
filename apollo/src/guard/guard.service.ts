@@ -15,12 +15,12 @@ export class GuardService {
 
   private readonly guardConfig: GuardInfo[] = [
     {
-      fromChain: 'crab-dvm',
+      fromChain: 'pangolin-dvm',
       toChain: 'sepolia',
-      bridge: 'xtoken-crab-dvm',
+      bridge: 'xtoken-pangolin-dvm',
       chainId: 11155111,
-      depositor: '0xf22D0bb66b39745Ae6e3fEa3E5859d7f0b367Fd1',
-      contract: '0xcc357d5A8E5dBD52bC508E0FE491137d912F6bc8',
+      depositor: '0x371019523b25Ff4F26d977724f976566b08bf741',
+      contract: '0x3f200d3b6DA62bcA2F8a93F663b172A7f1AaE9ba',
     },
   ];
 

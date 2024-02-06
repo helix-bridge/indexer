@@ -8,8 +8,8 @@ import { xTokenNonceOrder, TransferRecord, RefundTransferRecord } from "../gener
 const transferNonceId = "0x01";
 
 function isMsglineContract(event: ethereum.Log): boolean {
-    return event.address.toHexString() == '0x00000000001523057a05d6293c1e5171ee33ee0a' ||
-        event.address.toHexString() == '0x00000000046bc530804d66b6b64f7af69b4e4e81';
+    return event.address.toHexString() == '0x0000000005d961f950ada391c1511c92bbc64d9f' ||
+        event.address.toHexString() == '0x00000000001523057a05d6293c1e5171ee33ee0a';
 }
 
 function isMsglineAcceptEvent(event: ethereum.Log): boolean {
