@@ -14,19 +14,25 @@ export class TransferService extends BaseTransferServiceT2 {
 
   testChainTransfers: PartnerT2[] = [
     {
-      chainId: 44,
-      chain: 'crab-dvm',
+      chainId: 43,
+      chain: 'pangolin-dvm',
       url: this.darwainiaUrl,
       bridge: 'xtokenbridge',
       symbols: [
         {
-          originalSymbol: 'CRAB',
-          symbol: 'CRAB',
+          key: 'PRING',
+          symbol: 'PRING',
           address: '0x0000000000000000000000000000000000000000',
           protocolFee: 0,
           decimals: 18,
         },
       ],
+      channels: [
+        {
+          chain: 'sepolia',
+          channel: 'msgport'
+        }
+      ]
     },
     {
       chainId: 11155111,
@@ -35,18 +41,24 @@ export class TransferService extends BaseTransferServiceT2 {
       bridge: 'xtokenbridge',
       symbols: [
         {
-          originalSymbol: 'CRAB',
-          symbol: 'xCRAB',
-          address: '0x9Da7E18441f26515CC713290BE846E726d41781d',
+          key: 'PRING',
+          symbol: 'xPRING',
+          address: '0xBC43cb6175FcC8E577a0846256eA699b87eFcEE5',
           protocolFee: 0,
           decimals: 18,
         },
       ],
+      channels: [
+        {
+          chain: 'pangolin-dvm',
+          channel: 'msgport'
+        }
+      ]
     },
   ];
 
   dispatchEndPoints = {
-    'crab-dvm': this.darwiniaDispatchSubgraph,
+    'pangolin-dvm': this.darwiniaDispatchSubgraph,
     sepolia: this.ethereumDispatchSubgraph,
     darwinia: this.darwiniaDispatchSubgraph,
     ethereum: this.ethereumDispatchSubgraph,
