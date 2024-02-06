@@ -1,10 +1,12 @@
 import { INestApplication, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { DailyStatistics, HistoryRecord, Prisma, PrismaClient } from '@prisma/client';
-import { HistoryRecords, Lnv20RelayInfo, Lnv20RelayInfos } from '../graphql';
+import { HistoryRecords, LnBridgeRelayInfo, LnBridgeRelayInfos } from '../graphql';
 import { GuardService } from '../guard/guard.service';
 // export lnbridge service configure
-import { TransferService } from '../lnbridgev20/transfer.service';
 import { last } from 'lodash';
+import { TransferService as Lnv2Service } from '../lnbridgev20/transfer.service';
+import { TransferService as Lnv3Service} from '../lnv3/transfer.service';
+import { TasksService } from '../tasks/tasks.service';
 
 @Injectable()
 export class AggregationService extends PrismaClient implements OnModuleInit {
@@ -14,7 +16,12 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     await this.$connect();
   }
 
-  constructor(private guardService: GuardService, private lnService: TransferService) {
+  constructor(
+      private guardService: GuardService,
+      private lnv2Service: Lnv2Service,
+      private lnv3Service: Lnv3Service,
+      private tasksService: TasksService
+  ) {
     super();
   }
 
@@ -47,54 +54,55 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     });
   }
 
-  async createLnv20RelayInfo(data: Prisma.Lnv20RelayInfoCreateInput): Promise<Lnv20RelayInfo> {
-    return this.lnv20RelayInfo.create({
+  async queryLnBridgeRelayInfoFirst(
+    lnBridgeRelayInfoWhereInput: Prisma.LnBridgeRelayInfoWhereInput,
+    orderBy?: Prisma.Enumerable<Prisma.LnBridgeRelayInfoOrderByWithRelationAndSearchRelevanceInput>
+  ): Promise<LnBridgeRelayInfo | null> {
+    return this.lnBridgeRelayInfo.findFirst({
+      where: lnBridgeRelayInfoWhereInput,
+      orderBy,
+    });
+  }
+
+  async createLnBridgeRelayInfo(
+    data: Prisma.LnBridgeRelayInfoCreateInput
+  ): Promise<LnBridgeRelayInfo> {
+    return this.lnBridgeRelayInfo.create({
       data,
     });
   }
 
-  async updateLnv20RelayInfo(params: {
-    where: Prisma.Lnv20RelayInfoWhereUniqueInput;
-    data: Prisma.Lnv20RelayInfoUpdateInput;
-  }): Promise<Lnv20RelayInfo> {
+  async queryLnBridgeRelayInfoById(
+    lnBridgeRelayInfoWhereUniqueInput: Prisma.LnBridgeRelayInfoWhereUniqueInput
+  ): Promise<LnBridgeRelayInfo | null> {
+    return this.lnBridgeRelayInfo.findUnique({
+      where: lnBridgeRelayInfoWhereUniqueInput,
+    });
+  }
+
+  async updateLnBridgeRelayInfo(params: {
+    where: Prisma.LnBridgeRelayInfoWhereUniqueInput;
+    data: Prisma.LnBridgeRelayInfoUpdateInput;
+  }): Promise<LnBridgeRelayInfo> {
     const { where, data } = params;
-    return this.lnv20RelayInfo.update({
+    return this.lnBridgeRelayInfo.update({
       data,
       where,
     });
   }
 
-  async queryLnv20RelayInfoById(
-    lnv20RelayInfoWhereUniqueInput: Prisma.Lnv20RelayInfoWhereUniqueInput
-  ): Promise<Lnv20RelayInfo | null> {
-    return this.lnv20RelayInfo.findUnique({
-      where: lnv20RelayInfoWhereUniqueInput,
-    });
-  }
-
-  async queryLnv20RelayInfoFirst(
-    lnv20RelayInfoWhereInput: Prisma.Lnv20RelayInfoWhereInput,
-    orderBy?: Prisma.Enumerable<Prisma.Lnv20RelayInfoOrderByWithRelationAndSearchRelevanceInput>
-  ): Promise<Lnv20RelayInfo | null> {
-    return this.lnv20RelayInfo.findFirst({
-      where: lnv20RelayInfoWhereInput,
-      orderBy,
-      //orderBy: { nonce: 'desc' },
-    });
-  }
-
-  async queryLnv20RelayInfos(params: {
+  async queryLnBridgeRelayInfos(params: {
     skip?: number;
     take?: number;
-    where?: Prisma.Lnv20RelayInfoWhereInput;
-  }): Promise<Lnv20RelayInfos> {
+    where?: Prisma.LnBridgeRelayInfoWhereInput;
+  }): Promise<LnBridgeRelayInfos> {
     const { skip, take, where } = params;
-    const records = await this.lnv20RelayInfo.findMany({
+    const records = await this.lnBridgeRelayInfo.findMany({
       skip,
       take,
       where,
     });
-    const total = await this.lnv20RelayInfo.count({ where });
+    const total = await this.lnBridgeRelayInfo.count({ where });
 
     return { total, records };
   }
@@ -237,29 +245,55 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       orderBy: { timestamp: 'desc' },
     });
   }
+  
+  tasksHealthCheck() {
+      return this.tasksService.queryHealthChecks();
+  }
 
   checkLnBridgeConfigure(params: {
     sourceChainId: number;
     targetChainId: number;
     sourceToken: string;
     targetToken: string;
+    version: string;
   }): boolean {
-    const { sourceChainId, targetChainId, sourceToken, targetToken } = params;
-    const bridge = this.lnService.transfers.find((item) => item.chainId === sourceChainId);
-    if (bridge === undefined) {
-      return false;
+    const { sourceChainId, targetChainId, sourceToken, targetToken, version } = params;
+    if (version === 'lnv2') {
+      const bridge = this.lnv2Service.transfers.find((item) => item.chainId === sourceChainId);
+      if (bridge === undefined) {
+        return false;
+      }
+      const tokenBridge = bridge.tokens.find(
+        (item) => item.fromAddress.toLowerCase() === sourceToken.toLowerCase()
+      );
+      if (tokenBridge === undefined) {
+        return false;
+      }
+      const targetInfo = tokenBridge.remoteInfos.find(
+        (item) =>
+          item.toChain === targetChainId && item.toAddress.toLowerCase() === targetToken.toLowerCase()
+      );
+      return targetInfo !== undefined;
+    } else {
+      const lnv3SourceBridge = this.lnv3Service.transfers.find((item) => item.chainId === sourceChainId);
+      if (lnv3SourceBridge === undefined) {
+        return false;
+      }
+      const sourceSymbol = lnv3SourceBridge.symbols.find(
+          (item) => item.address.toLowerCase() === sourceToken.toLowerCase()
+      );
+      if (sourceSymbol === undefined) {
+        return false;
+      }
+      const lnv3TargetBridge = this.lnv3Service.transfers.find((item) => item.chainId === targetChainId);
+      if (lnv3TargetBridge === undefined) {
+        return false;
+      }
+      const targetSymbol = lnv3TargetBridge.symbols.find(
+          (item) => item.address.toLowerCase() === targetToken.toLowerCase()
+      );
+      return targetSymbol !== undefined;
     }
-    const tokenBridge = bridge.tokens.find(
-      (item) => item.fromAddress.toLowerCase() === sourceToken.toLowerCase()
-    );
-    if (tokenBridge === undefined) {
-      return false;
-    }
-    const targetInfo = tokenBridge.remoteInfos.find(
-      (item) =>
-        item.toChain === targetChainId && item.toAddress.toLowerCase() === targetToken.toLowerCase()
-    );
-    return targetInfo !== undefined;
   }
 
   async queryDailyStatisticsFirst(
@@ -271,14 +305,13 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     });
   }
 
-  async calculateLnv20RelayerPoint(
+  async calculateLnBridgeRelayerPoint(
     token: string,
     amount: bigint,
     decimals: number,
-    relayerInfo: Lnv20RelayInfo
+    relayerInfo: LnBridgeRelayInfo
   ): Promise<number | null> {
     const orderBy = { startTime: Prisma.SortOrder.desc };
-    var marginUsed = BigInt(0);
     const pendingRecords = await this.queryHistoryRecords({
       where: {
         fromChain: relayerInfo.fromChain,
@@ -290,47 +323,25 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       },
       orderBy,
     });
-    const { total, records } = pendingRecords;
-    if (total != records.length) {
-      this.logger.warn(`pending records too large relayer ${relayerInfo.relayer}, total ${total}`);
-      return null;
+
+    if (relayerInfo.version == 'lnv2') {
+      var marginUsed = BigInt(0);
+      for (const pendingRecord of pendingRecords.records) {
+        marginUsed += BigInt(pendingRecord.sendAmount);
+      }
+      // margin not enough, todo add finefund
+      if (BigInt(relayerInfo.margin) < marginUsed + amount) {
+        this.logger.warn(
+          `margin not enough, margin ${relayerInfo.margin}, used ${marginUsed}, amount ${amount}, relayer ${relayerInfo.relayer}`
+        );
+        return null;
+      }
     }
-    for (const pendingRecord of records) {
-      marginUsed += BigInt(pendingRecord.sendAmount);
-    }
-    // margin not enough, todo add finefund
-    if (BigInt(relayerInfo.margin) < marginUsed + amount) {
-      this.logger.warn(
-        `margin not enough, margin ${relayerInfo.margin}, used ${marginUsed}, amount ${amount}, relayer ${relayerInfo.relayer}`
-      );
-      return null;
-    }
-    const firstSuccess = await this.queryHistoryRecordFirst(
-      {
-        fromChain: relayerInfo.fromChain,
-        toChain: relayerInfo.toChain,
-        bridge: 'lnbridgev20',
-        relayer: relayerInfo.relayer,
-        sendTokenAddress: token,
-        result: 3,
-      },
-      { nonce: 'desc' }
-    );
     const F =
-      BigInt(relayerInfo.baseFee) +
+      BigInt(relayerInfo.baseFee) + BigInt(relayerInfo.protocolFee) +
       (BigInt(relayerInfo.liquidityFeeRate) * amount) / BigInt(100000);
-    const P = total;
     const R = relayerInfo.slashCount;
-    const now = Date.now() / 1000;
-    var S = firstSuccess ? Number(firstSuccess.messageNonce) : 0;
-    var T_0 = now - (firstSuccess ? firstSuccess.startTime : 0);
-    var T_1 = firstSuccess ? firstSuccess.endTime - firstSuccess.startTime : 0;
-    if (total > 0) {
-      S = Number(records[0].messageNonce);
-      T_0 = now - records[0].startTime;
-    }
-    const w =
-      P * 0.5 + Math.max(R - S * 0.001, 0) * 0.1 + Math.max(1 - T_0 * 0.001, 0) * 0.1 + T_1 * 0.2;
+    const w = 1 + R * 0.1;
     return Number(F / BigInt(10 ** decimals)) * w;
   }
 }

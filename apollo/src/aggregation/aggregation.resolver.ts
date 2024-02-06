@@ -5,6 +5,7 @@ import { Prisma } from '@prisma/client';
 
 @Resolver()
 export class AggregationResolver {
+  private readonly heartbeatTimeout = 300;
   constructor(private aggregationService: AggregationService) {}
 
   @Query()
@@ -57,6 +58,8 @@ export class AggregationResolver {
   async historyRecords(
     @Args('sender') sender: string,
     @Args('recipient') recipient: string,
+    @Args('relayer') relayer: string,
+    @Args('needWithdrawLiquidity') needWithdrawLiquidity: boolean,
     @Args('fromChains') fromChains: string[],
     @Args('toChains') toChains: string[],
     @Args('bridges') bridges: string,
@@ -76,15 +79,17 @@ export class AggregationResolver {
     const isValid = (item) =>
       !Object.values(item).some((value) => isUndefined(value) || isNull(value) || value === '');
 
-    const accFilters = [{ sender }, { recipient }].filter(isValid);
+    const accFilters = [{ sender: sender?.toLowerCase() }, { recipient }].filter(isValid);
+    const relayerFilters = [{ relayer: relayer?.toLowerCase() }, { needWithdrawLiquidity }].filter(isValid); 
     const accountCondition = accFilters.length ? { OR: accFilters } : {};
+    const relayerCondition = relayerFilters.length ? { AND: relayerFilters } : {};
     const resultCondition = results && results.length ? { result: { in: results } } : {};
     const fromChainCondition =
       fromChains && fromChains.length ? { fromChain: { in: fromChains } } : {};
     const toChainCondition = toChains && toChains.length ? { toChain: { in: toChains } } : {};
     const bridgeCondition = bridges && bridges.length ? { bridge: { in: bridges } } : {};
     const recvTokenCondition =
-      recvTokenAddress && recvTokenAddress.length ? { recvTokenAddress: recvTokenAddress } : {};
+      recvTokenAddress && recvTokenAddress.length ? { recvTokenAddress: recvTokenAddress?.toLowerCase() } : {};
     const chainConditions = {
       AND: {
         ...resultCondition,
@@ -92,6 +97,7 @@ export class AggregationResolver {
         ...toChainCondition,
         ...bridgeCondition,
         ...recvTokenCondition,
+        ...relayerCondition,
       },
     };
 
@@ -163,12 +169,13 @@ export class AggregationResolver {
   async lnBridgeHeartBeat(
     @Args('fromChainId') fromChainId: string,
     @Args('toChainId') toChainId: string,
+    @Args('version') version: string,
     @Args('relayer') relayer: string,
     @Args('tokenAddress') tokenAddress: string
   ) {
-    const id = `lnv20-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
+    const id = `${version}-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
     try {
-      await this.aggregationService.updateLnv20RelayInfo({
+      await this.aggregationService.updateLnBridgeRelayInfo({
         where: { id: id },
         data: {
           heartbeatTimestamp: Math.floor(Date.now() / 1000),
@@ -185,14 +192,32 @@ export class AggregationResolver {
     @Args('fromChainId') fromChainId: number,
     @Args('toChainId') toChainId: number,
     @Args('fromToken') fromToken: string,
-    @Args('toToken') toToken: string
+    @Args('toToken') toToken: string,
+    @Args('version') version: string
   ) {
     return this.aggregationService.checkLnBridgeConfigure({
       sourceChainId: fromChainId,
       targetChainId: toChainId,
       sourceToken: fromToken,
       targetToken: toToken,
+      version: version,
     });
+  }
+
+  @Query()
+  tasksHealthCheck(
+    @Args('name') name: string
+  ) {
+     const healthChecks = this.aggregationService.tasksHealthCheck();
+     if (name !== null) {
+       return [
+         {
+           name: name,
+           callTimes: healthChecks[name]
+         }
+       ];
+     }
+     return Array.from(healthChecks, ([name, callTimes]) => ({ name, callTimes }));
   }
 
   @Query()
@@ -247,9 +272,10 @@ export class AggregationResolver {
   }
 
   @Query()
-  async queryLnv20RelayInfos(
+  async queryLnBridgeRelayInfos(
     @Args('fromChain') fromChain: string,
     @Args('toChain') toChain: string,
+    @Args('version') version: string,
     @Args('bridge') bridge: string,
     @Args('relayer') relayer: string,
     @Args('row') row: number,
@@ -257,13 +283,13 @@ export class AggregationResolver {
   ) {
     const skip = row * page || 0;
     const take = row || 10;
-    const baseFilters = { fromChain, toChain, bridge, relayer };
+    const baseFilters = { fromChain, toChain, bridge, relayer, version };
 
     const where = {
       ...baseFilters,
     };
 
-    const records = await this.aggregationService.queryLnv20RelayInfos({
+    const records = await this.aggregationService.queryLnBridgeRelayInfos({
       skip,
       take,
       where,
@@ -272,9 +298,10 @@ export class AggregationResolver {
   }
 
   @Query()
-  async sortedLnv20RelayInfos(
+  async sortedLnBridgeRelayInfos(
     @Args('fromChain') fromChain: string,
     @Args('toChain') toChain: string,
+    @Args('version') version: string,
     @Args('bridge') bridge: string,
     @Args('token') token: string,
     @Args('row') row: number,
@@ -283,13 +310,13 @@ export class AggregationResolver {
   ) {
     const take = row || 128;
     const sendToken = token?.toLowerCase();
-    const baseFilters = { fromChain, toChain, sendToken, bridge };
+    const baseFilters = { fromChain, toChain, sendToken, bridge, version };
 
     const where = {
       ...baseFilters,
     };
 
-    const records = await this.aggregationService.queryLnv20RelayInfos({
+    const records = await this.aggregationService.queryLnBridgeRelayInfos({
       skip: 0,
       take,
       where,
@@ -298,16 +325,22 @@ export class AggregationResolver {
     //const validRecords = records.records.filter((record) => BigInt(record.margin) > BigInt(amount));
     // query all pending txs
     var sortedRelayers = [];
-    var maxMargin = BigInt(0);
+    var transferLimit = BigInt(0);
+    const now = Math.floor(Date.now() / 1000);
     for (const record of records.records) {
-      const margin = BigInt(record.margin);
-      if (margin > maxMargin) {
-        maxMargin = margin;
+      const limit = record.version == 'lnv2' ? BigInt(record.margin) : BigInt(record.transferLimit);
+      if (limit > transferLimit) {
+        transferLimit = limit;
       }
-      if (margin < BigInt(amount)) {
+      const providerFee = BigInt(amount) * BigInt(record.liquidityFeeRate) / BigInt(100000) + BigInt(record.baseFee);
+      if (limit < BigInt(amount) + providerFee + BigInt(record.protocolFee) || record.paused) {
         continue;
       }
-      const point = await this.aggregationService.calculateLnv20RelayerPoint(
+      // offline
+      if (record.heartbeatTimestamp + this.heartbeatTimeout < now) {
+        continue;
+      }
+      const point = await this.aggregationService.calculateLnBridgeRelayerPoint(
         token,
         BigInt(amount),
         decimals,
@@ -319,7 +352,7 @@ export class AggregationResolver {
       sortedRelayers.push({ record, point });
     }
     return {
-      maxMargin: maxMargin,
+      transferLimit: transferLimit,
       records: sortedRelayers.sort((l, r) => l.point - r.point).map((item) => item.record),
     };
   }

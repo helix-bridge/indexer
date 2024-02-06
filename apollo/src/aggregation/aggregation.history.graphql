@@ -28,6 +28,8 @@ type HistoryRecord {
   relayer: String
   endTxHash: String
   confirmedBlocks: String
+  needWithdrawLiquidity: Boolean
+  lastRequestWithdraw: BigInt
 }
 
 type DailyStatistics {
@@ -45,8 +47,9 @@ type HistoryRecords {
   records: [HistoryRecord]
 }
 
-type Lnv20RelayInfo {
+type LnBridgeRelayInfo {
   id: String!
+  version: String!
   nonce: BigInt!
   targetNonce: BigInt
   fromChain: String!
@@ -54,7 +57,7 @@ type Lnv20RelayInfo {
   bridge: String!
   relayer: String!
   sendToken: String
-  transaction_hash: String!
+  transactionHash: String!
   timestamp: Int!
   margin: String
   protocolFee: String
@@ -67,16 +70,23 @@ type Lnv20RelayInfo {
   profit: String
   heartbeatTimestamp: Int
   messageChannel: String
+  transferLimit: String
+  paused: Boolean
 }
 
-type Lnv20RelayInfos {
+type LnBridgeRelayInfos {
   total: Int!
-  records: [Lnv20RelayInfo]
+  records: [LnBridgeRelayInfo]
 }
 
-type SortedLnv20RelayInfos {
-  maxMargin: BigInt!
-  records: [Lnv20RelayInfo]
+type SortedLnBridgeRelayInfos {
+  transferLimit: BigInt!
+  records: [LnBridgeRelayInfo]
+}
+
+type HealthInfo {
+  name: String
+  callTimes: Int
 }
 
 type Query {
@@ -84,17 +94,18 @@ type Query {
   historyRecordByTxHash(txHash: String): HistoryRecord
   firstHistoryRecord(fromChain: String, toChain: String, bridge: String, results: [Int], relayer: String, token: String, order: String): HistoryRecord
   queryDailyStatistics(timepast: Int!, first: Int, from: String, to: String, bridge: String, token: String): [DailyStatistics]
-  historyRecords(sender: String, recipient: String, fromChains: [String], toChains: [String], bridges: [String], row: Int, page: Int, results: [Int], recvTokenAddress: String,  order: String): HistoryRecords
-  checkLnBridgeExist(fromChainId: Int, toChainId: Int, fromToken: String, toToken: String): Boolean
+  historyRecords(sender: String, recipient: String, relayer: String, needWithdrawLiquidity: Boolean, fromChains: [String], toChains: [String], bridges: [String], row: Int, page: Int, results: [Int], recvTokenAddress: String,  order: String): HistoryRecords
+  checkLnBridgeExist(fromChainId: Int, toChainId: Int, fromToken: String, toToken: String, version: String): Boolean
+  tasksHealthCheck(name: String): [HealthInfo]
   queryGuardNeedSignature(fromChain: String, toChain: String, bridge: String, guardAddress: String, row: Int): HistoryRecords
   queryRelayRecords(fromChain: String, toChain: String, bridge: String, relayer: String, row: Int): HistoryRecords
-  queryLnv20RelayInfos(fromChain: String, toChain: String, bridge: String, relayer: String, row: Int, page: Int): Lnv20RelayInfos
-  sortedLnv20RelayInfos(fromChain: String, toChain: String, bridge: String, token: String, row: Int, amount: String, decimals: Int): SortedLnv20RelayInfos
+  queryLnBridgeRelayInfos(fromChain: String, toChain: String, version: String, bridge: String, relayer: String, row: Int, page: Int): LnBridgeRelayInfos
+  sortedLnBridgeRelayInfos(fromChain: String, toChain: String, version: String, bridge: String, token: String, row: Int, amount: String, decimals: Int): SortedLnBridgeRelayInfos
 }
 
 type Mutation {
   addGuardSignature(id: String, dataHash: String, signature: String): String
   updateConfirmedBlock(id: String, block: String): String
-  lnBridgeHeartBeat(fromChainId: String, toChainId: String, relayer: String, tokenAddress: String): String
+  lnBridgeHeartBeat(fromChainId: String, toChainId: String, version: String, relayer: String, tokenAddress: String): String
 }
 

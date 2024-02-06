@@ -29,6 +29,7 @@ export class TransferService extends BaseTransferServiceT2 {
       url: this.karuraEndpoint,
       bridge: 'xcm',
       symbols: [],
+      channels: [],
     },
     {
       chainId: 2023,
@@ -36,6 +37,7 @@ export class TransferService extends BaseTransferServiceT2 {
       url: this.moonriverEndpoint,
       bridge: 'xcm',
       symbols: [],
+      channels: [],
     },
     {
       chainId: 2004,
@@ -43,6 +45,7 @@ export class TransferService extends BaseTransferServiceT2 {
       url: this.khalaEndpoint,
       bridge: 'xcm',
       symbols: [],
+      channels: [],
     },
     {
       chainId: 2007,
@@ -50,6 +53,7 @@ export class TransferService extends BaseTransferServiceT2 {
       url: this.shidenEndpoint,
       bridge: 'xcm',
       symbols: [],
+      channels: [],
     },
   ];
 
