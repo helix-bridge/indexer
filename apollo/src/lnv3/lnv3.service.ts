@@ -259,19 +259,18 @@ export class Lnv3Service implements OnModuleInit {
                 variables: null,
               })
               .then((res) => res.data?.data?.lnv3TransferRecord);
-              if (transferRecord) {
+              if (transferRecord && (transferRecord.hasWithdrawn || record.lastRequestWithdraw < requestWithdrawTimestamp)) {
                 await this.aggregationService.updateHistoryRecord({
                   where: { id: record.id },
                   data: {
                     needWithdrawLiquidity: !transferRecord.hasWithdrawn,
                     endTxHash: transferRecord.responseTxHash,
+                    lastRequestWithdraw: requestWithdrawTimestamp,
                   },
                 });
-                if (transferRecord.hasWithdrawn) {
-                  this.logger.log(
-                    `lnv3 [${transfer.chain}->${toChain.chain}] tx withdrawn id: ${record.id}`
-                  );
-                }
+                this.logger.log(
+                  `lnv3 [${transfer.chain}->${toChain.chain}] tx withdrawn id: ${record.id}, time: ${requestWithdrawTimestamp}, done: ${transferRecord.hasWithdrawn}`
+                );
               }
             }
           }
