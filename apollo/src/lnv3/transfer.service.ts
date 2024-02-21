@@ -89,6 +89,13 @@ export class TransferService extends BaseTransferServiceT2 {
           address: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
           protocolFee: 100000,
           decimals: 6,
+        },
+        {
+          key: 'ETH',
+          symbol: 'ETH',
+          address: '0x0000000000000000000000000000000000000000',
+          protocolFee: 1000000000000000,
+          decimals: 18,
         }
       ],
       channels: [
@@ -183,6 +190,13 @@ export class TransferService extends BaseTransferServiceT2 {
           address: '0xA219439258ca9da29E9Cc4cE5596924745e12B93',
           protocolFee: 100000,
           decimals: 6,
+        },
+        {
+          key: 'ETH',
+          symbol: 'ETH',
+          address: '0x0000000000000000000000000000000000000000',
+          protocolFee: 1000000000000000,
+          decimals: 18,
         }
       ],
       channels: [
