@@ -15,6 +15,7 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly gnosisEndpoint = this.configService.get<string>('GNOSIS_LNV3_ENDPOINT');
   private readonly mantleEndpoint = this.configService.get<string>('MANTLE_LNV3_ENDPOINT');
   private readonly scrollEndpoint = this.configService.get<string>('SCROLL_LNV3_ENDPOINT');
+  private readonly darwiniaEndpoint = this.configService.get<string>('DARWINIA_LNV3_ENDPOINT');
 
   formalChainTransfers: PartnerT2[] = [
     {
@@ -88,6 +89,13 @@ export class TransferService extends BaseTransferServiceT2 {
           address: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
           protocolFee: 100000,
           decimals: 6,
+        },
+        {
+          key: 'ETH',
+          symbol: 'ETH',
+          address: '0x0000000000000000000000000000000000000000',
+          protocolFee: 10000000000000,
+          decimals: 18,
         }
       ],
       channels: [
@@ -118,6 +126,10 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           chain: 'scroll',
           channel: 'layerzero',
+        },
+        {
+          chain: 'darwinia-dvm',
+          channel: 'msgline',
         }
       ]
     },
@@ -178,6 +190,13 @@ export class TransferService extends BaseTransferServiceT2 {
           address: '0xA219439258ca9da29E9Cc4cE5596924745e12B93',
           protocolFee: 100000,
           decimals: 6,
+        },
+        {
+          key: 'ETH',
+          symbol: 'ETH',
+          address: '0x0000000000000000000000000000000000000000',
+          protocolFee: 10000000000000,
+          decimals: 18,
         }
       ],
       channels: [
@@ -389,6 +408,27 @@ export class TransferService extends BaseTransferServiceT2 {
           chain: 'mantle',
           channel: 'layerzero',
         }
+      ]
+    },
+    {
+      chainId: 46,
+      chain: 'darwinia-dvm',
+      url: this.darwiniaEndpoint,
+      bridge: 'lnv3',
+      symbols: [
+        {
+          key: 'RING',
+          symbol: 'RING',
+          address: '0x0000000000000000000000000000000000000000',
+          protocolFee: 30000000000000000000,
+          decimals: 18,
+        }
+      ],
+      channels: [
+        {
+          chain: 'arbitrum',
+          channel: 'msgline',
+        },
       ]
     }
   ];
