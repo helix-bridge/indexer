@@ -6,7 +6,7 @@ class GuardInfo {
   toChain: string;
   bridge: string;
   chainId: number;
-  depositor: string;
+  depositor: string | null;
   contract: string;
 }
 
@@ -22,6 +22,14 @@ export class GuardService {
       depositor: '0x371019523b25Ff4F26d977724f976566b08bf741',
       contract: '0x3f200d3b6DA62bcA2F8a93F663b172A7f1AaE9ba',
     },
+    {
+      fromChain: 'darwinia-dvm',
+      toChain: 'ethereum',
+      bridge: 'helix-sub2ethv2(lock)',
+      chainId: 1,
+      depositor: null,
+      contract: '0x61B6B8c7C00aA7F060a2BEDeE6b11927CC9c3eF1',
+    }
   ];
 
   recoverPubkey(
@@ -64,10 +72,17 @@ export class GuardService {
     chainId: number,
     contractAddress: string
   ): string {
-    const claimSign = this.web3.eth.abi.encodeFunctionSignature(
+    const claimSign = depositor === null ?
+      this.web3.eth.abi.encodeFunctionSignature(
+      'claim(uint256,uint256,address,address,uint256,bytes[])'
+    ) : this.web3.eth.abi.encodeFunctionSignature(
       'claim(address,uint256,uint256,address,address,uint256,bytes[])'
     );
-    const param = this.web3.eth.abi.encodeParameters(
+    const param = depositor === null ? 
+      this.web3.eth.abi.encodeParameters(
+        ['uint256', 'uint256', 'address', 'address', 'uint256'],
+        [transferId, timestamp, token, recipient, amount]
+    ) : this.web3.eth.abi.encodeParameters(
       ['address', 'uint256', 'uint256', 'address', 'address', 'uint256'],
       [depositor, transferId, timestamp, token, recipient, amount]
     );
