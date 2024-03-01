@@ -67,6 +67,10 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           chain: 'scroll',
           channel: 'layerzero',
+        },
+        {
+          chain: 'darwinia-dvm',
+          channel: 'msgline',
         }
       ]
     },
@@ -429,6 +433,10 @@ export class TransferService extends BaseTransferServiceT2 {
           chain: 'arbitrum',
           channel: 'msgline',
         },
+        {
+          chain: 'polygon',
+          channel: 'msgline',
+        }
       ]
     }
   ];
