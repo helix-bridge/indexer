@@ -1,0 +1,20 @@
+{
+  "name": "Bridge",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "build-pangolin": "sh generate.sh init && sh generate.sh backing pangolin 0x94eAb0CB67AB7edaf9A280aCa097F70e4BD780ac 2298437 && graph codegen && graph build",
+    "build-sepolia": "sh generate.sh init && sh generate.sh issuing sepolia 0x371019523b25Ff4F26d977724f976566b08bf741 5230232 && graph codegen && graph build",
+    "build-darwinia": "sh generate.sh init && sh generate.sh backing darwinia2 0xFd626a860F4d4bDB94aF200c218ce62c9647c8b2 2020384 && sh generate.sh issuing darwinia2 0xf16d9682c4883415aee6e78eb0d6ae3507014e42 2020389 && graph codegen && graph build",
+    "build-crab": "sh generate.sh init && sh generate.sh backing crab2 0xFd626a860F4d4bDB94aF200c218ce62c9647c8b2 2239742 && sh generate.sh issuing crab2 0xf16d9682c4883415aee6e78eb0d6ae3507014e42 2239808 && graph codegen && graph build",
+    "create-remote-dev": "graph create --access-token ${KEY} --node https://thegraph-g2.darwinia.network/helix/deploy/ xtokentransfer/${NETWORK}",
+    "deploy-remote-dev": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com xtokentransfer/$NETWORK",
+    "create-remote-pro": "graph create --access-token ${KEY} --node https://thegraph.darwinia.network/helix/deploy/ xtokentransfer/${NETWORK}",
+    "deploy-remote-pro": "graph deploy --access-token $KEY --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com xtokentransfer/$NETWORK"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.31.1",
+    "@graphprotocol/graph-ts": "0.31.0"
+  }
+}

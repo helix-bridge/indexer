@@ -3,6 +3,7 @@ import { DailyStatistics, HistoryRecord, Prisma, PrismaClient } from '@prisma/cl
 import { HistoryRecords, LnBridgeRelayInfo, LnBridgeRelayInfos } from '../graphql';
 import { GuardService } from '../guard/guard.service';
 // export lnbridge service configure
+import { last } from 'lodash';
 import { TransferService as Lnv2Service } from '../lnbridgev20/transfer.service';
 import { TransferService as Lnv3Service} from '../lnv3/transfer.service';
 import { TasksService } from '../tasks/tasks.service';
@@ -123,7 +124,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
         record.fromChain,
         record.toChain,
         record.bridge,
-        BigInt(record.messageNonce).toString(),
+        BigInt(last(record.id.split('-'))).toString(),
         record.endTime.toString(),
         record.recvTokenAddress,
         record.recipient,
