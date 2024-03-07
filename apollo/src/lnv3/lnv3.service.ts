@@ -373,6 +373,7 @@ export class Lnv3Service implements OnModuleInit {
             profit: '0',
             heartbeatTimestamp: 0,
             transferLimit: record.transferLimit ?? '0',
+            softTransferLimit: '0',
             paused: record.paused ?? false,
             messageChannel: channel.channel,
           });

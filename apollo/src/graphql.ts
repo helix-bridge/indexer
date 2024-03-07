@@ -108,6 +108,7 @@ export class LnBridgeRelayInfo {
     heartbeatTimestamp?: Nullable<number>;
     messageChannel?: Nullable<string>;
     transferLimit?: Nullable<string>;
+    softTransferLimit?: Nullable<string>;
     paused?: Nullable<boolean>;
 }
 
@@ -131,7 +132,7 @@ export abstract class IMutation {
 
     abstract updateConfirmedBlock(id?: Nullable<string>, block?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 
-    abstract lnBridgeHeartBeat(fromChainId?: Nullable<string>, toChainId?: Nullable<string>, version?: Nullable<string>, relayer?: Nullable<string>, tokenAddress?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
+    abstract lnBridgeHeartBeat(fromChainId?: Nullable<string>, toChainId?: Nullable<string>, version?: Nullable<string>, relayer?: Nullable<string>, tokenAddress?: Nullable<string>, softTransferLimit?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 }
 
 export type BigInt = any;

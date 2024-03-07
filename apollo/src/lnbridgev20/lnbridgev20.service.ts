@@ -606,6 +606,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             lastTransferId: '0x0000000000000000000000000000000000000000000000000000000000000000',
             messageChannel: tokenPair.channel,
             transferLimit: '0',
+            softTransferLimit: '0',
             paused: false,
           });
         }
@@ -697,6 +698,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             lastTransferId: '0x0000000000000000000000000000000000000000000000000000000000000000',
             messageChannel: tokenPair.channel,
             transferLimit: '0',
+            softTransferLimit: '0',
             paused: false,
           });
         } else {
@@ -803,6 +805,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             heartbeatTimestamp: 0,
             messageChannel: tokenPair.channel,
             transferLimit: '0',
+            softTransferLimit: '0',
             paused: false,
           });
         } else {

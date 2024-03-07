@@ -71,6 +71,7 @@ type LnBridgeRelayInfo {
   heartbeatTimestamp: Int
   messageChannel: String
   transferLimit: String
+  softTransferLimit: String
   paused: Boolean
 }
 
@@ -106,6 +107,6 @@ type Query {
 type Mutation {
   addGuardSignature(id: String, dataHash: String, signature: String): String
   updateConfirmedBlock(id: String, block: String): String
-  lnBridgeHeartBeat(fromChainId: String, toChainId: String, version: String, relayer: String, tokenAddress: String): String
+  lnBridgeHeartBeat(fromChainId: String, toChainId: String, version: String, relayer: String, tokenAddress: String, softTransferLimit: String): String
 }
 
