@@ -16,6 +16,7 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly mantleEndpoint = this.configService.get<string>('MANTLE_LNV3_ENDPOINT');
   private readonly scrollEndpoint = this.configService.get<string>('SCROLL_LNV3_ENDPOINT');
   private readonly darwiniaEndpoint = this.configService.get<string>('DARWINIA_LNV3_ENDPOINT');
+  private readonly blastEndpoint = this.configService.get<string>('BLAST_LNV3_ENDPOINT');
 
   formalChainTransfers: PartnerT2[] = [
     {
@@ -70,6 +71,10 @@ export class TransferService extends BaseTransferServiceT2 {
         },
         {
           chain: 'darwinia-dvm',
+          channel: 'msgline',
+        },
+        {
+          chain: 'blast',
           channel: 'msgline',
         }
       ]
@@ -438,7 +443,29 @@ export class TransferService extends BaseTransferServiceT2 {
           channel: 'msgline',
         }
       ]
+    },
+    {
+      chainId: 81457,
+      chain: 'blast',
+      url: this.blastEndpoint,
+      bridge: 'lnv3',
+      symbols: [
+        {
+          key: 'ETH',
+          symbol: 'ETH',
+          address: '0x0000000000000000000000000000000000000000',
+          protocolFee: 10000000000000,
+          decimals: 18,
+        }
+      ],
+      channels: [
+        {
+          chain: 'arbitrum',
+          channel: 'msgline',
+        }
+      ]
     }
+
   ];
 
   testChainTransfers: PartnerT2[] = [

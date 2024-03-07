@@ -15,13 +15,15 @@
     "build-gnosis": "sh generate.sh gnosis 0xbA5D580B18b6436411562981e02c8A9aA1776D10 32215168 && graph codegen && graph build",
     "build-mantle": "sh generate.sh mantle 0xbA5D580B18b6436411562981e02c8A9aA1776D10 51738488 && graph codegen && graph build",
     "build-scroll": "sh generate.sh scroll 0xbA5D580B18b6436411562981e02c8A9aA1776D10 2932126 && graph codegen && graph build",
+    "build-darwinia": "sh generate.sh darwinia2 0xbA5D580B18b6436411562981e02c8A9aA1776D10 2013481 && graph codegen && graph build",
+    "build-blast": "sh generate.sh blast-mainnet 0xB180D7DcB5CC161C862aD60442FA37527546cAFC 459939 && graph codegen && graph build",
     "create-remote-dev": "graph create --access-token ${KEY} --node https://thegraph-g2.darwinia.network/helix/deploy/ lnv3/${NETWORK}",
     "deploy-remote-dev": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com lnv3/$NETWORK",
     "create-remote-pro": "graph create --access-token ${KEY} --node https://thegraph.darwinia.network/helix/deploy/ lnv3/${NETWORK}",
     "deploy-remote-pro": "graph deploy --access-token $KEY --node https://thegraph.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com lnv3/$NETWORK"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.31.1",
-    "@graphprotocol/graph-ts": "0.31.0"
+    "@graphprotocol/graph-cli": "0.68.5",
+    "@graphprotocol/graph-ts": "0.33.0"
   }
 }
