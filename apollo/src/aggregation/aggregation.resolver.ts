@@ -171,7 +171,8 @@ export class AggregationResolver {
     @Args('toChainId') toChainId: string,
     @Args('version') version: string,
     @Args('relayer') relayer: string,
-    @Args('tokenAddress') tokenAddress: string
+    @Args('tokenAddress') tokenAddress: string,
+    @Args('softTransferLimit') softTransferLimit: string
   ) {
     const id = `${version}-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
     try {
@@ -179,6 +180,7 @@ export class AggregationResolver {
         where: { id: id },
         data: {
           heartbeatTimestamp: Math.floor(Date.now() / 1000),
+          softTransferLimit: softTransferLimit,
         },
       });
     } catch (e) {
@@ -311,6 +313,8 @@ export class AggregationResolver {
     const take = row || 128;
     const sendToken = token?.toLowerCase();
     const baseFilters = { fromChain, toChain, sendToken, bridge, version };
+    amount = amount ?? '0';
+    decimals = decimals ?? 18;
 
     const where = {
       ...baseFilters,
@@ -328,9 +332,15 @@ export class AggregationResolver {
     var transferLimit = BigInt(0);
     const now = Math.floor(Date.now() / 1000);
     for (const record of records.records) {
-      const limit = record.version == 'lnv2' ? BigInt(record.margin) : BigInt(record.transferLimit);
-      if (limit > transferLimit) {
-        transferLimit = limit;
+      let limit = record.version == 'lnv2' ? BigInt(record.margin) : BigInt(record.transferLimit);
+      try {
+          const softTransferLimit = BigInt(record.softTransferLimit);
+          if (limit > softTransferLimit && softTransferLimit > 0) {
+              limit = softTransferLimit;
+          }
+      } catch(e) {
+          console.log(`get softTransferLimit failed ${record.id}, exception: ${e}`);
+          continue;
       }
       const providerFee = BigInt(amount) * BigInt(record.liquidityFeeRate) / BigInt(100000) + BigInt(record.baseFee);
       if (limit < BigInt(amount) + providerFee + BigInt(record.protocolFee) || record.paused) {
@@ -348,6 +358,9 @@ export class AggregationResolver {
       );
       if (point == null) {
         continue;
+      }
+      if (limit > transferLimit) {
+        transferLimit = limit;
       }
       sortedRelayers.push({ record, point });
     }

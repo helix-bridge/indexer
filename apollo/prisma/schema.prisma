@@ -78,6 +78,7 @@ model LnBridgeRelayInfo {
   heartbeatTimestamp Int
   messageChannel String
   transferLimit String
+  softTransferLimit String
   paused Boolean
 }
 
