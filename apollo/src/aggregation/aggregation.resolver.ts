@@ -180,7 +180,7 @@ export class AggregationResolver {
         where: { id: id },
         data: {
           heartbeatTimestamp: Math.floor(Date.now() / 1000),
-          softTransferLimit: softTransferLimit,
+          softTransferLimit: softTransferLimit ?? '0',
         },
       });
     } catch (e) {
