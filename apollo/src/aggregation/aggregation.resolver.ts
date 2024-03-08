@@ -175,13 +175,17 @@ export class AggregationResolver {
     @Args('softTransferLimit') softTransferLimit: string
   ) {
     const id = `${version}-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
+    let updateData = {
+      heartbeatTimestamp: Math.floor(Date.now() / 1000),
+    };
+    if (softTransferLimit !== undefined && softTransferLimit !== '0') {
+      updateData['softTransferLimit'] = softTransferLimit;
+    }
+
     try {
       await this.aggregationService.updateLnBridgeRelayInfo({
         where: { id: id },
-        data: {
-          heartbeatTimestamp: Math.floor(Date.now() / 1000),
-          softTransferLimit: softTransferLimit ?? '0',
-        },
+        data: updateData,
       });
     } catch (e) {
       console.log(`heart beat failed ${id}, exception: ${e}`);
