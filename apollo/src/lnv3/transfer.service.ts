@@ -73,10 +73,6 @@ export class TransferService extends BaseTransferServiceT2 {
           chain: 'darwinia-dvm',
           channel: 'msgline',
         },
-        {
-          chain: 'blast',
-          channel: 'msgline',
-        }
       ]
     },
     {
@@ -138,6 +134,10 @@ export class TransferService extends BaseTransferServiceT2 {
         },
         {
           chain: 'darwinia-dvm',
+          channel: 'msgline',
+        },
+        {
+          chain: 'blast',
           channel: 'msgline',
         }
       ]
