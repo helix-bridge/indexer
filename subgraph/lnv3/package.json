@@ -7,6 +7,8 @@
     "build-sepolia": "sh generate.sh sepolia 0x38627Cb033De66a1E07e73f5D0a7a7adFB6741fa 5060070 && graph codegen && graph build",
     "build-arbitrum-sepolia": "sh generate.sh arbitrum-sepolia 0x38627Cb033De66a1E07e73f5D0a7a7adFB6741fa 6126325 && graph codegen && graph build",
     "build-zksync-sepolia": "sh generate.sh zksync-era-sepolia 0xDc55fF59F82AA50D8A4A61dB8CcaDffD26Fb7dD2 76772 && graph codegen && graph build",
+    "build-bera-testnet": "sh generate.sh bera 0x00e7EFf0826dfCDf2AA5945dFF710B48f4AA7E64 1006527 && graph codegen && graph build",
+    "build-taiko-testnet": "sh generate.sh taiko 0x00e7EFf0826dfCDf2AA5945dFF710B48f4AA7E64 501744 && graph codegen && graph build",
     "build-polygon-pos": "sh generate.sh matic 0xbA5D580B18b6436411562981e02c8A9aA1776D10 52848029 && graph codegen && graph build",
     "build-arbitrum-one": "sh generate.sh arbitrum-one 0xbA5D580B18b6436411562981e02c8A9aA1776D10 175050634 && graph codegen && graph build",
     "build-bsc": "sh generate.sh bsc 0xbA5D580B18b6436411562981e02c8A9aA1776D10 35684060 && graph codegen && graph build",

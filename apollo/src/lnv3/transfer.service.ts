@@ -17,6 +17,8 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly scrollEndpoint = this.configService.get<string>('SCROLL_LNV3_ENDPOINT');
   private readonly darwiniaEndpoint = this.configService.get<string>('DARWINIA_LNV3_ENDPOINT');
   private readonly blastEndpoint = this.configService.get<string>('BLAST_LNV3_ENDPOINT');
+  private readonly beraEndpoint = this.configService.get<string>('BERA_LNV3_ENDPOINT');
+  private readonly taikoEndpoint = this.configService.get<string>('TAIKO_LNV3_ENDPOINT');
 
   formalChainTransfers: PartnerT2[] = [
     {
@@ -545,6 +547,14 @@ export class TransferService extends BaseTransferServiceT2 {
           chain: 'zksync-sepolia',
           channel: 'layerzero',
         },
+        {
+          chain: 'taiko',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'bera',
+          channel: 'layerzero',
+        },
       ],
     },
     {
@@ -586,6 +596,49 @@ export class TransferService extends BaseTransferServiceT2 {
         },
       ],
     },
+    {
+      chainId: 167008,
+      chain: 'taiko',
+      url: this.taikoEndpoint,
+      bridge: 'lnv3',
+      symbols: [
+        {
+          key: 'USDC',
+          symbol: 'USDC',
+          address: '0x3F7DF5866591e7E48D18C8EbeAE61Bc343a63283',
+          protocolFee: 1000000000000000,
+          decimals: 18,
+        },
+      ],
+      channels: [
+        {
+          chain: 'arbitrum-sepolia',
+          channel: 'layerzero',
+        },
+      ],
+    },
+    {
+      chainId: 80085,
+      chain: 'bera',
+      url: this.beraEndpoint,
+      bridge: 'lnv3',
+      symbols: [
+        {
+          key: 'USDC',
+          symbol: 'USDC',
+          address: '0x89AF830781A2C1d3580Db930bea11094F55AfEae',
+          protocolFee: 1000000000000000,
+          decimals: 18,
+        },
+      ],
+      channels: [
+        {
+          chain: 'arbitrum-sepolia',
+          channel: 'layerzero',
+        },
+      ],
+    },
+
   ];
 
   readonly addressToTokenInfo: { [key: string]: AddressTokenMap } = {};
