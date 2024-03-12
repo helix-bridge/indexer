@@ -326,7 +326,9 @@ export class AggregationResolver {
         if (!toChains) {
             supportChains.set(record.fromChain, [ record.toChain ]);
         } else {
-            toChains.push(record.toChain);
+            if (!toChains.includes(record.toChain)) {
+                toChains.push(record.toChain);
+            }
         }
     }
     return Array.from(supportChains, ([fromChain, toChains]) => ({
