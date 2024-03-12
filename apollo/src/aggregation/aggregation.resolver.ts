@@ -304,6 +304,38 @@ export class AggregationResolver {
   }
 
   @Query()
+  async queryLnBridgeSupportChains(
+    @Args('tokenKey') tokenKey: string
+  ) {
+    const baseFilters = { 
+        tokenKey,
+        paused: false,
+        OR: [{transferLimit: { not: '0' }}, {margin: { not: '0' }}]
+    };
+
+    const where = {
+      ...baseFilters,
+    };
+
+    const records = await this.aggregationService.queryLnBridgeRelayInfos({
+      where,
+    });
+    let supportChains = new Map();
+    for (const record of records.records) {
+        let toChains = supportChains.get(record.fromChain);
+        if (!toChains) {
+            supportChains.set(record.fromChain, [ record.toChain ]);
+        } else {
+            toChains.push(record.toChain);
+        }
+    }
+    return Array.from(supportChains, ([fromChain, toChains]) => ({
+        fromChain,
+        toChains,
+    }));
+  }
+
+  @Query()
   async sortedLnBridgeRelayInfos(
     @Args('fromChain') fromChain: string,
     @Args('toChain') toChain: string,

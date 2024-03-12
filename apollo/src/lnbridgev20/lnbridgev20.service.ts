@@ -31,6 +31,7 @@ export interface BridgeIndexInfo {
 }
 
 export interface TokenPairInfo {
+  key: string;
   fromSymbol: string;
   toSymbol: string;
   fromDecimals: number;
@@ -494,6 +495,7 @@ export class Lnbridgev20Service implements OnModuleInit {
       return null;
     }
     return {
+      key: sourceInfo.key,
       fromSymbol: sourceInfo.fromSymbol,
       fromDecimals: sourceInfo.decimals,
       toSymbol: targetInfo?.toSymbol,
@@ -592,6 +594,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             withdrawNonce: Number(record.withdrawNonce),
             relayer: record.provider,
             sendToken: record.sourceToken,
+            tokenKey: tokenPair.key,
             transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),
             margin: BigInt(sourceMargin).toString(),
@@ -684,6 +687,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             withdrawNonce: 0,
             relayer: record.provider,
             sendToken: record.sourceToken,
+            tokenKey: tokenPair.key,
             transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),
             margin: '0',
@@ -790,6 +794,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             nonce: latestNonce,
             relayer: record.provider,
             sendToken: record.sourceToken,
+            tokenKey: tokenPair.key,
             transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),
             margin: margin,

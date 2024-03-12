@@ -36,6 +36,8 @@ export abstract class IQuery {
     abstract queryLnBridgeRelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, version?: Nullable<string>, bridge?: Nullable<string>, relayer?: Nullable<string>, row?: Nullable<number>, page?: Nullable<number>): Nullable<LnBridgeRelayInfos> | Promise<Nullable<LnBridgeRelayInfos>>;
 
     abstract sortedLnBridgeRelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, version?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>, row?: Nullable<number>, amount?: Nullable<string>, decimals?: Nullable<number>): Nullable<SortedLnBridgeRelayInfos> | Promise<Nullable<SortedLnBridgeRelayInfos>>;
+
+    abstract queryLnBridgeSupportChains(tokenKey?: Nullable<string>): Nullable<Nullable<SupportChains>[]> | Promise<Nullable<Nullable<SupportChains>[]>>;
 }
 
 export class HistoryRecord {
@@ -94,6 +96,7 @@ export class LnBridgeRelayInfo {
     bridge: string;
     relayer: string;
     sendToken?: Nullable<string>;
+    tokenKey?: Nullable<string>;
     transactionHash: string;
     timestamp: number;
     margin?: Nullable<string>;
@@ -120,6 +123,11 @@ export class LnBridgeRelayInfos {
 export class SortedLnBridgeRelayInfos {
     transferLimit: BigInt;
     records?: Nullable<Nullable<LnBridgeRelayInfo>[]>;
+}
+
+export class SupportChains {
+    fromChain: string;
+    toChains?: Nullable<Nullable<string>[]>;
 }
 
 export class HealthInfo {

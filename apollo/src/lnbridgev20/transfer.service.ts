@@ -57,6 +57,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: this.lnEthereumOppositeEndpoint,
       tokens: [
         {
+          key: 'RING',
           fromSymbol: 'RING',
           fromAddress: '0x9469D013805bFfB7D3DEBe5E7839237e535ec483',
           decimals: 18,
@@ -81,6 +82,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: this.lnArbitrumOppositeEndpoint,
       tokens: [
         {
+          key: 'RING',
           fromSymbol: 'RING',
           fromAddress: '0x9e523234D36973f9e38642886197D023C88e307e',
           decimals: 18,
@@ -115,6 +117,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
         {
+          key: 'USDT',
           fromSymbol: 'USDT',
           fromAddress: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
           decimals: 6,
@@ -158,6 +161,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
         {
+          key: 'USDC',
           fromSymbol: 'USDC',
           fromAddress: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
           decimals: 6,
@@ -191,6 +195,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: null,
       tokens: [
         {
+          key: 'USDT',
           fromSymbol: 'USDT',
           fromAddress: '0x201eba5cc46d216ce6dc03f6a759e8e766e956ae',
           decimals: 6,
@@ -225,6 +230,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
         {
+          key: 'USDC',
           fromSymbol: 'USDC',
           fromAddress: '0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9',
           decimals: 6,
@@ -258,6 +264,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: null,
       tokens: [
         {
+          key: 'RING',
           fromSymbol: 'RING',
           fromAddress: '0x9c1c23e60b72bc88a043bf64afdb16a02540ae8f',
           decimals: 18,
@@ -282,6 +289,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: null,
       tokens: [
         {
+          key: 'USDT',
           fromSymbol: 'USDT',
           fromAddress: '0x493257fd37edb34451f62edf8d2a0c418852ba4c',
           decimals: 6,
@@ -324,6 +332,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: null,
       tokens: [
         {
+          key: 'USDT',
           fromSymbol: 'USDT',
           fromAddress: '0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df',
           decimals: 6,
@@ -349,6 +358,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
         {
+          key: 'USDC',
           fromSymbol: 'USDC',
           fromAddress: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
           decimals: 6,
@@ -382,6 +392,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: null,
       tokens: [
         {
+          key: 'RING',
           fromSymbol: 'RING',
           fromAddress: '0x0000000000000000000000000000000000000000',
           decimals: 18,
@@ -407,6 +418,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
         {
+          key: 'CRAB',
           fromSymbol: 'xWCRAB',
           fromAddress: '0x656567Eb75b765FC320783cc6EDd86bD854b2305',
           decimals: 18,
@@ -431,6 +443,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: null,
       tokens: [
         {
+          key: 'CRAB',
           fromSymbol: 'CRAB',
           fromAddress: '0x0000000000000000000000000000000000000000',
           decimals: 18,
@@ -447,6 +460,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
         {
+          key: 'RING',
           fromSymbol: 'xWRING',
           fromAddress: '0x273131F7CB50ac002BDd08cA721988731F7e1092',
           decimals: 18,
@@ -471,6 +485,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: null,
       tokens: [
         {
+          key: 'USDT',
           fromSymbol: 'USDT',
           fromAddress: '0x55d398326f99059fF775485246999027B3197955',
           decimals: 18,
@@ -505,6 +520,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
         {
+          key: 'USDC',
           fromSymbol: 'USDC',
           fromAddress: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
           decimals: 18,
@@ -529,6 +545,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: null,
       tokens: [
         {
+          key: 'USDC',
           fromSymbol: 'USDC',
           fromAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
           decimals: 6,
@@ -553,6 +570,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: null,
       tokens: [
         {
+          key: 'USDT',
           fromSymbol: 'USDT',
           fromAddress: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
           decimals: 6,
@@ -577,6 +595,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: null,
       tokens: [
         {
+          key: 'USDT',
           fromSymbol: 'USDT',
           fromAddress: '0xA219439258ca9da29E9Cc4cE5596924745e12B93',
           decimals: 6,
@@ -613,6 +632,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: this.lnEthereumOppositeEndpoint,
       tokens: [
         {
+          key: 'USDC',
           fromSymbol: 'USDC',
           fromAddress: '0x0ac58Df0cc3542beC4cDa71B16D06C3cCc39f405',
           decimals: 18,
@@ -638,6 +658,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
         {
+          key: 'USDT',
           fromSymbol: 'USDT',
           fromAddress: '0x876A4f6eCF13EEb101F9E75FCeF58f19Ff383eEB',
           decimals: 18,
@@ -663,6 +684,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
         {
+          key: 'ETH',
           fromSymbol: 'ETH',
           fromAddress: '0x0000000000000000000000000000000000000000',
           decimals: 18,
@@ -696,6 +718,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: this.lnArbitrumOppositeEndpoint,
       tokens: [
         {
+          key: 'USDC',
           fromSymbol: 'USDC',
           fromAddress: '0x8A87497488073307E1a17e8A12475a94Afcb413f',
           decimals: 18,
@@ -721,6 +744,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
         {
+          key: 'USDT',
           fromSymbol: 'USDT',
           fromAddress: '0x3b8Bb7348D4F581e67E2498574F73e4B9Fc51855',
           decimals: 18,
@@ -746,6 +770,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
         {
+          key: 'ETH',
           fromSymbol: 'ETH',
           fromAddress: '0x0000000000000000000000000000000000000000',
           decimals: 18,
@@ -779,6 +804,7 @@ export class TransferService extends BaseTransferServiceT3 {
       oppositeEndpoint: null,
       tokens: [
         {
+          key: 'USDC',
           fromSymbol: 'USDC',
           fromAddress: '0x253adBFE99Fcd096B9b5502753F96CF78D42eaD0',
           decimals: 6,
@@ -804,6 +830,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
         {
+          key: 'USDT',
           fromSymbol: 'USDT',
           fromAddress: '0x3350f1ef046e21E052dCbA60Fc575919CCaFEdeb',
           decimals: 6,
@@ -829,6 +856,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
         {
+          key: 'ETH',
           fromSymbol: 'ETH',
           fromAddress: '0x0000000000000000000000000000000000000000',
           decimals: 18,

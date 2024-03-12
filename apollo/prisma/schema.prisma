@@ -64,6 +64,7 @@ model LnBridgeRelayInfo {
   bridge String
   relayer String
   sendToken String
+  tokenKey String
   transactionHash String
   timestamp Int
   margin String

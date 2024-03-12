@@ -41,6 +41,7 @@ export interface RemoteInfo {
 }
 
 export interface Token {
+  key: string;
   fromSymbol: string;
   fromAddress: string;
   decimals: number;

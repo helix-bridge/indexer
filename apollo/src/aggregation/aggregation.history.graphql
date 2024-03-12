@@ -57,6 +57,7 @@ type LnBridgeRelayInfo {
   bridge: String!
   relayer: String!
   sendToken: String
+  tokenKey: String
   transactionHash: String!
   timestamp: Int!
   margin: String
@@ -85,6 +86,11 @@ type SortedLnBridgeRelayInfos {
   records: [LnBridgeRelayInfo]
 }
 
+type SupportChains {
+  fromChain: String!
+  toChains: [String]
+}
+
 type HealthInfo {
   name: String
   callTimes: Int
@@ -102,6 +108,7 @@ type Query {
   queryRelayRecords(fromChain: String, toChain: String, bridge: String, relayer: String, row: Int): HistoryRecords
   queryLnBridgeRelayInfos(fromChain: String, toChain: String, version: String, bridge: String, relayer: String, row: Int, page: Int): LnBridgeRelayInfos
   sortedLnBridgeRelayInfos(fromChain: String, toChain: String, version: String, bridge: String, token: String, row: Int, amount: String, decimals: Int): SortedLnBridgeRelayInfos
+  queryLnBridgeSupportChains(tokenKey: String): [SupportChains]
 }
 
 type Mutation {

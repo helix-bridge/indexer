@@ -99,11 +99,13 @@ export class Lnv3Service implements OnModuleInit {
         })
         .then((res) => res.data?.data?.lnv3TransferRecords);
 
-
       if (records && records.length > 0) {
         for (const record of records) {
           const toChain = this.getDestChain(record.remoteChainId.toString());
           if (toChain === null) {
+            this.logger.warn(`fetch record cannot find toChain, id ${record.remoteChainId}`);
+            latestNonce += 1;
+            this.fetchCache[index].latestNonce = latestNonce;
             continue;
           }
           const fromToken = this.getTokenInfo(transfer, record.sourceToken);
@@ -359,6 +361,7 @@ export class Lnv3Service implements OnModuleInit {
             nonce: latestNonce + 1,
             relayer: record.provider,
             sendToken: record.sourceToken,
+            tokenKey: fromToken.key,
             transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),
             margin: penalty,
