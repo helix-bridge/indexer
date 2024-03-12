@@ -321,8 +321,14 @@ export class AggregationResolver {
       where,
     });
     let supportChains = new Map();
+    const now = Math.floor(Date.now() / 1000);
     for (const record of records.records) {
+        if (record.heartbeatTimestamp + this.heartbeatTimeout < now) {
+          continue;
+        }
+
         let toChains = supportChains.get(record.fromChain);
+
         if (!toChains) {
             supportChains.set(record.fromChain, [ record.toChain ]);
         } else {
