@@ -609,6 +609,13 @@ export class TransferService extends BaseTransferServiceT2 {
           protocolFee: 1000000000000000,
           decimals: 18,
         },
+        {
+          key: 'USDT',
+          symbol: 'USDT',
+          address: '0x89AF830781A2C1d3580Db930bea11094F55AfEae',
+          protocolFee: 1000000000000000,
+          decimals: 18,
+        },
       ],
       channels: [
         {
@@ -627,6 +634,13 @@ export class TransferService extends BaseTransferServiceT2 {
           key: 'USDC',
           symbol: 'USDC',
           address: '0x89AF830781A2C1d3580Db930bea11094F55AfEae',
+          protocolFee: 1000000000000000,
+          decimals: 18,
+        },
+        {
+          key: 'USDT',
+          symbol: 'USDT',
+          address: '0x463D1730a8527CA58d48EF70C7460B9920346567',
           protocolFee: 1000000000000000,
           decimals: 18,
         },
