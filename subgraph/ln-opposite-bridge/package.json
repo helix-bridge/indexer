@@ -8,6 +8,7 @@
     "build-arbisepolia": "sh generate.sh arbitrum-sepolia 0xbA96d83E2A04c4E50F2D6D7eCA03D70bA2426e5f 7188705 && graph codegen && graph build",
     "build-ethereum": "sh generate.sh mainnet 0x48d769d5C7ff75703cDd1543A1a2ed9bC9044A23 18381361 && graph codegen && graph build",
     "build-arbitrum": "sh generate.sh arbitrum-one 0x48d769d5C7ff75703cDd1543A1a2ed9bC9044A23 141864870 && graph codegen && graph build",
+    "build-darwinia": "sh generate.sh darwinia2 0x48d769d5C7ff75703cDd1543A1a2ed9bC9044A23 2267471 && graph codegen && graph build",
     "create-remote-dev": "graph create --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ lnopposite/$NETWORK",
     "deploy-remote-dev": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com lnopposite/$NETWORK",
     "create-remote-pro": "graph create --access-token $KEY --node https://thegraph.darwinia.network/helix/deploy/ lnopposite/$NETWORK",
