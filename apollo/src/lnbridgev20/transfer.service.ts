@@ -43,6 +43,9 @@ export class TransferService extends BaseTransferServiceT3 {
   private readonly lnDarwiniaDefaultEndpoint = this.configService.get<string>(
     'LN_DARWINIA_DEFAULT_ENDPOINT'
   );
+  private readonly lnDarwiniaOppositeEndpoint = this.configService.get<string>(
+    'LN_DARWINIA_OPPOSITE_ENDPOINT'
+  );
   private readonly lnCrabDefaultEndpoint = this.configService.get<string>(
     'LN_CRAB_DEFAULT_ENDPOINT'
   );
@@ -70,6 +73,15 @@ export class TransferService extends BaseTransferServiceT3 {
               decimals: 18,
               bridgeType: 'default',
               channel: 'arbitrum-l2',
+            },
+            {
+              toChain: 46,
+              toSymbol: 'RING',
+              toAddress: '0x0000000000000000000000000000000000000000',
+              protocolFee: 100000000000000000000,
+              decimals: 18,
+              bridgeType: 'default',
+              channel: 'msgline',
             },
           ],
         },
@@ -389,7 +401,7 @@ export class TransferService extends BaseTransferServiceT3 {
       chainId: 46,
       chainName: 'darwinia-dvm',
       defaultEndpoint: this.lnDarwiniaDefaultEndpoint,
-      oppositeEndpoint: null,
+      oppositeEndpoint: this.lnDarwiniaOppositeEndpoint,
       tokens: [
         {
           key: 'RING',
@@ -404,6 +416,15 @@ export class TransferService extends BaseTransferServiceT3 {
               protocolFee: 100000000000000000000,
               decimals: 18,
               bridgeType: 'default',
+              channel: 'msgline',
+            },
+            {
+              toChain: 1,
+              toSymbol: 'RING',
+              toAddress: '0x9469D013805bFfB7D3DEBe5E7839237e535ec483',
+              protocolFee: 100000000000000000000,
+              decimals: 18,
+              bridgeType: 'opposite',
               channel: 'msgline',
             },
             {
