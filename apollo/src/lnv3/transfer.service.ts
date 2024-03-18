@@ -140,7 +140,7 @@ export class TransferService extends BaseTransferServiceT2 {
         },
         {
           chain: 'blast',
-          channel: 'msgline',
+          channel: 'layerzero',
         }
       ]
     },
@@ -463,7 +463,7 @@ export class TransferService extends BaseTransferServiceT2 {
       channels: [
         {
           chain: 'arbitrum',
-          channel: 'msgline',
+          channel: 'layerzero',
         }
       ]
     }
