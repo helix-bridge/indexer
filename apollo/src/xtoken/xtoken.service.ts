@@ -114,7 +114,7 @@ export class xTokenService implements OnModuleInit {
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { transferRecords(first: ${this.baseConfigure.fetchHistoryDataFirst}, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, direction, remoteChainId, nonce, userNonce, messageId, sender, receiver, token, amount, timestamp, transactionHash, fee } }`;
+      const query = `query { transferRecords(first: ${this.baseConfigure.fetchHistoryDataFirst}, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, direction, remoteChainId, nonce, userNonce, messageId, sender, receiver, token, amount, timestamp, transactionHash, fee, extData } }`;
 
       const records = await axios
         .post(transfer.url, {
@@ -171,6 +171,7 @@ export class xTokenService implements OnModuleInit {
             recvTokenAddress: recvTokenInfo.address.toLowerCase(),
             endTxHash: '',
             confirmedBlocks: '',
+            extData: record.extData,
           });
           latestNonce += 1;
         }
@@ -213,6 +214,7 @@ export class xTokenService implements OnModuleInit {
             variables: null,
           })
           .then((res) => res.data?.data?.messageDispatchedResult);
+
         if (node === undefined || node === null || node.result === null) {
           continue;
         }

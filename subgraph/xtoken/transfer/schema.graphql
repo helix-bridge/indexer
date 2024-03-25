@@ -17,6 +17,7 @@ type TransferRecord @entity {
   transactionHash: Bytes!
   fee: BigInt
   userNonce: String!
+  extData: String!
 }
 
 type RefundTransferRecord @entity {

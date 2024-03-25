@@ -127,8 +127,8 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
         BigInt(last(record.id.split('-'))).toString(),
         record.endTime.toString(),
         record.recvTokenAddress,
-        record.recipient,
         record.recvAmount,
+        record.extData,
         signature
       );
       if (!guard) {

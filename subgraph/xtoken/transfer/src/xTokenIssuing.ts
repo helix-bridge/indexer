@@ -1,7 +1,7 @@
-import { BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts"
+import { BigInt, ByteArray, Bytes, ethereum } from "@graphprotocol/graph-ts"
 import {
-  BurnAndRemoteUnlocked,
-  RemoteUnlockForIssuingFailureRequested,
+  BurnAndXUnlocked,
+  RollbackLockAndXIssueRequested,
 } from "../generated/xTokenIssuing/xTokenIssuing"
 import { xTokenNonceOrder, TransferRecord, RefundTransferRecord } from "../generated/schema"
 
@@ -22,7 +22,40 @@ function isMsglineDeliveryEvent(event: ethereum.Log): boolean {
         isMsglineContract(event);
 }
 
-export function handleBurnAndRemoteUnlocked(event: BurnAndRemoteUnlocked): void {
+function isGuardAddress(address: string): boolean {
+    return address == "0x4ca75992d2750bec270731a72dfdede6b9e71cc7"; // testnet
+}
+
+function isWTokenConvertor(address: string): boolean {
+    return address == "0x3aceb55aad4cdfe1531a9c6f6416753e6a7bdd49"; // testnet
+}
+
+function isXRingConvertor(address: string): boolean {
+    return address == "0x917cb26bfcf9f6be65f387903aa9180613a40f41";
+}
+
+function isXRingConvertorEvent(event: ethereum.Log): boolean {
+    return isXRingConvertor(event.address.toHexString()) &&
+        event.topics[0].toHexString() == '0xe23676e6691ce6138d353b843afbe1e188c54bf9d04e99942c0a810b433da0ba';
+}
+
+function parseEventParams(types: string, input: Bytes): ethereum.Value | null {
+  const tuplePrefix = ByteArray.fromHexString(
+      '0x0000000000000000000000000000000000000000000000000000000000000020'
+  );
+  const functionInputAsTuple = new Uint8Array(
+      tuplePrefix.length + input.length
+  );
+  functionInputAsTuple.set(tuplePrefix, 0);
+  functionInputAsTuple.set(input, tuplePrefix.length);
+  const tupleInputBytes = Bytes.fromUint8Array(functionInputAsTuple);
+  return ethereum.decode(
+      types,
+      tupleInputBytes
+  );
+}
+
+export function handleBurnAndXUnlocked(event: BurnAndXUnlocked): void {
   let message_id = event.params.transferId.toHexString();
   let entity = TransferRecord.load(message_id);
   if (entity == null) {
@@ -40,14 +73,34 @@ export function handleBurnAndRemoteUnlocked(event: BurnAndRemoteUnlocked): void 
   entity.direction = 'burn';
   entity.remoteChainId = event.params.remoteChainId.toI32();
   entity.nonce = counter.count;
-  entity.sender = event.params.sender;
-  entity.receiver = event.params.recipient;
+  entity.sender = event.transaction.from;
+  const recipient = event.params.recipient;
+  entity.receiver = recipient;
   entity.token = event.params.originalToken;
   entity.amount = event.params.amount;
   entity.transactionHash = event.transaction.hash;
   entity.timestamp = event.block.timestamp;
   entity.fee = event.params.fee;
   entity.userNonce = event.params.nonce.toHexString();
+  entity.extData = event.params.extData.toHexString();
+
+  if (isGuardAddress(recipient.toHexString())) {
+      const decodedExtdata = parseEventParams(
+          '(address,bytes)',
+          event.params.extData
+      )
+      if (decodedExtdata !== null) {
+          const extData = decodedExtdata.toTuple();
+          const nextRecipient = extData[0].toAddress();
+          if (isWTokenConvertor(nextRecipient.toHexString())) {
+              entity.receiver = extData[1].toBytes();
+          } else {
+              entity.receiver = nextRecipient;
+          }
+      }
+  } else if (isWTokenConvertor(recipient.toHexString())) {
+      entity.receiver = event.params.extData;
+  }
 
   var messageId: string;
   // find the messageId
@@ -58,7 +111,6 @@ export function handleBurnAndRemoteUnlocked(event: BurnAndRemoteUnlocked): void 
       for (var idx = 0; idx < logs.length; idx++) {
           if (isMsglineAcceptEvent(logs[idx])) {
               messageId = logs[idx].topics[1].toHexString();
-              break;
           }
       }
   }
@@ -70,7 +122,7 @@ export function handleBurnAndRemoteUnlocked(event: BurnAndRemoteUnlocked): void 
 }
 
 // refund txs
-export function handleRemoteUnlockForIssuingFailureRequested(event: RemoteUnlockForIssuingFailureRequested): void {
+export function handleRollbackLockAndXIssueRequested(event: RollbackLockAndXIssueRequested): void {
   var messageId = '';
   if (event.receipt == null) {
       return;

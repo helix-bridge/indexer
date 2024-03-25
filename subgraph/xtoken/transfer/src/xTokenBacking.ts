@@ -1,4 +1,4 @@
-import { BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts"
+import { BigInt, ByteArray, Bytes, ethereum } from "@graphprotocol/graph-ts"
 import {
   TokenLocked,
   RemoteIssuingFailure,
@@ -20,6 +20,39 @@ function isMsglineAcceptEvent(event: ethereum.Log): boolean {
 function isMsglineDeliveryEvent(event: ethereum.Log): boolean {
     return event.topics[0].toHexString() == '0x62b1dc20fd6f1518626da5b6f9897e8cd4ebadbad071bb66dc96a37c970087a8' &&
         isMsglineContract(event);
+}
+
+function isWTokenConvertor(address: string): boolean {
+    return address == "0x3aceb55aad4cdfe1531a9c6f6416753e6a7bdd49"; // testnet
+}
+
+function isXRingConvertor(address: string): boolean {
+    return address == "0x917cb26bfcf9f6be65f387903aa9180613a40f41";
+}
+
+function isGuardAddress(address: string): boolean {
+    return address == "0x4ca75992d2750bec270731a72dfdede6b9e71cc7"; // testnet
+}
+
+function isWTokenConvertorEvent(event: ethereum.Log): boolean {
+    return isWTokenConvertor(event.address.toHexString()) &&
+        event.topics[0].toHexString() == '0xad1c9774020375f95af619204dbe4efc0279cc649e1480865004e3443b0d13a0';
+}
+
+function parseEventParams(types: string, input: Bytes): ethereum.Value | null {
+  const tuplePrefix = ByteArray.fromHexString(
+      '0x0000000000000000000000000000000000000000000000000000000000000020'
+  );
+  const functionInputAsTuple = new Uint8Array(
+      tuplePrefix.length + input.length
+  );
+  functionInputAsTuple.set(tuplePrefix, 0);
+  functionInputAsTuple.set(input, tuplePrefix.length);
+  const tupleInputBytes = Bytes.fromUint8Array(functionInputAsTuple);
+  return ethereum.decode(
+      types,
+      tupleInputBytes
+  );
 }
 
 export function handleTokenLocked(event: TokenLocked): void {
@@ -48,6 +81,7 @@ export function handleTokenLocked(event: TokenLocked): void {
   entity.timestamp = event.block.timestamp;
   entity.fee = event.params.fee;
   entity.userNonce = event.params.nonce.toHexString();
+  entity.extData = event.params.extData.toHexString();
 
   var messageId: string;
   // find the messageId
@@ -58,7 +92,38 @@ export function handleTokenLocked(event: TokenLocked): void {
       for (var idx = 0; idx < logs.length; idx++) {
           if (isMsglineAcceptEvent(logs[idx])) {
               messageId = logs[idx].topics[1].toHexString();
-              break;
+          } else if (isWTokenConvertorEvent(logs[idx])) {
+              //event LockAndXIssue(uint256 transferId, address sender, address recipient, uint256 amount, bytes extData);
+              const decoded = parseEventParams(
+                  '(uint256,address,address,uint256,bytes)',
+                  logs[idx].data
+              );
+              if (decoded === null) {
+                  break;
+              }
+              const txParams = decoded.toTuple();
+              entity.sender = txParams[1].toAddress();
+
+              const recepientAddress = txParams[2].toAddress();
+              if (isGuardAddress(recepientAddress.toHexString())) {
+                  const decodedExtdata = parseEventParams(
+                      '(address,bytes)',
+                      txParams[4].toBytes()
+                  );
+                  if (decodedExtdata === null) {
+                      entity.receiver = recepientAddress;
+                      break;
+                  }
+                  const extData = decodedExtdata.toTuple();
+                  const nextRecipient = extData[0].toAddress();
+                  if (isXRingConvertor(nextRecipient.toHexString())) {
+                      entity.receiver = extData[1].toBytes();
+                  } else {
+                      entity.receiver = nextRecipient;
+                  }
+              } else {
+                  entity.receiver = recepientAddress;
+              }
           }
       }
   }

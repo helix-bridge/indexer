@@ -69,6 +69,7 @@ export class HistoryRecord {
     confirmedBlocks?: Nullable<string>;
     needWithdrawLiquidity?: Nullable<boolean>;
     lastRequestWithdraw?: Nullable<BigInt>;
+    extData?: Nullable<string>;
 }
 
 export class DailyStatistics {

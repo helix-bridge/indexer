@@ -41,6 +41,7 @@ model HistoryRecord {
   confirmedBlocks String?
   needWithdrawLiquidity Boolean?
   lastRequestWithdraw BigInt?
+  extData String?
 }
 
 model DailyStatistics {

@@ -30,6 +30,7 @@ type HistoryRecord {
   confirmedBlocks: String
   needWithdrawLiquidity: Boolean
   lastRequestWithdraw: BigInt
+  extData: String
 }
 
 type DailyStatistics {

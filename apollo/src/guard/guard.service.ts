@@ -19,8 +19,16 @@ export class GuardService {
       toChain: 'sepolia',
       bridge: 'xtoken-pangolin-dvm',
       chainId: 11155111,
-      depositor: '0x371019523b25Ff4F26d977724f976566b08bf741',
-      contract: '0x3f200d3b6DA62bcA2F8a93F663b172A7f1AaE9ba',
+      depositor: '0x3B36c2Db4CC5E92Af015Eb572A1C95C95599a8bF',
+      contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
+    },
+    {
+      fromChain: 'sepolia',
+      toChain: 'pangolin-dvm',
+      bridge: 'xtoken-sepolia',
+      chainId: 43,
+      depositor: '0x7E3105E3A13D55d824b6322cbD2049f098a097F6',
+      contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
     },
     {
       fromChain: 'darwinia-dvm',
@@ -39,8 +47,8 @@ export class GuardService {
     transferId: string,
     timestamp: string,
     token: string,
-    recipient: string,
     amount: string,
+    extData: string,
     sig: string
   ): string | null {
     const info = this.guardConfig.find((info) => {
@@ -54,8 +62,8 @@ export class GuardService {
       transferId,
       timestamp,
       token,
-      recipient,
       amount,
+      extData,
       info.chainId,
       info.contract
     );
@@ -67,24 +75,17 @@ export class GuardService {
     transferId: string,
     timestamp: string,
     token: string,
-    recipient: string,
     amount: string,
+    extData: string,
     chainId: number,
     contractAddress: string
   ): string {
-    const claimSign = depositor === null ?
-      this.web3.eth.abi.encodeFunctionSignature(
-      'claim(uint256,uint256,address,address,uint256,bytes[])'
-    ) : this.web3.eth.abi.encodeFunctionSignature(
-      'claim(address,uint256,uint256,address,address,uint256,bytes[])'
+    const claimSign = this.web3.eth.abi.encodeFunctionSignature(
+      'claim(address,uint256,uint256,address,uint256,bytes,bytes[])'
     );
-    const param = depositor === null ? 
-      this.web3.eth.abi.encodeParameters(
-        ['uint256', 'uint256', 'address', 'address', 'uint256'],
-        [transferId, timestamp, token, recipient, amount]
-    ) : this.web3.eth.abi.encodeParameters(
-      ['address', 'uint256', 'uint256', 'address', 'address', 'uint256'],
-      [depositor, transferId, timestamp, token, recipient, amount]
+    const param = this.web3.eth.abi.encodeParameters(
+      ['address', 'uint256', 'uint256', 'address', 'uint256', 'bytes'],
+      [depositor, transferId, timestamp, token, amount, extData]
     );
     const message = this.web3.eth.abi.encodeParameters(['bytes4', 'bytes'], [claimSign, param]);
     const structHash = this.web3.utils.keccak256(message);
