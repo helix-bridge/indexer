@@ -23,11 +23,11 @@ function isMsglineDeliveryEvent(event: ethereum.Log): boolean {
 }
 
 function isWTokenConvertor(address: string): boolean {
-    return address == "0x3aceb55aad4cdfe1531a9c6f6416753e6a7bdd49"; // testnet
+    return address == "0xb3a8db63d6fbe0f50a3d4977c3e892543d772c4a"; // testnet
 }
 
 function isXRingConvertor(address: string): boolean {
-    return address == "0x917cb26bfcf9f6be65f387903aa9180613a40f41";
+    return address == "0x4cdfe9915d2c72506f4fc2363a8eae032e82d1aa";
 }
 
 function isGuardAddress(address: string): boolean {

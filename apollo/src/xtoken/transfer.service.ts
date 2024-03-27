@@ -108,8 +108,8 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           key: 'PRING',
           symbol: 'xPRING',
-          address: '0xF874fad204757588e67EE55cE93D654b6f5C39C6',
-          outerAddress: '0xBD50868F36Eb46355eC5a153AbD3a7eA094A5c37',
+          address: '0x3beb2cf5c2c050bc575350671aa5f06e589386e8',
+          outerAddress: '0xdE64c6d8b24eeB16D864841d2873aB7a379c45b6',
           protocolFee: 0,
           decimals: 18,
         },
