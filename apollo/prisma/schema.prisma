@@ -35,6 +35,8 @@ model HistoryRecord {
   messageNonce String
   sendTokenAddress String
   recvTokenAddress String?
+  sendOuterTokenAddress String?
+  recvOuterTokenAddress String?
   guardSignatures String?
   relayer String?
   endTxHash String?

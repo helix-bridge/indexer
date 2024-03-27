@@ -63,6 +63,8 @@ export class HistoryRecord {
     messageNonce?: Nullable<string>;
     sendTokenAddress?: Nullable<string>;
     recvTokenAddress?: Nullable<string>;
+    sendOuterTokenAddress?: Nullable<string>;
+    recvOuterTokenAddress?: Nullable<string>;
     guardSignatures?: Nullable<string>;
     relayer?: Nullable<string>;
     endTxHash?: Nullable<string>;

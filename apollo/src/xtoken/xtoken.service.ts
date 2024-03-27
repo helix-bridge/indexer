@@ -169,6 +169,8 @@ export class xTokenService implements OnModuleInit {
             reason: '',
             sendTokenAddress: sendTokenInfo.address.toLowerCase(),
             recvTokenAddress: recvTokenInfo.address.toLowerCase(),
+            sendOuterTokenAddress: sendTokenInfo.outerAddress.toLowerCase(),
+            recvOuterTokenAddress: recvTokenInfo.outerAddress.toLowerCase(),
             endTxHash: '',
             confirmedBlocks: '',
             extData: record.extData,
