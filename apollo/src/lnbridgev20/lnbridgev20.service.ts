@@ -562,7 +562,7 @@ export class Lnbridgev20Service implements OnModuleInit {
           id: id,
         });
         const sourceMargin =
-          Number(record.margin) * Math.pow(10, tokenPair.fromDecimals - tokenPair.toDecimals);
+          (Number(record.margin) * Math.pow(10, tokenPair.fromDecimals - tokenPair.toDecimals)).toFixed();
         if (relayerInfo) {
           // transfer target margin to source margin
           const updateData = {
@@ -620,7 +620,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         );
       }
     } catch (error) {
-      this.logger.warn(`fetch lnv2 relay records failed, error ${error}`);
+      this.logger.warn(`fetchMarginInfoFromTarget failed, error ${error}`);
     }
   }
 
@@ -691,8 +691,8 @@ export class Lnbridgev20Service implements OnModuleInit {
             transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),
             margin: '0',
-            protocolFee: BigInt(tokenPair.protocolFee.toFixed()).toString(),
-            baseFee: BigInt(record.baseFee.toFixed()).toString(),
+            protocolFee: BigInt(tokenPair.protocolFee).toString(),
+            baseFee: BigInt(record.baseFee).toString(),
             liquidityFeeRate: Number(record.liquidityFeeRate),
             slashCount: 0,
             targetNonce: 0,
@@ -713,7 +713,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             baseFee: BigInt(relayerInfo.baseFee).toString(),
             liquidityFeeRate: relayerInfo.liquidityFeeRate,
           };
-          updateData.baseFee = BigInt(record.baseFee.toFixed()).toString();
+          updateData.baseFee = BigInt(record.baseFee).toString();
           updateData.liquidityFeeRate = Number(record.liquidityFeeRate);
           await this.aggregationService.updateLnBridgeRelayInfo({
             where: { id: id },
@@ -727,7 +727,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         );
       }
     } catch (error) {
-      this.logger.warn(`fetch lnv2 relay records failed, error ${error}`);
+      this.logger.warn(`fetchFeeInfoFromSource failed, error ${error}`);
     }
   }
 
@@ -845,7 +845,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         );
       }
     } catch (error) {
-      this.logger.warn(`fetch lnv2 relay records failed, error ${error}`);
+      this.logger.warn(`fetchRelayInfo failed, error ${error}`);
     }
   }
 }
