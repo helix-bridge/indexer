@@ -19,7 +19,7 @@ export class GuardService {
       toChain: 'sepolia',
       bridge: 'xtoken-pangolin-dvm',
       chainId: 11155111,
-      depositor: '0x3B36c2Db4CC5E92Af015Eb572A1C95C95599a8bF',
+      depositor: '0x1aeC008Af5c604be3525d0bB70fFcc4D7281f30C',
       contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
     },
     {
@@ -27,7 +27,7 @@ export class GuardService {
       toChain: 'pangolin-dvm',
       bridge: 'xtoken-sepolia',
       chainId: 43,
-      depositor: '0x7E3105E3A13D55d824b6322cbD2049f098a097F6',
+      depositor: '0x24f8a04F0cA0730F4b8eC3241F15aCc6b3f8Da0a',
       contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
     },
     {
