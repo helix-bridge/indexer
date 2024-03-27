@@ -691,8 +691,8 @@ export class Lnbridgev20Service implements OnModuleInit {
             transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),
             margin: '0',
-            protocolFee: BigInt(tokenPair.protocolFee).toString(),
-            baseFee: BigInt(record.baseFee).toString(),
+            protocolFee: BigInt(tokenPair.protocolFee.toFixed()).toString(),
+            baseFee: BigInt(record.baseFee.toFixed()).toString(),
             liquidityFeeRate: Number(record.liquidityFeeRate),
             slashCount: 0,
             targetNonce: 0,
@@ -713,7 +713,7 @@ export class Lnbridgev20Service implements OnModuleInit {
             baseFee: BigInt(relayerInfo.baseFee).toString(),
             liquidityFeeRate: relayerInfo.liquidityFeeRate,
           };
-          updateData.baseFee = BigInt(record.baseFee).toString();
+          updateData.baseFee = BigInt(record.baseFee.toFixed()).toString();
           updateData.liquidityFeeRate = Number(record.liquidityFeeRate);
           await this.aggregationService.updateLnBridgeRelayInfo({
             where: { id: id },
