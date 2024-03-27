@@ -505,6 +505,16 @@ export class Lnbridgev20Service implements OnModuleInit {
     };
   }
 
+  transferDecimals(value: string, decimals: number): string {
+      if (decimals > 0) {
+          return value.padEnd(value.length + decimals);
+      } else if (value.length + decimals > 0) {
+          return value.substr(0, value.length + decimals);
+      } else {
+          return '0';
+      }
+  }
+
   async fetchMarginInfoFromTarget(transfer: PartnerT3, indexInfo: BridgeIndexInfo) {
     const index = indexInfo.index;
     let latestNonce = this.fetchCache[index].latestRelayerInfoTargetNonce;
@@ -561,8 +571,7 @@ export class Lnbridgev20Service implements OnModuleInit {
         const relayerInfo = await this.aggregationService.queryLnBridgeRelayInfoById({
           id: id,
         });
-        const sourceMargin =
-          (Number(record.margin) * Math.pow(10, tokenPair.fromDecimals - tokenPair.toDecimals)).toFixed();
+        const sourceMargin = this.transferDecimals(record.margin, tokenPair.fromDecimals - tokenPair.toDecimals);
         if (relayerInfo) {
           // transfer target margin to source margin
           const updateData = {
