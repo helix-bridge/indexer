@@ -413,4 +413,65 @@ export class AggregationResolver {
       records: sortedRelayers.sort((l, r) => l.point - r.point).map((item) => item.record),
     };
   }
+
+  /**
+   * For one relayer
+   * userBalance, transferLimitV2(margin), transferLimitV3 baseFee, liquidityFeeRate, protocolFee
+   * suppose user transfer amount is X
+   * then totalFee = X * liquidityFeeRate / 100000 + baseFee + protocolFee
+   * 1. totalFee + X <= userBalance          => X <= (userBalance - baseFee - protocolFee)/(1 + liquidityFeeRate / 100000)
+   * 2. V2: totalFee + X <= transferLimitV2  => X <= (transferLimitV2 - baseFee - protocolFee)/(1 + liquidityFeeRate / 100000)
+   * 3. V3: X <= transferLimitV3             => X <= transferLimitV3
+   */
+  @Query()
+  async queryMaxTransfer(
+    @Args('fromChain') fromChain: string,
+    @Args('toChain') toChain: string,
+    @Args('bridge') bridge: string,
+    @Args('token') token: string,
+    @Args('balance') balance: string,
+  ) {
+    const sendToken = token?.toLowerCase();
+    const baseFilters = { fromChain, toChain, sendToken, bridge };
+
+    const where = {
+      ...baseFilters,
+    };
+
+    const records = await this.aggregationService.queryLnBridgeRelayInfos({
+      skip: 0,
+      where,
+    });
+    var maxTransferAmount = BigInt(0);
+    const now = Math.floor(Date.now() / 1000);
+    const liquidityFeeScale = BigInt(100000);
+    for (const record of records.records) {
+      // offline
+      if (record.heartbeatTimestamp + this.heartbeatTimeout < now || record.paused) {
+        continue;
+      }
+
+      const fixFee = BigInt(record.baseFee) + BigInt(record.protocolFee);
+      const userBalanceRestrict = (BigInt(balance) - fixFee) * liquidityFeeScale / (liquidityFeeScale + BigInt(record.liquidityFeeRate));
+      let limitRestrict = record.version === 'lnv2' ?
+          (BigInt(record.margin) - fixFee) * liquidityFeeScale / (liquidityFeeScale + BigInt(record.liquidityFeeRate)) :
+          BigInt(record.transferLimit);
+
+      try {
+          const softTransferLimit = BigInt(record.softTransferLimit);
+          if (limitRestrict > softTransferLimit && softTransferLimit > 0) {
+              limitRestrict = softTransferLimit;
+          }
+      } catch(e) {
+          console.log(`get softTransferLimit failed ${record.id}, exception: ${e}`);
+          continue;
+      }
+
+      const limit = limitRestrict < userBalanceRestrict ? limitRestrict : userBalanceRestrict;
+      if (maxTransferAmount < limit) {
+          maxTransferAmount = limit;
+      }
+    }
+    return maxTransferAmount;
+  }
 }
