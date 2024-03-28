@@ -5,9 +5,13 @@ import { AddressTokenMap } from '../base/AddressToken';
 
 @Injectable()
 export class TransferService extends BaseTransferServiceT2 {
-  private readonly darwainiaUrl = this.configService.get<string>('XTOKEN_DARWINIA');
-  private readonly crabUrl = this.configService.get<string>('XTOKEN_CRAB');
-  private readonly ethereumUrl = this.configService.get<string>('XTOKEN_ETHEREUM');
+  private readonly darwainiaCrabBackingUrl = this.configService.get<string>('XTOKEN_DARWINIA_CRAB_BACKING');
+  private readonly darwainiaCrabIssuingUrl = this.configService.get<string>('XTOKEN_DARWINIA_CRAB_ISSUING');
+  private readonly crabDarwiniaBackingUrl = this.configService.get<string>('XTOKEN_CRAB_DARWINIA_BACKING');
+  private readonly crabDarwiniaIssuingUrl = this.configService.get<string>('XTOKEN_CRAB_DARWINIA_ISSUING');
+
+  private readonly darwiniaEthereumBackingUrl = this.configService.get<string>('XTOKEN_DARWINIA_ETHEREUM_BACKING');
+  private readonly darwiniaEthereumIssuingUrl = this.configService.get<string>('XTOKEN_DARWINIA_ETHEREUM_ISSUING')
   private readonly darwiniaDispatchSubgraph = this.configService.get<string>('XTOKEN_DISPATCH_DARWINIA');
   private readonly crabDispatchSubgraph = this.configService.get<string>('XTOKEN_DISPATCH_CRAB');
   private readonly ethereumDispatchSubgraph = this.configService.get<string>('XTOKEN_DISPATCH_ETHEREUM');
@@ -16,8 +20,8 @@ export class TransferService extends BaseTransferServiceT2 {
     {
       chainId: 46,
       chain: 'darwinia-dvm',
-      url: this.darwainiaUrl,
-      bridge: 'xtokenbridge',
+      url: this.darwainiaCrabBackingUrl,
+      bridge: 'xtoken-darwinia-crab',
       symbols: [
         {
           key: 'RING',
@@ -26,7 +30,43 @@ export class TransferService extends BaseTransferServiceT2 {
           outerAddress: '0x0000000000000000000000000000000000000000',
           protocolFee: 0,
           decimals: 18,
+        }
+      ],
+      channels: [
+        {
+          chain: 'crab-dvm',
+          channel: 'msgport'
+        }
+      ]
+    },
+    {
+      chainId: 44,
+      chain: 'crab-dvm',
+      url: this.darwainiaCrabIssuingUrl,
+      bridge: 'xtoken-darwinia-crab',
+      symbols: [
+        {
+          key: 'RING',
+          symbol: 'xWRING',
+          address: '0x273131F7CB50ac002BDd08cA721988731F7e1092',
+          outerAddress: '0x273131F7CB50ac002BDd08cA721988731F7e1092',
+          protocolFee: 0,
+          decimals: 18,
         },
+      ],
+      channels: [
+        {
+          chain: 'darwinia-dvm',
+          channel: 'msgport'
+        }
+      ]
+    },
+    {
+      chainId: 46,
+      chain: 'darwinia-dvm',
+      url: this.crabDarwiniaIssuingUrl,
+      bridge: 'xtoken-crab-darwinia',
+      symbols: [
         {
           key: 'CRAB',
           symbol: 'xWCRAB',
@@ -46,17 +86,9 @@ export class TransferService extends BaseTransferServiceT2 {
     {
       chainId: 44,
       chain: 'crab-dvm',
-      url: this.crabUrl,
-      bridge: 'xtokenbridge',
+      url: this.crabDarwiniaBackingUrl,
+      bridge: 'xtoken-crab-darwinia',
       symbols: [
-        {
-          key: 'RING',
-          symbol: 'xWRING',
-          address: '0x273131F7CB50ac002BDd08cA721988731F7e1092',
-          outerAddress: '0x273131F7CB50ac002BDd08cA721988731F7e1092',
-          protocolFee: 0,
-          decimals: 18,
-        },
         {
           key: 'CRAB',
           symbol: 'CRAB',
@@ -72,7 +104,6 @@ export class TransferService extends BaseTransferServiceT2 {
           channel: 'msgport'
         }
       ]
-
     }
   ];
 
@@ -80,7 +111,7 @@ export class TransferService extends BaseTransferServiceT2 {
     {
       chainId: 43,
       chain: 'pangolin-dvm',
-      url: this.darwainiaUrl,
+      url: this.darwiniaEthereumBackingUrl,
       bridge: 'xtokenbridge',
       symbols: [
         {
@@ -102,7 +133,7 @@ export class TransferService extends BaseTransferServiceT2 {
     {
       chainId: 11155111,
       chain: 'sepolia',
-      url: this.ethereumUrl,
+      url: this.darwiniaEthereumIssuingUrl,
       bridge: 'xtokenbridge',
       symbols: [
         {

@@ -10,7 +10,7 @@ type TransferRecord @entity {
   remoteChainId: Int!
   nonce: BigInt!
   sender: Bytes!
-  receiver: Bytes!
+  receiver: String!
   token: Bytes!
   amount: BigInt!
   timestamp: BigInt!

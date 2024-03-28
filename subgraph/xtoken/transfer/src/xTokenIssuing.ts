@@ -17,42 +17,24 @@ function isMsglineAcceptEvent(event: ethereum.Log): boolean {
         isMsglineContract(event);
 }
 
-function isMsglineDeliveryEvent(event: ethereum.Log): boolean {
-    return event.topics[0].toHexString() == '0x62b1dc20fd6f1518626da5b6f9897e8cd4ebadbad071bb66dc96a37c970087a8' &&
-        isMsglineContract(event);
-}
-
 function isGuardAddress(address: string): boolean {
     return address == "0x4ca75992d2750bec270731a72dfdede6b9e71cc7"; // testnet
 }
 
 function isWTokenConvertor(address: string): boolean {
-    return address == "0xb3a8db63d6fbe0f50a3d4977c3e892543d772c4a"; // testnet
+    return address == "0xb3a8db63d6fbe0f50a3d4977c3e892543d772c4a" ||  // testnet
+        address == "0xa8d0e9a45249ec839c397fa0f371f5f64ecab7f7" ||
+        address == "0x004d0de211bc148c3ce696c51cbc85bd421727e9";
 }
 
-function isXRingConvertor(address: string): boolean {
-    return address == "0x4cdfe9915d2c72506f4fc2363a8eae032e82d1aa";
-}
-
-function isXRingConvertorEvent(event: ethereum.Log): boolean {
-    return isXRingConvertor(event.address.toHexString()) &&
-        event.topics[0].toHexString() == '0xe23676e6691ce6138d353b843afbe1e188c54bf9d04e99942c0a810b433da0ba';
-}
-
-function parseEventParams(types: string, input: Bytes): ethereum.Value | null {
-  const tuplePrefix = ByteArray.fromHexString(
-      '0x0000000000000000000000000000000000000000000000000000000000000020'
-  );
-  const functionInputAsTuple = new Uint8Array(
-      tuplePrefix.length + input.length
-  );
-  functionInputAsTuple.set(tuplePrefix, 0);
-  functionInputAsTuple.set(input, tuplePrefix.length);
-  const tupleInputBytes = Bytes.fromUint8Array(functionInputAsTuple);
-  return ethereum.decode(
-      types,
-      tupleInputBytes
-  );
+// abi.encode(address, bytes)
+function parseExtData(extData: string): string {
+    const address = '0x' + extData.substring(26, 66);
+    if (isWTokenConvertor(address)) {
+        return '0x' + extData.substring(194, 234);
+    } else {
+        return address;
+    }
 }
 
 export function handleBurnAndXUnlocked(event: BurnAndXUnlocked): void {
@@ -74,7 +56,7 @@ export function handleBurnAndXUnlocked(event: BurnAndXUnlocked): void {
   entity.remoteChainId = event.params.remoteChainId.toI32();
   entity.nonce = counter.count;
   entity.sender = event.transaction.from;
-  const recipient = event.params.recipient;
+  const recipient = event.params.recipient.toHexString();
   entity.receiver = recipient;
   entity.token = event.params.originalToken;
   entity.amount = event.params.amount;
@@ -82,24 +64,13 @@ export function handleBurnAndXUnlocked(event: BurnAndXUnlocked): void {
   entity.timestamp = event.block.timestamp;
   entity.fee = event.params.fee;
   entity.userNonce = event.params.nonce.toHexString();
-  entity.extData = event.params.extData.toHexString();
+  const extData = event.params.extData.toHexString();
+  entity.extData = extData;
 
-  if (isGuardAddress(recipient.toHexString())) {
-      const decodedExtdata = parseEventParams(
-          '(address,bytes)',
-          event.params.extData
-      )
-      if (decodedExtdata !== null) {
-          const extData = decodedExtdata.toTuple();
-          const nextRecipient = extData[0].toAddress();
-          if (isWTokenConvertor(nextRecipient.toHexString())) {
-              entity.receiver = extData[1].toBytes();
-          } else {
-              entity.receiver = nextRecipient;
-          }
-      }
-  } else if (isWTokenConvertor(recipient.toHexString())) {
-      entity.receiver = event.params.extData;
+  if (isGuardAddress(recipient)) {
+      entity.receiver = parseExtData(extData);
+  } else if (isWTokenConvertor(recipient)) {
+      entity.receiver = extData;
   }
 
   var messageId: string;

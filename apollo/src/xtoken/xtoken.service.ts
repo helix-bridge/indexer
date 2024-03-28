@@ -90,7 +90,7 @@ export class xTokenService implements OnModuleInit {
       chain.symbols.find(
         (item) =>
           item.key === symbolOrAddress ||
-          symbolOrAddress.toLowerCase() === item.address.toLowerCase()
+          symbolOrAddress?.toLowerCase() === item.address.toLowerCase()
       ) ?? null
     );
   }
@@ -123,6 +123,7 @@ export class xTokenService implements OnModuleInit {
         })
         .then((res) => res.data?.data?.transferRecords);
 
+      let added = 0;
       if (records && records.length > 0) {
         for (const record of records) {
           const toChain = this.getDestChain(record.remoteChainId.toString(), transfer.bridge);
@@ -130,16 +131,18 @@ export class xTokenService implements OnModuleInit {
 
           if (record.direction === 'lock') {
             sendTokenInfo = this.getToken(transfer, record.token);
-            recvTokenInfo = this.getToken(toChain, sendTokenInfo.key);
+            recvTokenInfo = this.getToken(toChain, sendTokenInfo?.key);
           } else {
             recvTokenInfo = this.getToken(toChain, record.token);
-            sendTokenInfo = this.getToken(transfer, recvTokenInfo.key);
+            sendTokenInfo = this.getToken(transfer, recvTokenInfo?.key);
           }
 
           if (sendTokenInfo == null) {
+            latestNonce += 1;
             continue;
           }
           if (recvTokenInfo == null) {
+            latestNonce += 1;
             continue;
           }
 
@@ -176,10 +179,11 @@ export class xTokenService implements OnModuleInit {
             extData: record.extData,
           });
           latestNonce += 1;
+          added += 1;
         }
 
         this.logger.log(
-          `save new send record succeeded ${transfer.chain}, nonce: ${latestNonce}, added: ${records.length}`
+          `save new send record succeeded ${transfer.chain}, nonce: ${latestNonce}, added: ${added}/${records.length}`
         );
         this.fetchCache[index].latestNonce = latestNonce;
       }

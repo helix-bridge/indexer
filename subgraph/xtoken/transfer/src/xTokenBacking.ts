@@ -17,15 +17,6 @@ function isMsglineAcceptEvent(event: ethereum.Log): boolean {
         isMsglineContract(event);
 }
 
-function isMsglineDeliveryEvent(event: ethereum.Log): boolean {
-    return event.topics[0].toHexString() == '0x62b1dc20fd6f1518626da5b6f9897e8cd4ebadbad071bb66dc96a37c970087a8' &&
-        isMsglineContract(event);
-}
-
-function isWTokenConvertor(address: string): boolean {
-    return address == "0xb3a8db63d6fbe0f50a3d4977c3e892543d772c4a"; // testnet
-}
-
 function isXRingConvertor(address: string): boolean {
     return address == "0x4cdfe9915d2c72506f4fc2363a8eae032e82d1aa";
 }
@@ -34,25 +25,14 @@ function isGuardAddress(address: string): boolean {
     return address == "0x4ca75992d2750bec270731a72dfdede6b9e71cc7"; // testnet
 }
 
-function isWTokenConvertorEvent(event: ethereum.Log): boolean {
-    return isWTokenConvertor(event.address.toHexString()) &&
-        event.topics[0].toHexString() == '0xad1c9774020375f95af619204dbe4efc0279cc649e1480865004e3443b0d13a0';
-}
-
-function parseEventParams(types: string, input: Bytes): ethereum.Value | null {
-  const tuplePrefix = ByteArray.fromHexString(
-      '0x0000000000000000000000000000000000000000000000000000000000000020'
-  );
-  const functionInputAsTuple = new Uint8Array(
-      tuplePrefix.length + input.length
-  );
-  functionInputAsTuple.set(tuplePrefix, 0);
-  functionInputAsTuple.set(input, tuplePrefix.length);
-  const tupleInputBytes = Bytes.fromUint8Array(functionInputAsTuple);
-  return ethereum.decode(
-      types,
-      tupleInputBytes
-  );
+// abi.encode(address, bytes)
+function parseExtData(extData: string): string {
+    const address = '0x' + extData.substring(26, 66);
+    if (isXRingConvertor(address)) {
+        return '0x' + extData.substring(194, 234);
+    } else {
+        return address;
+    }
 }
 
 export function handleTokenLocked(event: TokenLocked): void {
@@ -73,15 +53,23 @@ export function handleTokenLocked(event: TokenLocked): void {
   entity.direction = 'lock';
   entity.remoteChainId = event.params.remoteChainId.toI32();
   entity.nonce = counter.count;
-  entity.sender = event.params.sender;
-  entity.receiver = event.params.recipient;
+  entity.sender = event.transaction.from;
+  const recipient = event.params.recipient.toHexString();
+  entity.receiver = recipient;
   entity.token = event.params.token;
   entity.amount = event.params.amount;
   entity.transactionHash = event.transaction.hash;
   entity.timestamp = event.block.timestamp;
   entity.fee = event.params.fee;
   entity.userNonce = event.params.nonce.toHexString();
-  entity.extData = event.params.extData.toHexString();
+  const extData = event.params.extData.toHexString();
+  entity.extData = extData;
+
+  if (isGuardAddress(recipient)) {
+      entity.receiver = parseExtData(extData);
+  } else if (isXRingConvertor(recipient)) {
+      entity.receiver = extData;
+  }
 
   var messageId: string;
   // find the messageId
@@ -92,38 +80,6 @@ export function handleTokenLocked(event: TokenLocked): void {
       for (var idx = 0; idx < logs.length; idx++) {
           if (isMsglineAcceptEvent(logs[idx])) {
               messageId = logs[idx].topics[1].toHexString();
-          } else if (isWTokenConvertorEvent(logs[idx])) {
-              //event LockAndXIssue(uint256 transferId, address sender, address recipient, uint256 amount, bytes extData);
-              const decoded = parseEventParams(
-                  '(uint256,address,address,uint256,bytes)',
-                  logs[idx].data
-              );
-              if (decoded === null) {
-                  break;
-              }
-              const txParams = decoded.toTuple();
-              entity.sender = txParams[1].toAddress();
-
-              const recepientAddress = txParams[2].toAddress();
-              if (isGuardAddress(recepientAddress.toHexString())) {
-                  const decodedExtdata = parseEventParams(
-                      '(address,bytes)',
-                      txParams[4].toBytes()
-                  );
-                  if (decodedExtdata === null) {
-                      entity.receiver = recepientAddress;
-                      break;
-                  }
-                  const extData = decodedExtdata.toTuple();
-                  const nextRecipient = extData[0].toAddress();
-                  if (isXRingConvertor(nextRecipient.toHexString())) {
-                      entity.receiver = extData[1].toBytes();
-                  } else {
-                      entity.receiver = nextRecipient;
-                  }
-              } else {
-                  entity.receiver = recepientAddress;
-              }
           }
       }
   }
