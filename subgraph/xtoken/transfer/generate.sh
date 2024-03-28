@@ -24,7 +24,7 @@ echo "  - kind: ethereum/contract
         - name: xTokenBacking
           file: ./abis/xTokenBacking.json
       eventHandlers:
-        - event: TokenLocked(bytes32,uint256,uint256,address,address,address,uint256,uint256)
+        - event: TokenLocked(bytes32,uint256,uint256,address,address,address,address,uint256,uint256,bytes)
           handler: handleTokenLocked
           receipt: true
         - event: RemoteIssuingFailure(bytes32,address,address,uint256,uint256)
@@ -46,17 +46,17 @@ echo "  - kind: ethereum/contract
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - BurnAndRemoteUnlocked
-        - RemoteUnlockForIssuingFailureRequested
+        - BurnAndXUnlocked
+        - RollbackLockAndXIssueRequested
       abis:
         - name: xTokenIssuing
           file: ./abis/xTokenIssuing.json
       eventHandlers:
-        - event: BurnAndRemoteUnlocked(bytes32,uint256,uint256,address,address,address,uint256,uint256)
-          handler: handleBurnAndRemoteUnlocked
+        - event: BurnAndXUnlocked(bytes32,uint256,uint256,address,address,address,uint256,uint256,bytes)
+          handler: handleBurnAndXUnlocked
           receipt: true
-        - event: RemoteUnlockForIssuingFailureRequested(bytes32,address,address,uint256,uint256)
-          handler: handleRemoteUnlockForIssuingFailureRequested
+        - event: RollbackLockAndXIssueRequested(bytes32,address,address,uint256,uint256)
+          handler: handleRollbackLockAndXIssueRequested
           receipt: true
       file: ./src/xTokenIssuing.ts" >> subgraph.yaml
 }

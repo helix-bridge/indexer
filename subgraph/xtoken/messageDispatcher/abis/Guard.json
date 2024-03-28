@@ -7,6 +7,11 @@
           "type": "address[]"
         },
         {
+          "internalType": "address",
+          "name": "_operator",
+          "type": "address"
+        },
+        {
           "internalType": "uint256",
           "name": "_threshold",
           "type": "uint256"
@@ -114,15 +119,15 @@
         },
         {
           "indexed": false,
-          "internalType": "address",
-          "name": "recipient",
-          "type": "address"
-        },
-        {
-          "indexed": false,
           "internalType": "uint256",
           "name": "amount",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
         }
       ],
       "name": "TokenDeposit",
@@ -227,37 +232,37 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "from",
+          "name": "_from",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "id",
+          "name": "_id",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "timestamp",
+          "name": "_timestamp",
           "type": "uint256"
         },
         {
           "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient",
+          "name": "_token",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "amount",
+          "name": "_amount",
           "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_extData",
+          "type": "bytes"
         },
         {
           "internalType": "bytes[]",
-          "name": "signatures",
+          "name": "_signatures",
           "type": "bytes[]"
         }
       ],
@@ -270,38 +275,33 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "from",
+          "name": "_from",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "id",
+          "name": "_id",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "timestamp",
+          "name": "_timestamp",
           "type": "uint256"
         },
         {
           "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient",
+          "name": "_token",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "amount",
+          "name": "_amount",
           "type": "uint256"
         },
         {
-          "internalType": "bool",
-          "name": "isNative",
-          "type": "bool"
+          "internalType": "bytes",
+          "name": "_extData",
+          "type": "bytes"
         }
       ],
       "name": "claimByTimeout",
@@ -313,71 +313,38 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "from",
+          "name": "",
           "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes[]",
-          "name": "signatures",
-          "type": "bytes[]"
         }
       ],
-      "name": "claimNative",
-      "outputs": [],
-      "stateMutability": "nonpayable",
+      "name": "depositors",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
+          "name": "",
           "type": "uint256"
         }
       ],
-      "name": "deposit",
-      "outputs": [],
-      "stateMutability": "nonpayable",
+      "name": "deposits",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -410,6 +377,30 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "extData",
+          "type": "bytes"
+        }
+      ],
+      "name": "encodeExtData",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "pure",
       "type": "function"
     },
     {
@@ -455,7 +446,7 @@
       "inputs": [
         {
           "internalType": "bytes",
-          "name": "value",
+          "name": "_value",
           "type": "bytes"
         }
       ],
@@ -580,12 +571,40 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "depositor",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes[]",
+          "name": "_signatures",
+          "type": "bytes[]"
+        }
+      ],
+      "name": "rescueFunds",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_depositor",
           "type": "address"
         },
         {
           "internalType": "bool",
-          "name": "enable",
+          "name": "_enable",
           "type": "bool"
         }
       ],
@@ -600,6 +619,11 @@
           "internalType": "uint256",
           "name": "_maxUnclaimableTime",
           "type": "uint256"
+        },
+        {
+          "internalType": "bytes[]",
+          "name": "_signatures",
+          "type": "bytes[]"
         }
       ],
       "name": "setMaxUnclaimableTime",
@@ -611,18 +635,37 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "newOperator",
+          "name": "_operator",
           "type": "address"
         },
         {
           "internalType": "bytes[]",
-          "name": "signatures",
+          "name": "_signatures",
           "type": "bytes[]"
         }
       ],
       "name": "setOperator",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes4",
+          "name": "interfaceId",
+          "type": "bytes4"
+        }
+      ],
+      "name": "supportsInterface",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -659,5 +702,37 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_transferId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_xToken",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_extData",
+          "type": "bytes"
+        }
+      ],
+      "name": "xTokenCallback",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
     }
 ]

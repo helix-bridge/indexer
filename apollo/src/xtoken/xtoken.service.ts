@@ -90,7 +90,7 @@ export class xTokenService implements OnModuleInit {
       chain.symbols.find(
         (item) =>
           item.key === symbolOrAddress ||
-          symbolOrAddress.toLowerCase() === item.address.toLowerCase()
+          symbolOrAddress?.toLowerCase() === item.address.toLowerCase()
       ) ?? null
     );
   }
@@ -114,7 +114,7 @@ export class xTokenService implements OnModuleInit {
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { transferRecords(first: ${this.baseConfigure.fetchHistoryDataFirst}, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, direction, remoteChainId, nonce, userNonce, messageId, sender, receiver, token, amount, timestamp, transactionHash, fee } }`;
+      const query = `query { transferRecords(first: ${this.baseConfigure.fetchHistoryDataFirst}, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, direction, remoteChainId, nonce, userNonce, messageId, sender, receiver, token, amount, timestamp, transactionHash, fee, extData } }`;
 
       const records = await axios
         .post(transfer.url, {
@@ -123,6 +123,7 @@ export class xTokenService implements OnModuleInit {
         })
         .then((res) => res.data?.data?.transferRecords);
 
+      let added = 0;
       if (records && records.length > 0) {
         for (const record of records) {
           const toChain = this.getDestChain(record.remoteChainId.toString(), transfer.bridge);
@@ -130,16 +131,18 @@ export class xTokenService implements OnModuleInit {
 
           if (record.direction === 'lock') {
             sendTokenInfo = this.getToken(transfer, record.token);
-            recvTokenInfo = this.getToken(toChain, sendTokenInfo.key);
+            recvTokenInfo = this.getToken(toChain, sendTokenInfo?.key);
           } else {
             recvTokenInfo = this.getToken(toChain, record.token);
-            sendTokenInfo = this.getToken(transfer, recvTokenInfo.key);
+            sendTokenInfo = this.getToken(transfer, recvTokenInfo?.key);
           }
 
           if (sendTokenInfo == null) {
+            latestNonce += 1;
             continue;
           }
           if (recvTokenInfo == null) {
+            latestNonce += 1;
             continue;
           }
 
@@ -169,14 +172,18 @@ export class xTokenService implements OnModuleInit {
             reason: '',
             sendTokenAddress: sendTokenInfo.address.toLowerCase(),
             recvTokenAddress: recvTokenInfo.address.toLowerCase(),
+            sendOuterTokenAddress: sendTokenInfo.outerAddress.toLowerCase(),
+            recvOuterTokenAddress: recvTokenInfo.outerAddress.toLowerCase(),
             endTxHash: '',
             confirmedBlocks: '',
+            extData: record.extData,
           });
           latestNonce += 1;
+          added += 1;
         }
 
         this.logger.log(
-          `save new send record succeeded ${transfer.chain}, nonce: ${latestNonce}, added: ${records.length}`
+          `save new send record succeeded ${transfer.chain}, nonce: ${latestNonce}, added: ${added}/${records.length}`
         );
         this.fetchCache[index].latestNonce = latestNonce;
       }
@@ -213,6 +220,7 @@ export class xTokenService implements OnModuleInit {
             variables: null,
           })
           .then((res) => res.data?.data?.messageDispatchedResult);
+
         if (node === undefined || node === null || node.result === null) {
           continue;
         }
