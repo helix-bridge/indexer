@@ -22,7 +22,7 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           key: 'RING',
           symbol: 'RING',
-          address: '0x0000000000000000000000000000000000000000',
+          address: '0xE7578598Aac020abFB918f33A20faD5B71d670b4',
           outerAddress: '0x0000000000000000000000000000000000000000',
           protocolFee: 0,
           decimals: 18,
@@ -60,7 +60,7 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           key: 'CRAB',
           symbol: 'CRAB',
-          address: '0x0000000000000000000000000000000000000000',
+          address: '0x2D2b97EA380b0185e9fDF8271d1AFB5d2Bf18329',
           outerAddress: '0x0000000000000000000000000000000000000000',
           protocolFee: 0,
           decimals: 18,
