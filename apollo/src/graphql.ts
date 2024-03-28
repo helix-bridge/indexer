@@ -38,6 +38,8 @@ export abstract class IQuery {
     abstract sortedLnBridgeRelayInfos(fromChain?: Nullable<string>, toChain?: Nullable<string>, version?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>, row?: Nullable<number>, amount?: Nullable<string>, decimals?: Nullable<number>): Nullable<SortedLnBridgeRelayInfos> | Promise<Nullable<SortedLnBridgeRelayInfos>>;
 
     abstract queryLnBridgeSupportChains(tokenKey?: Nullable<string>): Nullable<Nullable<SupportChains>[]> | Promise<Nullable<Nullable<SupportChains>[]>>;
+
+    abstract queryMaxTransfer(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>, balance?: Nullable<string>): Nullable<BigInt> | Promise<Nullable<BigInt>>;
 }
 
 export class HistoryRecord {
