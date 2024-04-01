@@ -8,6 +8,9 @@ on:
 # on:
 #   pull_request:
 
+env:
+  DOCKER_REGISTRY: ghcr.io
+
 jobs:
   publish-apollo:
     name: Publish apollo
@@ -18,9 +21,9 @@ jobs:
       - name: Docker login
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.QUAY_IO_BOT_USERNAME }}
-          password: ${{ secrets.QUAY_IO_BOT_PASSWORD }}
-          registry: quay.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ env.DOCKER_REGISTRY }}
 
       - uses: benjlevesque/short-sha@v1.2
         id: short-sha
@@ -37,5 +40,5 @@ jobs:
           context: apollo
           file: apollo/Dockerfile
           tags: |
-            quay.io/helix-bridge/apollo:sha-${{ steps.short-sha.outputs.sha }}
-            quay.io/helix-bridge/apollo:${{ steps.tag-name.outputs.tag }}
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ steps.short-sha.outputs.sha }}
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:${{ steps.tag-name.outputs.tag }}
