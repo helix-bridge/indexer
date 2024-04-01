@@ -11,7 +11,7 @@
     "build-crab-darwinia-backing": "sh generate.sh init && sh generate.sh backing crab2 0xa64D1c284280b22f921E7B2A55040C7bbfD4d9d0 2515876 && graph codegen && graph build",
     "build-darwinia-crab-issuing": "sh generate.sh init && sh generate.sh issuing crab2 0xf6372ab2d35B32156A19F2d2F23FA6dDeFBE58bd 2515876 && graph codegen && graph build",
     "build-darwinia-ethereum-backing": "sh generate.sh init && sh generate.sh backing darwinia2 0x2B496f19A420C02490dB859fefeCCD71eDc2c046 2365403 && graph codegen && graph build",
-    "build-darwinia-ethereum-issuing": "sh generate.sh init && sh generate.sh backing mainnet 0xDc0C760c0fB4672D06088515F6446a71Df0c64C1 19537485 && graph codegen && graph build",
+    "build-darwinia-ethereum-issuing": "sh generate.sh init && sh generate.sh issuing mainnet 0xDc0C760c0fB4672D06088515F6446a71Df0c64C1 19537485 && graph codegen && graph build",
     "create-remote-dev": "graph create --access-token ${KEY} --node https://thegraph-g2.darwinia.network/helix/deploy/ xtokentransfer/${NETWORK}",
     "deploy-remote-dev": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com xtokentransfer/$NETWORK",
     "create-remote-pro": "graph create --access-token ${KEY} --node https://thegraph.darwinia.network/helix/deploy/ xtokentransfer/${NETWORK}",
