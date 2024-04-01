@@ -65,7 +65,7 @@ echo "  - kind: ethereum/contract
         - name: Guard
           file: ./abis/Guard.json
       eventHandlers:
-        - event: TokenDeposit(address,uint256,uint256,address,address,uint256)
+        - event: TokenDeposit(address,uint256,uint256,address,uint256,bytes)
           handler: handleTokenDeposit
         - event: TokenClaimed(uint256)
           handler: handleTokenClaimed

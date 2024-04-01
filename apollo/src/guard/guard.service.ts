@@ -19,16 +19,32 @@ export class GuardService {
       toChain: 'sepolia',
       bridge: 'xtoken-pangolin-dvm',
       chainId: 11155111,
-      depositor: '0x371019523b25Ff4F26d977724f976566b08bf741',
-      contract: '0x3f200d3b6DA62bcA2F8a93F663b172A7f1AaE9ba',
+      depositor: '0x1aeC008Af5c604be3525d0bB70fFcc4D7281f30C',
+      contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
+    },
+    {
+      fromChain: 'sepolia',
+      toChain: 'pangolin-dvm',
+      bridge: 'xtoken-sepolia',
+      chainId: 43,
+      depositor: '0x24f8a04F0cA0730F4b8eC3241F15aCc6b3f8Da0a',
+      contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
     },
     {
       fromChain: 'darwinia-dvm',
       toChain: 'ethereum',
-      bridge: 'helix-sub2ethv2(lock)',
+      bridge: 'xtoken-darwinia-dvm',
       chainId: 1,
-      depositor: null,
-      contract: '0x61B6B8c7C00aA7F060a2BEDeE6b11927CC9c3eF1',
+      depositor: '0xDc0C760c0fB4672D06088515F6446a71Df0c64C1',
+      contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
+    },
+    {
+      fromChain: 'ethereum',
+      toChain: 'darwinia-dvm',
+      bridge: 'xtoken-ethereum',
+      chainId: 46,
+      depositor: '0x2B496f19A420C02490dB859fefeCCD71eDc2c046',
+      contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
     }
   ];
 
@@ -39,8 +55,8 @@ export class GuardService {
     transferId: string,
     timestamp: string,
     token: string,
-    recipient: string,
     amount: string,
+    extData: string,
     sig: string
   ): string | null {
     const info = this.guardConfig.find((info) => {
@@ -54,8 +70,8 @@ export class GuardService {
       transferId,
       timestamp,
       token,
-      recipient,
       amount,
+      extData,
       info.chainId,
       info.contract
     );
@@ -67,24 +83,17 @@ export class GuardService {
     transferId: string,
     timestamp: string,
     token: string,
-    recipient: string,
     amount: string,
+    extData: string,
     chainId: number,
     contractAddress: string
   ): string {
-    const claimSign = depositor === null ?
-      this.web3.eth.abi.encodeFunctionSignature(
-      'claim(uint256,uint256,address,address,uint256,bytes[])'
-    ) : this.web3.eth.abi.encodeFunctionSignature(
-      'claim(address,uint256,uint256,address,address,uint256,bytes[])'
+    const claimSign = this.web3.eth.abi.encodeFunctionSignature(
+      'claim(address,uint256,uint256,address,uint256,bytes,bytes[])'
     );
-    const param = depositor === null ? 
-      this.web3.eth.abi.encodeParameters(
-        ['uint256', 'uint256', 'address', 'address', 'uint256'],
-        [transferId, timestamp, token, recipient, amount]
-    ) : this.web3.eth.abi.encodeParameters(
-      ['address', 'uint256', 'uint256', 'address', 'address', 'uint256'],
-      [depositor, transferId, timestamp, token, recipient, amount]
+    const param = this.web3.eth.abi.encodeParameters(
+      ['address', 'uint256', 'uint256', 'address', 'uint256', 'bytes'],
+      [depositor, transferId, timestamp, token, amount, extData]
     );
     const message = this.web3.eth.abi.encodeParameters(['bytes4', 'bytes'], [claimSign, param]);
     const structHash = this.web3.utils.keccak256(message);
