@@ -99,7 +99,22 @@ export class xTokenService implements OnModuleInit {
     return `${from}2${to}-${this.baseConfigure.name}(${direction})-${id}`;
   }
 
+  findPartner(transfer: PartnerT2): PartnerT2 {
+    return (
+      this.transferService.transfers.find(
+        (target) =>
+          target.bridge === transfer.bridge && target.chainId !== transfer.chainId
+      ) ?? null
+    );
+  }
+
   async fetchRecords(transfer: PartnerT2, index: number) {
+    const partner = this.findPartner(transfer);
+    if (partner === null) {
+      this.logger.error(`xtoken can't find partner ${transfer.chainId}, ${transfer.bridge}`);
+      return;
+    }
+
     // the nonce of cBridge message is not increased
     let latestNonce = this.fetchCache[index].latestNonce;
     try {
@@ -107,6 +122,7 @@ export class xTokenService implements OnModuleInit {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
           {
             fromChain: transfer.chain,
+            toChain: partner.chain,
             bridge: 'xtoken-' + transfer.chain,
           },
           { nonce: 'desc' }
@@ -114,7 +130,7 @@ export class xTokenService implements OnModuleInit {
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
 
-      const query = `query { transferRecords(first: ${this.baseConfigure.fetchHistoryDataFirst}, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, direction, remoteChainId, nonce, userNonce, messageId, sender, receiver, token, amount, timestamp, transactionHash, fee, extData } }`;
+      const query = `query { transferRecords(where: {remoteChainId: ${partner.chainId}}, first: ${this.baseConfigure.fetchHistoryDataFirst}, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, direction, remoteChainId, nonce, userNonce, messageId, sender, receiver, token, amount, timestamp, transactionHash, fee, extData } }`;
 
       const records = await axios
         .post(transfer.url, {
@@ -193,6 +209,12 @@ export class xTokenService implements OnModuleInit {
   }
 
   async fetchStatus(transfer: PartnerT2, index: number) {
+    const partner = this.findPartner(transfer);
+    if (partner === null) {
+      this.logger.error(`xtoken can't find partner ${transfer.chainId}, ${transfer.bridge}`);
+      return;
+    }
+
     try {
       const uncheckedRecords = await this.aggregationService
         .queryHistoryRecords({
@@ -200,6 +222,7 @@ export class xTokenService implements OnModuleInit {
           take: this.baseConfigure.takeEachTime,
           where: {
             fromChain: transfer.chain,
+            toChain: partner.chain,
             bridge: `xtoken-${transfer.chain}`,
             responseTxHash: '',
           },
