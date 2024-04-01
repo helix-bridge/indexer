@@ -18,7 +18,7 @@ function isMsglineAcceptEvent(event: ethereum.Log): boolean {
 }
 
 function isXRingConvertor(address: string): boolean {
-    return address == "0x4cdfe9915d2c72506f4fc2363a8eae032e82d1aa";
+    return address == "0x4cdfe9915d2c72506f4fc2363a8eae032e82d1aa" || address == '0xc29dcb1f12a1618262ef9fba673b77140adc02d6';
 }
 
 function isGuardAddress(address: string): boolean {

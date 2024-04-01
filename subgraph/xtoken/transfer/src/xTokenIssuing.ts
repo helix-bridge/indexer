@@ -24,7 +24,8 @@ function isGuardAddress(address: string): boolean {
 function isWTokenConvertor(address: string): boolean {
     return address == "0xb3a8db63d6fbe0f50a3d4977c3e892543d772c4a" ||  // testnet
         address == "0xa8d0e9a45249ec839c397fa0f371f5f64ecab7f7" ||
-        address == "0x004d0de211bc148c3ce696c51cbc85bd421727e9";
+        address == "0x004d0de211bc148c3ce696c51cbc85bd421727e9" ||
+        address == "0x092e19c46c9daab7824393f1cd9c22f5bea13560";
 }
 
 // abi.encode(address, bytes)
