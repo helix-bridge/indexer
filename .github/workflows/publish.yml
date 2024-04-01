@@ -31,10 +31,11 @@ jobs:
         id: tag-name
 
       - name: Build and push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
-          file: apollo/Dockerfile
           push: true
+          context: apollo
+          file: apollo/Dockerfile
           tags: |
             quay.io/helix-bridge/apollo:sha-${{ steps.short-sha.outputs.sha }}
             quay.io/helix-bridge/apollo:${{ steps.tag-name.outputs.tag }}
