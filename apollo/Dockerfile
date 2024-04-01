@@ -3,7 +3,7 @@ FROM node:14-alpine
 COPY . /opt/indexer
 
 RUN cd /opt/indexer/apollo && \
-  npm i && \
+  yarn install && \
   npx prisma generate
 
 WORKDIR /opt/indexer/apollo
