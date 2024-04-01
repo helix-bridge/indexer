@@ -9,6 +9,8 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly darwainiaCrabIssuingUrl = this.configService.get<string>('XTOKEN_DARWINIA_CRAB_ISSUING');
   private readonly crabDarwiniaBackingUrl = this.configService.get<string>('XTOKEN_CRAB_DARWINIA_BACKING');
   private readonly crabDarwiniaIssuingUrl = this.configService.get<string>('XTOKEN_CRAB_DARWINIA_ISSUING');
+  private readonly darwainiaEthereumBackingUrl = this.configService.get<string>('XTOKEN_DARWINIA_ETHEREUM_BACKING');
+  private readonly darwainiaEthereumIssuingUrl = this.configService.get<string>('XTOKEN_DARWINIA_ETHEREUM_ISSUING');
 
   private readonly darwiniaEthereumBackingUrl = this.configService.get<string>('XTOKEN_DARWINIA_ETHEREUM_BACKING');
   private readonly darwiniaEthereumIssuingUrl = this.configService.get<string>('XTOKEN_DARWINIA_ETHEREUM_ISSUING')
@@ -104,7 +106,51 @@ export class TransferService extends BaseTransferServiceT2 {
           channel: 'msgport'
         }
       ]
-    }
+    },
+    {
+      chainId: 46,
+      chain: 'darwinia-dvm',
+      url: this.darwainiaEthereumBackingUrl,
+      bridge: 'xtoken-darwinia-ethereum',
+      symbols: [
+        {
+          key: 'RING',
+          symbol: 'RING',
+          address: '0xE7578598Aac020abFB918f33A20faD5B71d670b4',
+          outerAddress: '0x0000000000000000000000000000000000000000',
+          protocolFee: 0,
+          decimals: 18,
+        }
+      ],
+      channels: [
+        {
+          chain: 'ethereum',
+          channel: 'msgport'
+        }
+      ]
+    },
+    {
+      chainId: 1,
+      chain: 'ethereum',
+      url: this.darwainiaEthereumIssuingUrl,
+      bridge: 'xtoken-darwinia-ethereum',
+      symbols: [
+        {
+          key: 'RING',
+          symbol: 'RING',
+          address: '0x9469D013805bFfB7D3DEBe5E7839237e535ec483',
+          outerAddress: '0x9469D013805bFfB7D3DEBe5E7839237e535ec483',
+          protocolFee: 0,
+          decimals: 18,
+        }
+      ],
+      channels: [
+        {
+          chain: 'darwinia-dvm',
+          channel: 'msgport'
+        }
+      ]
+    },
   ];
 
   testChainTransfers: PartnerT2[] = [
