@@ -120,7 +120,15 @@ export class TransferService extends BaseTransferServiceT2 {
           outerAddress: '0x0000000000000000000000000000000000000000',
           protocolFee: 0,
           decimals: 18,
-        }
+        },
+        {
+          key: 'KTON',
+          symbol: 'KTON',
+          address: '0x0000000000000000000000000000000000000402',
+          outerAddress: '0x0000000000000000000000000000000000000402',
+          protocolFee: 0,
+          decimals: 18,
+        },
       ],
       channels: [
         {
@@ -140,6 +148,14 @@ export class TransferService extends BaseTransferServiceT2 {
           symbol: 'RING',
           address: '0x81e32d4652Be82AE225DEdd1bD0bf3BCba8FEE07',
           outerAddress: '0x9469D013805bFfB7D3DEBe5E7839237e535ec483',
+          protocolFee: 0,
+          decimals: 18,
+        },
+        {
+          key: 'KTON',
+          symbol: 'KTON',
+          address: '0x9F284E1337A815fe77D2Ff4aE46544645B20c5ff',
+          outerAddress: '0x9F284E1337A815fe77D2Ff4aE46544645B20c5ff',
           protocolFee: 0,
           decimals: 18,
         }
