@@ -35,12 +35,15 @@ model HistoryRecord {
   messageNonce String
   sendTokenAddress String
   recvTokenAddress String?
+  sendOuterTokenAddress String?
+  recvOuterTokenAddress String?
   guardSignatures String?
   relayer String?
   endTxHash String?
   confirmedBlocks String?
   needWithdrawLiquidity Boolean?
   lastRequestWithdraw BigInt?
+  extData String?
 }
 
 model DailyStatistics {

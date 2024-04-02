@@ -1,4 +1,4 @@
-import { BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts"
+import { BigInt, ByteArray, Bytes, ethereum } from "@graphprotocol/graph-ts"
 import {
   TokenLocked,
   RemoteIssuingFailure,
@@ -17,9 +17,22 @@ function isMsglineAcceptEvent(event: ethereum.Log): boolean {
         isMsglineContract(event);
 }
 
-function isMsglineDeliveryEvent(event: ethereum.Log): boolean {
-    return event.topics[0].toHexString() == '0x62b1dc20fd6f1518626da5b6f9897e8cd4ebadbad071bb66dc96a37c970087a8' &&
-        isMsglineContract(event);
+function isXRingConvertor(address: string): boolean {
+    return address == "0x4cdfe9915d2c72506f4fc2363a8eae032e82d1aa" || address == '0xc29dcb1f12a1618262ef9fba673b77140adc02d6';
+}
+
+function isGuardAddress(address: string): boolean {
+    return address == "0x4ca75992d2750bec270731a72dfdede6b9e71cc7"; // testnet
+}
+
+// abi.encode(address, bytes)
+function parseExtData(extData: string): string {
+    const address = '0x' + extData.substring(26, 66);
+    if (isXRingConvertor(address)) {
+        return '0x' + extData.substring(194, 234);
+    } else {
+        return address;
+    }
 }
 
 export function handleTokenLocked(event: TokenLocked): void {
@@ -40,14 +53,23 @@ export function handleTokenLocked(event: TokenLocked): void {
   entity.direction = 'lock';
   entity.remoteChainId = event.params.remoteChainId.toI32();
   entity.nonce = counter.count;
-  entity.sender = event.params.sender;
-  entity.receiver = event.params.recipient;
+  entity.sender = event.transaction.from;
+  const recipient = event.params.recipient.toHexString();
+  entity.receiver = recipient;
   entity.token = event.params.token;
   entity.amount = event.params.amount;
   entity.transactionHash = event.transaction.hash;
   entity.timestamp = event.block.timestamp;
   entity.fee = event.params.fee;
   entity.userNonce = event.params.nonce.toHexString();
+  const extData = event.params.extData.toHexString();
+  entity.extData = extData;
+
+  if (isGuardAddress(recipient)) {
+      entity.receiver = parseExtData(extData);
+  } else if (isXRingConvertor(recipient)) {
+      entity.receiver = extData;
+  }
 
   var messageId: string;
   // find the messageId
@@ -58,7 +80,6 @@ export function handleTokenLocked(event: TokenLocked): void {
       for (var idx = 0; idx < logs.length; idx++) {
           if (isMsglineAcceptEvent(logs[idx])) {
               messageId = logs[idx].topics[1].toHexString();
-              break;
           }
       }
   }

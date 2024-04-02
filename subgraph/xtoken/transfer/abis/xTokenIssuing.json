@@ -49,9 +49,15 @@
           "internalType": "uint256",
           "name": "fee",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "extData",
+          "type": "bytes"
         }
       ],
-      "name": "BurnAndRemoteUnlocked",
+      "name": "BurnAndXUnlocked",
       "type": "event"
     },
     {
@@ -189,7 +195,7 @@
           "type": "uint256"
         }
       ],
-      "name": "RemoteUnlockForIssuingFailureRequested",
+      "name": "RollbackLockAndXIssueRequested",
       "type": "event"
     },
     {
@@ -390,7 +396,7 @@
           "type": "address"
         }
       ],
-      "name": "acceptxTokenOwnership",
+      "name": "acceptXTokenOwnership",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -408,6 +414,11 @@
           "type": "address"
         },
         {
+          "internalType": "address",
+          "name": "_rollbackAccount",
+          "type": "address"
+        },
+        {
           "internalType": "uint256",
           "name": "_amount",
           "type": "uint256"
@@ -419,12 +430,23 @@
         },
         {
           "internalType": "bytes",
+          "name": "_extData",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
           "name": "_extParams",
           "type": "bytes"
         }
       ],
-      "name": "burnAndRemoteUnlock",
-      "outputs": [],
+      "name": "burnAndXUnlock",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "transferId",
+          "type": "bytes32"
+        }
+      ],
       "stateMutability": "payable",
       "type": "function"
     },
@@ -497,6 +519,11 @@
           "type": "address"
         },
         {
+          "internalType": "address",
+          "name": "_rollbackAccount",
+          "type": "address"
+        },
+        {
           "internalType": "uint256",
           "name": "_amount",
           "type": "uint256"
@@ -507,7 +534,7 @@
           "type": "uint256"
         }
       ],
-      "name": "encodeUnlockForIssuingFailureFromRemote",
+      "name": "encodeRollbackLockAndXIssue",
       "outputs": [
         {
           "internalType": "bytes",
@@ -536,6 +563,11 @@
           "type": "address"
         },
         {
+          "internalType": "address",
+          "name": "_rollbackAccount",
+          "type": "address"
+        },
+        {
           "internalType": "uint256",
           "name": "_amount",
           "type": "uint256"
@@ -544,9 +576,14 @@
           "internalType": "uint256",
           "name": "_nonce",
           "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_extData",
+          "type": "bytes"
         }
       ],
-      "name": "encodeUnlockFromRemote",
+      "name": "encodeXUnlock",
       "outputs": [
         {
           "internalType": "bytes",
@@ -585,6 +622,11 @@
         },
         {
           "internalType": "uint256",
+          "name": "_sourceChainId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
           "name": "_targetChainId",
           "type": "uint256"
         },
@@ -601,6 +643,11 @@
         {
           "internalType": "address",
           "name": "_recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_rollbackAccount",
           "type": "address"
         },
         {
@@ -631,44 +678,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_originalChainId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "_originalToken",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_originalSender",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_recipient",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_amount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_nonce",
-          "type": "uint256"
-        }
-      ],
-      "name": "handleIssuingForUnlockFailureFromRemote",
-      "outputs": [],
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -712,6 +721,11 @@
           "type": "address"
         },
         {
+          "internalType": "address",
+          "name": "_rollbackAccount",
+          "type": "address"
+        },
+        {
           "internalType": "uint256",
           "name": "_amount",
           "type": "uint256"
@@ -720,9 +734,14 @@
           "internalType": "uint256",
           "name": "_nonce",
           "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_extData",
+          "type": "bytes"
         }
       ],
-      "name": "issuexToken",
+      "name": "issue",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -885,7 +904,7 @@
           "type": "uint256"
         }
       ],
-      "name": "registerxToken",
+      "name": "registerXToken",
       "outputs": [
         {
           "internalType": "address",
@@ -943,6 +962,11 @@
           "type": "address"
         },
         {
+          "internalType": "address",
+          "name": "_rollbackAccount",
+          "type": "address"
+        },
+        {
           "internalType": "uint256",
           "name": "_amount",
           "type": "uint256"
@@ -951,16 +975,11 @@
           "internalType": "uint256",
           "name": "_nonce",
           "type": "uint256"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_extParams",
-          "type": "bytes"
         }
       ],
-      "name": "requestRemoteUnlockForIssuingFailure",
+      "name": "rollbackBurnAndXUnlock",
       "outputs": [],
-      "stateMutability": "payable",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -1098,7 +1117,7 @@
           "type": "address"
         }
       ],
-      "name": "transferxTokenOwnership",
+      "name": "transferXTokenOwnership",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1141,7 +1160,7 @@
           "type": "address"
         }
       ],
-      "name": "updatexToken",
+      "name": "updateXToken",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1175,6 +1194,54 @@
       "name": "withdrawProtocolFee",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_originalChainId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_originalToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_originalSender",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_rollbackAccount",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_nonce",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_extParams",
+          "type": "bytes"
+        }
+      ],
+      "name": "xRollbackLockAndXIssue",
+      "outputs": [],
+      "stateMutability": "payable",
       "type": "function"
     },
     {
