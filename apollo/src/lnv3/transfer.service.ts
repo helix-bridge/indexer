@@ -19,6 +19,7 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly blastEndpoint = this.configService.get<string>('BLAST_LNV3_ENDPOINT');
   private readonly beraEndpoint = this.configService.get<string>('BERA_LNV3_ENDPOINT');
   private readonly taikoEndpoint = this.configService.get<string>('TAIKO_LNV3_ENDPOINT');
+  private readonly astarZkEVMEndpoint = this.configService.get<string>('ASTAR_ZKEVM_LNV3_ENDPOINT');
 
   formalChainTransfers: PartnerT2[] = [
     {
@@ -145,6 +146,10 @@ export class TransferService extends BaseTransferServiceT2 {
         },
         {
           chain: 'blast',
+          channel: 'layerzero',
+        },
+        {
+          chain: 'astar-zkevm',
           channel: 'layerzero',
         }
       ]
@@ -480,8 +485,29 @@ export class TransferService extends BaseTransferServiceT2 {
           channel: 'layerzero',
         }
       ]
+    },
+    {
+      chainId: 3776,
+      chain: 'astar-zkevm',
+      url: this.astarZkEVMEndpoint,
+      bridge: 'lnv3',
+      symbols: [
+        {
+          key: 'ETH',
+          symbol: 'ETH',
+          address: '0x0000000000000000000000000000000000000000',
+          outerAddress: '0x0000000000000000000000000000000000000000',
+          protocolFee: 10000000000000,
+          decimals: 18,
+        }
+      ],
+      channels: [
+        {
+          chain: 'arbitrum',
+          channel: 'layerzero',
+        }
+      ]
     }
-
   ];
 
   testChainTransfers: PartnerT2[] = [
