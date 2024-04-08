@@ -123,7 +123,7 @@ export class xTokenService implements OnModuleInit {
           {
             fromChain: transfer.chain,
             toChain: partner.chain,
-            bridge: 'xtoken-' + transfer.chain,
+            bridge: transfer.bridge,
           },
           { nonce: 'desc' }
         );
@@ -169,7 +169,7 @@ export class xTokenService implements OnModuleInit {
             id: this.genID(transfer.chain, toChain.chain, record.direction, record.id),
             fromChain: transfer.chain,
             toChain: toChain.chain,
-            bridge: 'xtoken-' + transfer.chain,
+            bridge: transfer.bridge,
             messageNonce: this.toMessageNonce(record.messageId, record.userNonce),
             nonce: latestNonce + 1,
             requestTxHash: record.transactionHash,
@@ -223,7 +223,7 @@ export class xTokenService implements OnModuleInit {
           where: {
             fromChain: transfer.chain,
             toChain: partner.chain,
-            bridge: `xtoken-${transfer.chain}`,
+            bridge: transfer.bridge,
             responseTxHash: '',
           },
         })
