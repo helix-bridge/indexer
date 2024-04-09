@@ -174,7 +174,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 43,
       chain: 'pangolin-dvm',
       url: this.darwiniaEthereumBackingUrl,
-      bridge: 'xtokenbridge',
+      bridge: 'xtoken-pangolin-sepolia',
       symbols: [
         {
           key: 'PRING',
@@ -196,7 +196,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 11155111,
       chain: 'sepolia',
       url: this.darwiniaEthereumIssuingUrl,
-      bridge: 'xtokenbridge',
+      bridge: 'xtoken-pangolin-sepolia',
       symbols: [
         {
           key: 'PRING',
