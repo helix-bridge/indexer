@@ -17,7 +17,7 @@ export class GuardService {
     {
       fromChain: 'pangolin-dvm',
       toChain: 'sepolia',
-      bridge: 'xtoken-pangolin-dvm',
+      bridge: 'xtoken-pangolin-sepolia',
       chainId: 11155111,
       depositor: '0x1aeC008Af5c604be3525d0bB70fFcc4D7281f30C',
       contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
@@ -25,7 +25,7 @@ export class GuardService {
     {
       fromChain: 'sepolia',
       toChain: 'pangolin-dvm',
-      bridge: 'xtoken-sepolia',
+      bridge: 'xtoken-pangolin-sepolia',
       chainId: 43,
       depositor: '0x24f8a04F0cA0730F4b8eC3241F15aCc6b3f8Da0a',
       contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
@@ -33,7 +33,7 @@ export class GuardService {
     {
       fromChain: 'darwinia-dvm',
       toChain: 'ethereum',
-      bridge: 'xtoken-darwinia-dvm',
+      bridge: 'xtoken-darwinia-ethereum',
       chainId: 1,
       depositor: '0xDc0C760c0fB4672D06088515F6446a71Df0c64C1',
       contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
@@ -41,7 +41,7 @@ export class GuardService {
     {
       fromChain: 'ethereum',
       toChain: 'darwinia-dvm',
-      bridge: 'xtoken-ethereum',
+      bridge: 'xtoken-darwinia-ethereum',
       chainId: 46,
       depositor: '0x2B496f19A420C02490dB859fefeCCD71eDc2c046',
       contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
