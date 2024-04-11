@@ -659,6 +659,10 @@ export class Lnbridgev20Service implements OnModuleInit {
           this.logger.warn(`query fee update failed err ${err}`);
         });
 
+      if (records === undefined) {
+          this.logger.warn(`query record failed, url: ${indexInfo.url}, query: ${query}`);
+          return;
+      }
       // query nonce big then latestNonce
       for (const record of records) {
         // query by relayer
@@ -767,6 +771,10 @@ export class Lnbridgev20Service implements OnModuleInit {
           this.logger.warn(`query relay update record failed err ${err}`);
         });
 
+      if (records === undefined) {
+          this.logger.warn(`query record failed, url: ${indexInfo.url}, query: ${query}`);
+          return;
+      }
       // query nonce big then latestNonce
       for (const record of records) {
         // query by relayer

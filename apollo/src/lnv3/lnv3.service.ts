@@ -322,6 +322,12 @@ export class Lnv3Service implements OnModuleInit {
           this.logger.warn(`query relay update record failed err ${err}`);
         });
 
+      // maybe this query is archived and can't access
+      if (records === undefined) {
+          this.logger.warn(`query record failed, url: ${transfer.url}, query: ${query}`);
+          return;
+      }
+
       // query nonce big then latestNonce
       for (const record of records) {
         // query by relayer
