@@ -20,6 +20,7 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly beraEndpoint = this.configService.get<string>('BERA_LNV3_ENDPOINT');
   private readonly taikoEndpoint = this.configService.get<string>('TAIKO_LNV3_ENDPOINT');
   private readonly astarZkEVMEndpoint = this.configService.get<string>('ASTAR_ZKEVM_LNV3_ENDPOINT');
+  private readonly morphEndpoint = this.configService.get<string>('MORPH_LNV3_ENDPOINT');
 
   formalChainTransfers: PartnerT2[] = [
     {
@@ -601,6 +602,10 @@ export class TransferService extends BaseTransferServiceT2 {
           chain: 'bera',
           channel: 'layerzero',
         },
+        {
+          chain: 'morph',
+          channel: 'layerzero',
+        },
       ],
     },
     {
@@ -705,7 +710,36 @@ export class TransferService extends BaseTransferServiceT2 {
         },
       ],
     },
-
+    {
+      chainId: 2710,
+      chain: 'morph',
+      url: this.morphEndpoint,
+      bridge: 'lnv3',
+      symbols: [
+        {
+          key: 'USDC',
+          symbol: 'USDC',
+          address: '0x89AF830781A2C1d3580Db930bea11094F55AfEae',
+          outerAddress: '0x89AF830781A2C1d3580Db930bea11094F55AfEae',
+          protocolFee: 1000000000000000,
+          decimals: 18,
+        },
+        {
+          key: 'USDT',
+          symbol: 'USDT',
+          address: '0x463D1730a8527CA58d48EF70C7460B9920346567',
+          outerAddress: '0x463D1730a8527CA58d48EF70C7460B9920346567',
+          protocolFee: 1000000000000000,
+          decimals: 18,
+        },
+      ],
+      channels: [
+        {
+          chain: 'arbitrum-sepolia',
+          channel: 'layerzero',
+        },
+      ],
+    },
   ];
 
   readonly addressToTokenInfo: { [key: string]: AddressTokenMap } = {};
