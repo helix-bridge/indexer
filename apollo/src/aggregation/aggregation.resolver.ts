@@ -178,8 +178,17 @@ export class AggregationResolver {
     let updateData = {
       heartbeatTimestamp: Math.floor(Date.now() / 1000),
     };
+    
     if (softTransferLimit !== undefined && softTransferLimit !== '0') {
-      updateData['softTransferLimit'] = softTransferLimit;
+      // the softTransferLimit is on target chain, transfer it to source chain
+      const transferLimit = this.aggregationService.targetAmountToSourceAmount({
+        amount: softTransferLimit,
+        sourceChainId: Number(fromChainId),
+        targetChainId: Number(toChainId),
+        sourceToken: tokenAddress,
+        version
+      });
+      updateData['softTransferLimit'] = transferLimit;
     }
 
     try {
@@ -395,7 +404,7 @@ export class AggregationResolver {
         continue;
       }
       const point = await this.aggregationService.calculateLnBridgeRelayerPoint(
-        token,
+        sendToken,
         BigInt(amount),
         decimals,
         record
