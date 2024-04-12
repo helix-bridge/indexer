@@ -250,6 +250,58 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       return this.tasksService.queryHealthChecks();
   }
 
+  targetAmountToSourceAmount(params: {
+      amount: string;
+      sourceChainId: number;
+      targetChainId: number;
+      sourceToken: string;
+      version: string;
+  }): string {
+      const { amount, sourceChainId, targetChainId, sourceToken, version } = params;
+      let transferDecimals = (value: string, decimals: number) => {
+          if (decimals > 0) {
+              return value.padEnd(value.length + decimals, '0');
+          } else if (value.length + decimals > 0) {
+              return value.substr(0, value.length + decimals);
+          } else {
+              return '0';
+          }
+      }
+
+      if (version === 'lnv2') {
+        const sourceNode = this.lnv2Service.transfers.find((item) => item.chainId === sourceChainId);
+        const sourceTokenInfo = sourceNode?.tokens.find(
+          (item) => item.fromAddress.toLowerCase() === sourceToken.toLowerCase()
+        );
+        if (sourceTokenInfo === undefined) {
+            return '0';
+        }
+        const targetNode = this.lnv2Service.transfers.find((item) => item.chainId === targetChainId);
+        const targetTokenInfo = targetNode?.tokens.find(
+          (item) => item.key === sourceTokenInfo.key
+        );
+        if (targetTokenInfo === undefined) {
+            return '0';
+        }
+
+        return transferDecimals(amount, sourceTokenInfo.decimals - targetTokenInfo.decimals);
+      } else {
+        const lnv3SourceBridge = this.lnv3Service.transfers.find((item) => item.chainId === sourceChainId);
+        const sourceSymbol = lnv3SourceBridge?.symbols.find(
+            (item) => item.address.toLowerCase() === sourceToken.toLowerCase()
+        );
+        if (sourceSymbol === undefined) {
+            return '0';
+        }
+        const lnv3TargetBridge = this.lnv3Service.transfers.find((item) => item.chainId === targetChainId);
+        const targetSymbol = lnv3TargetBridge?.symbols.find(
+            (item) => item.key === sourceSymbol.key 
+        );
+
+        return transferDecimals(amount, sourceSymbol.decimals - targetSymbol.decimals);
+      }
+  }
+
   checkLnBridgeConfigure(params: {
     sourceChainId: number;
     targetChainId: number;
