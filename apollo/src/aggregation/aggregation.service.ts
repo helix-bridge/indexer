@@ -260,7 +260,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       const { amount, sourceChainId, targetChainId, sourceToken, version } = params;
       let transferDecimals = (value: string, decimals: number) => {
           if (decimals > 0) {
-              return value.padEnd(value.length + decimals);
+              return value.padEnd(value.length + decimals, '0');
           } else if (value.length + decimals > 0) {
               return value.substr(0, value.length + decimals);
           } else {

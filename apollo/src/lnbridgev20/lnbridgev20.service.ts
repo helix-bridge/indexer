@@ -507,7 +507,7 @@ export class Lnbridgev20Service implements OnModuleInit {
 
   transferDecimals(value: string, decimals: number): string {
       if (decimals > 0) {
-          return value.padEnd(value.length + decimals);
+          return value.padEnd(value.length + decimals, '0');
       } else if (value.length + decimals > 0) {
           return value.substr(0, value.length + decimals);
       } else {
