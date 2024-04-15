@@ -40,7 +40,7 @@ export class AggregationResolver {
         ? { [orderCondition[0]]: orderCondition[1] }
         : { startTime: Prisma.SortOrder.desc };
     const resultCondition = results && results.length ? { result: { in: results } } : {};
-    const submitCondition = notsubmited ? { confirmedBlocks: { search: '-0x' } } : {};
+    const submitCondition = notsubmited ? {  confirmedBlocks: { not: { contains: '0x' } } } : {};
 
     return this.aggregationService.queryHistoryRecordFirst(
       {
