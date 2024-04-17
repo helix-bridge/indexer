@@ -77,6 +77,9 @@ type LnBridgeRelayInfo {
   transferLimit: String
   softTransferLimit: String
   paused: Boolean
+  dynamicFee: String
+  dynamicFeeExpire: String
+  dynamicFeeSignature: String
 }
 
 type LnBridgeRelayInfos {
@@ -119,5 +122,8 @@ type Mutation {
   addGuardSignature(id: String, dataHash: String, signature: String): String
   updateConfirmedBlock(id: String, block: String): String
   lnBridgeHeartBeat(fromChainId: String, toChainId: String, version: String, relayer: String, tokenAddress: String, softTransferLimit: String): String
+  signConfirmedBlock(id: String, block: String, timestamp: Int, signature: String): String
+  signHeartBeat(fromChainId: String, toChainId: String, version: String, relayer: String, tokenAddress: String, softTransferLimit: String, timestamp: Int, signature: String): String
+  signDynamicFee(dynamicFee: String, expire: String, sig: String, timestamp: Int, signature: String): String
 }
 
