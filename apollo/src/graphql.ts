@@ -19,7 +19,7 @@ export abstract class IQuery {
 
     abstract historyRecordByTxHash(txHash?: Nullable<string>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
 
-    abstract firstHistoryRecord(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, results?: Nullable<Nullable<number>[]>, relayer?: Nullable<string>, token?: Nullable<string>, order?: Nullable<string>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
+    abstract firstHistoryRecord(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, results?: Nullable<Nullable<number>[]>, relayer?: Nullable<string>, token?: Nullable<string>, order?: Nullable<string>, notsubmited?: Nullable<boolean>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
 
     abstract queryDailyStatistics(timepast: number, first?: Nullable<number>, from?: Nullable<string>, to?: Nullable<string>, bridge?: Nullable<string>, token?: Nullable<string>): Nullable<Nullable<DailyStatistics>[]> | Promise<Nullable<Nullable<DailyStatistics>[]>>;
 

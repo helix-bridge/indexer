@@ -31,7 +31,8 @@ export class AggregationResolver {
     @Args('results') results: number[],
     @Args('relayer') relayer: string,
     @Args('token') token: string,
-    @Args('order') order: string
+    @Args('order') order: string,
+    @Args('notsubmited') notsubmited: boolean,
   ) {
     const orderCondition = order?.split('_');
     const orderBy =
@@ -39,6 +40,8 @@ export class AggregationResolver {
         ? { [orderCondition[0]]: orderCondition[1] }
         : { startTime: Prisma.SortOrder.desc };
     const resultCondition = results && results.length ? { result: { in: results } } : {};
+    const submitCondition = notsubmited ? {  confirmedBlocks: { not: { contains: '0x' } } } : {};
+
     return this.aggregationService.queryHistoryRecordFirst(
       {
         AND: {
@@ -47,6 +50,7 @@ export class AggregationResolver {
           bridge: bridge,
           relayer: relayer,
           sendTokenAddress: token,
+          ...submitCondition,
           ...resultCondition,
         },
       },
@@ -395,12 +399,16 @@ export class AggregationResolver {
           console.log(`get softTransferLimit failed ${record.id}, exception: ${e}`);
           continue;
       }
-      const providerFee = BigInt(amount) * BigInt(record.liquidityFeeRate) / BigInt(100000) + BigInt(record.baseFee);
-      if (limit < BigInt(amount) + providerFee + BigInt(record.protocolFee) || record.paused) {
-        continue;
-      }
       // offline
       if (record.heartbeatTimestamp + this.heartbeatTimeout < now) {
+        continue;
+      }
+
+      if (limit > transferLimit) {
+        transferLimit = limit;
+      }
+      const providerFee = BigInt(amount) * BigInt(record.liquidityFeeRate) / BigInt(100000) + BigInt(record.baseFee);
+      if (limit < BigInt(amount) + providerFee + BigInt(record.protocolFee) || record.paused) {
         continue;
       }
       const point = await this.aggregationService.calculateLnBridgeRelayerPoint(
@@ -411,9 +419,6 @@ export class AggregationResolver {
       );
       if (point == null) {
         continue;
-      }
-      if (limit > transferLimit) {
-        transferLimit = limit;
       }
       sortedRelayers.push({ record, point });
     }

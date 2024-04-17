@@ -45,6 +45,38 @@ export class GuardService {
       chainId: 46,
       depositor: '0x2B496f19A420C02490dB859fefeCCD71eDc2c046',
       contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
+    },
+    {
+      fromChain: 'darwinia-dvm',
+      toChain: 'crab-dvm',
+      bridge: 'xtoken-darwinia-crab',
+      chainId: 44,
+      depositor: '0xf6372ab2d35B32156A19F2d2F23FA6dDeFBE58bd',
+      contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
+    },
+    {
+      fromChain: 'crab-dvm',
+      toChain: 'darwinia-dvm',
+      bridge: 'xtoken-darwinia-crab',
+      chainId: 46,
+      depositor: '0xa64D1c284280b22f921E7B2A55040C7bbfD4d9d0',
+      contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
+    },
+    {
+      fromChain: 'darwinia-dvm',
+      toChain: 'crab-dvm',
+      bridge: 'xtoken-crab-darwinia',
+      chainId: 44,
+      depositor: '0xa64D1c284280b22f921E7B2A55040C7bbfD4d9d0',
+      contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
+    },
+    {
+      fromChain: 'crab-dvm',
+      toChain: 'darwinia-dvm',
+      bridge: 'xtoken-crab-darwinia',
+      chainId: 46,
+      depositor: '0xf6372ab2d35B32156A19F2d2F23FA6dDeFBE58bd',
+      contract: '0x4CA75992d2750BEC270731A72DfDedE6b9E71cC7',
     }
   ];
 
