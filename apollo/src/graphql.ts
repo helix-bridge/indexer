@@ -150,7 +150,7 @@ export abstract class IMutation {
 
     abstract lnBridgeHeartBeat(fromChainId?: Nullable<string>, toChainId?: Nullable<string>, version?: Nullable<string>, relayer?: Nullable<string>, tokenAddress?: Nullable<string>, softTransferLimit?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 
-    abstract signConfirmedBlock(id?: Nullable<string>, block?: Nullable<string>, timestamp?: Nullable<number>, signature?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
+    abstract signConfirmedBlock(id?: Nullable<string>, relayer?: Nullable<string>, block?: Nullable<string>, timestamp?: Nullable<number>, signature?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 
     abstract signHeartBeat(fromChainId?: Nullable<string>, toChainId?: Nullable<string>, version?: Nullable<string>, relayer?: Nullable<string>, tokenAddress?: Nullable<string>, softTransferLimit?: Nullable<string>, timestamp?: Nullable<number>, signature?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 

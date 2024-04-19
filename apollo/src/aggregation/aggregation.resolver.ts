@@ -257,12 +257,12 @@ export class AggregationResolver {
   @Mutation()
   async signConfirmedBlock(
       @Args('id') id: string,
+      @Args('relayer') relayer: string,
       @Args('block') block: string,
       @Args('timestamp') timestamp: number,
       @Args('signature') signature: string
   ) {
-    const relayer = id?.split('-')[3];
-    const allowSetConfirmed = this.checkMessageSender(timestamp, block, relayer, signature);
+    const allowSetConfirmed = this.checkMessageSender(timestamp, block, relayer?.toLowerCase(), signature);
     if (!allowSetConfirmed) {
       return;
     }
