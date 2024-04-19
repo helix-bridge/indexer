@@ -32,8 +32,13 @@ export class AggregationResolver {
       if (timestamp + this.signatureExpire < now) {
           return false;
       }
-      const messageHash = this.web3.utils.keccak256(`${timestamp}:${message}`);
-      const signer = this.ecrecover(messageHash, sig);
+
+      const messageHash = this.web3.utils.soliditySha3({value: `${timestamp}`, type: 'uint256'}, {value: message, type: 'string'});
+      const dataHash = this.web3.utils.soliditySha3(
+          { value: '\x19Ethereum Signed Message:\n32', type: 'string' },
+          { value: messageHash, type: 'bytes' }
+      );
+      const signer = this.ecrecover(dataHash, sig);
       return signer === relayer || this.relayerProxy[signer] === relayer;
     } catch {
       return false;
@@ -327,7 +332,8 @@ export class AggregationResolver {
     @Args('signature') signature: string
   ) {
     const id = `${version}-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
-    const allowSetDynamicFee = this.checkMessageSender(timestamp, `${dynamicFee}:${dynamicFeeExpire}:${dynamicFeeSignature}`, relayer.toLowerCase(), signature);
+    const message = `${dynamicFee}:${dynamicFeeExpire}:${dynamicFeeSignature}`;
+    const allowSetDynamicFee = this.checkMessageSender(timestamp, message, relayer.toLowerCase(), signature);
     if (!allowSetDynamicFee) {
       return
     }

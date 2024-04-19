@@ -154,7 +154,7 @@ export abstract class IMutation {
 
     abstract signHeartBeat(fromChainId?: Nullable<string>, toChainId?: Nullable<string>, version?: Nullable<string>, relayer?: Nullable<string>, tokenAddress?: Nullable<string>, softTransferLimit?: Nullable<string>, timestamp?: Nullable<number>, signature?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 
-    abstract signDynamicFee(dynamicFee?: Nullable<string>, expire?: Nullable<string>, sig?: Nullable<string>, timestamp?: Nullable<number>, signature?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
+    abstract signDynamicFee(fromChainId?: Nullable<string>, toChainId?: Nullable<string>, version?: Nullable<string>, relayer?: Nullable<string>, tokenAddress?: Nullable<string>, dynamicFee?: Nullable<string>, dynamicFeeExpire?: Nullable<string>, dynamicFeeSignature?: Nullable<string>, timestamp?: Nullable<number>, signature?: Nullable<string>): Nullable<string> | Promise<Nullable<string>>;
 }
 
 export type BigInt = any;
