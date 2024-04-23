@@ -2,11 +2,48 @@ import { Args, Query, Mutation, Resolver } from '@nestjs/graphql';
 import { isEmpty, isNull, isUndefined } from 'lodash';
 import { AggregationService } from './aggregation.service';
 import { Prisma } from '@prisma/client';
+import * as ethUtil from 'ethereumjs-util';
+import Web3 from 'web3';
 
 @Resolver()
 export class AggregationResolver {
+  private readonly web3 = new Web3(Web3.givenProvider);
   private readonly heartbeatTimeout = 300;
+  private readonly signatureExpire = 120;
+  // todo: move this to contract
+  private readonly relayerProxy = {
+  };
   constructor(private aggregationService: AggregationService) {}
+
+  private ecrecover(hash: string, sig: string): string {
+    const sigObj = ethUtil.fromRpcSig(sig);
+    const pubkey = ethUtil.ecrecover(
+      Buffer.from(hash.substr(2), 'hex'),
+      sigObj.v,
+      sigObj.r,
+      sigObj.s
+    );
+    return ethUtil.bufferToHex(ethUtil.publicToAddress(pubkey)).toLowerCase();
+  }
+
+  private checkMessageSender(timestamp: number, message: string, relayer: string, sig: string): boolean {
+    try {
+      const now = Math.floor(Date.now() / 1000);
+      if (timestamp + this.signatureExpire < now) {
+          return false;
+      }
+
+      const messageHash = this.web3.utils.soliditySha3({value: `${timestamp}`, type: 'uint256'}, {value: message, type: 'string'});
+      const dataHash = this.web3.utils.soliditySha3(
+          { value: '\x19Ethereum Signed Message:\n32', type: 'string' },
+          { value: messageHash, type: 'bytes' }
+      );
+      const signer = this.ecrecover(dataHash, sig);
+      return signer === relayer || this.relayerProxy[signer] === relayer;
+    } catch {
+      return false;
+    }
+  }
 
   @Query()
   async historyRecordById(@Args('id') id: string) {
@@ -161,14 +198,23 @@ export class AggregationResolver {
     });
   }
 
+  /**
+  * @deprecated instead, please use signConfirmedBlock
+  **/
   @Mutation()
-  async updateConfirmedBlock(@Args('id') id: string, @Args('block') block: string) {
+  async updateConfirmedBlock(
+      @Args('id') id: string,
+      @Args('block') block: string
+  ) {
     await this.aggregationService.updateConfirmedBlock({
       where: { id: id },
       block: block,
     });
   }
 
+  /**
+  * @deprecated instead, please use signHeartBeat
+  **/
   @Mutation()
   async lnBridgeHeartBeat(
     @Args('fromChainId') fromChainId: string,
@@ -176,11 +222,13 @@ export class AggregationResolver {
     @Args('version') version: string,
     @Args('relayer') relayer: string,
     @Args('tokenAddress') tokenAddress: string,
-    @Args('softTransferLimit') softTransferLimit: string
+    @Args('softTransferLimit') softTransferLimit: string,
   ) {
     const id = `${version}-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
+    const now = Math.floor(Date.now() / 1000);
+
     let updateData = {
-      heartbeatTimestamp: Math.floor(Date.now() / 1000),
+      heartbeatTimestamp: now,
     };
     
     if (softTransferLimit !== undefined && softTransferLimit !== '0') {
@@ -202,6 +250,104 @@ export class AggregationResolver {
       });
     } catch (e) {
       console.log(`heart beat failed ${id}, exception: ${e}`);
+      return;
+    }
+  }
+
+  @Mutation()
+  async signConfirmedBlock(
+      @Args('id') id: string,
+      @Args('relayer') relayer: string,
+      @Args('block') block: string,
+      @Args('timestamp') timestamp: number,
+      @Args('signature') signature: string
+  ) {
+    const allowSetConfirmed = this.checkMessageSender(timestamp, block, relayer?.toLowerCase(), signature);
+    if (!allowSetConfirmed) {
+      return;
+    }
+    await this.aggregationService.updateConfirmedBlock({
+      where: { id: id },
+      block: block,
+    });
+  }
+
+  @Mutation()
+  async signHeartBeat(
+    @Args('fromChainId') fromChainId: string,
+    @Args('toChainId') toChainId: string,
+    @Args('version') version: string,
+    @Args('relayer') relayer: string,
+    @Args('tokenAddress') tokenAddress: string,
+    @Args('softTransferLimit') softTransferLimit: string,
+    @Args('timestamp') timestamp: number,
+    @Args('signature') signature: string
+  ) {
+    const id = `${version}-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
+    const now = Math.floor(Date.now() / 1000);
+
+    const allowHeartBeat = this.checkMessageSender(timestamp, softTransferLimit, relayer.toLowerCase(), signature);
+    if (!allowHeartBeat) {
+      return
+    }
+
+    let updateData = {
+      heartbeatTimestamp: now,
+    };
+    
+    if (softTransferLimit !== undefined && softTransferLimit !== '0') {
+      // the softTransferLimit is on target chain, transfer it to source chain
+      const transferLimit = this.aggregationService.targetAmountToSourceAmount({
+        amount: softTransferLimit,
+        sourceChainId: Number(fromChainId),
+        targetChainId: Number(toChainId),
+        sourceToken: tokenAddress,
+        version
+      });
+      updateData['softTransferLimit'] = transferLimit;
+    }
+
+    try {
+      await this.aggregationService.updateLnBridgeRelayInfo({
+        where: { id: id },
+        data: updateData,
+      });
+    } catch (e) {
+      console.log(`heart beat failed ${id}, exception: ${e}`);
+      return;
+    }
+  }
+
+  @Mutation()
+  async signDynamicFee(
+    @Args('fromChainId') fromChainId: string,
+    @Args('toChainId') toChainId: string,
+    @Args('version') version: string,
+    @Args('relayer') relayer: string,
+    @Args('tokenAddress') tokenAddress: string,
+    @Args('dynamicFee') dynamicFee: string,
+    @Args('dynamicFeeExpire') dynamicFeeExpire: string,
+    @Args('dynamicFeeSignature') dynamicFeeSignature: string,
+    @Args('timestamp') timestamp: number,
+    @Args('signature') signature: string
+  ) {
+    const id = `${version}-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
+    const message = `${dynamicFee}:${dynamicFeeExpire}:${dynamicFeeSignature}`;
+    const allowSetDynamicFee = this.checkMessageSender(timestamp, message, relayer.toLowerCase(), signature);
+    if (!allowSetDynamicFee) {
+      return
+    }
+
+    try {
+      await this.aggregationService.updateLnBridgeRelayInfo({
+        where: { id: id },
+        data: {
+          dynamicFee,
+          dynamicFeeExpire,
+          dynamicFeeSignature
+        },
+      });
+    } catch (e) {
       return;
     }
   }
