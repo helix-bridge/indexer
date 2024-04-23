@@ -12,6 +12,9 @@ export class AggregationResolver {
   private readonly signatureExpire = 120;
   // todo: move this to contract
   private readonly relayerProxy = {
+      "0x570fca2c6f902949dbb90664be5680fec94a84f6": "0x000000000bb6a011db294ce3f3423f00eac4959e",
+      "0xc5a809900b5bfb46b1b3892e419e69331b8fbc6c": "0x000000000bb6a011db294ce3f3423f00eac4959e",
+      "0x3f63bce51d3c6665bfe919816780a2109d42238d": "0x000000000bb6a011db294ce3f3423f00eac4959e"
   };
   constructor(private aggregationService: AggregationService) {}
 
@@ -283,10 +286,10 @@ export class AggregationResolver {
     @Args('timestamp') timestamp: number,
     @Args('signature') signature: string
   ) {
-    const id = `${version}-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
+    const id = `${version}-${fromChainId}-${toChainId}-${relayer?.toLowerCase()}-${tokenAddress?.toLowerCase()}`;
     const now = Math.floor(Date.now() / 1000);
 
-    const allowHeartBeat = this.checkMessageSender(timestamp, softTransferLimit, relayer.toLowerCase(), signature);
+    const allowHeartBeat = this.checkMessageSender(timestamp, softTransferLimit, relayer?.toLowerCase(), signature);
     if (!allowHeartBeat) {
       return
     }
@@ -331,9 +334,9 @@ export class AggregationResolver {
     @Args('timestamp') timestamp: number,
     @Args('signature') signature: string
   ) {
-    const id = `${version}-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
+    const id = `${version}-${fromChainId}-${toChainId}-${relayer?.toLowerCase()}-${tokenAddress?.toLowerCase()}`;
     const message = `${dynamicFee}:${dynamicFeeExpire}:${dynamicFeeSignature}`;
-    const allowSetDynamicFee = this.checkMessageSender(timestamp, message, relayer.toLowerCase(), signature);
+    const allowSetDynamicFee = this.checkMessageSender(timestamp, message, relayer?.toLowerCase(), signature);
     if (!allowSetDynamicFee) {
       return
     }
