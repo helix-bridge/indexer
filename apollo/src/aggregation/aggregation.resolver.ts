@@ -12,9 +12,9 @@ export class AggregationResolver {
   private readonly signatureExpire = 120;
   // todo: move this to contract
   private readonly relayerProxy = {
-      "0x570fca2c6f902949dbb90664be5680fec94a84f6": "0x000000000bb6a011db294ce3f3423f00eac4959e",
-      "0xc5a809900b5bfb46b1b3892e419e69331b8fbc6c": "0x000000000bb6a011db294ce3f3423f00eac4959e",
-      "0x3f63bce51d3c6665bfe919816780a2109d42238d": "0x000000000bb6a011db294ce3f3423f00eac4959e"
+    '0x570fca2c6f902949dbb90664be5680fec94a84f6': '0x000000000bb6a011db294ce3f3423f00eac4959e',
+    '0xc5a809900b5bfb46b1b3892e419e69331b8fbc6c': '0x000000000bb6a011db294ce3f3423f00eac4959e',
+    '0x3f63bce51d3c6665bfe919816780a2109d42238d': '0x000000000bb6a011db294ce3f3423f00eac4959e',
   };
   constructor(private aggregationService: AggregationService) {}
 
@@ -29,17 +29,25 @@ export class AggregationResolver {
     return ethUtil.bufferToHex(ethUtil.publicToAddress(pubkey)).toLowerCase();
   }
 
-  private checkMessageSender(timestamp: number, message: string, relayer: string, sig: string): boolean {
+  private checkMessageSender(
+    timestamp: number,
+    message: string,
+    relayer: string,
+    sig: string
+  ): boolean {
     try {
       const now = Math.floor(Date.now() / 1000);
       if (timestamp + this.signatureExpire < now) {
-          return false;
+        return false;
       }
 
-      const messageHash = this.web3.utils.soliditySha3({value: `${timestamp}`, type: 'uint256'}, {value: message, type: 'string'});
+      const messageHash = this.web3.utils.soliditySha3(
+        { value: `${timestamp}`, type: 'uint256' },
+        { value: message, type: 'string' }
+      );
       const dataHash = this.web3.utils.soliditySha3(
-          { value: '\x19Ethereum Signed Message:\n32', type: 'string' },
-          { value: messageHash, type: 'bytes' }
+        { value: '\x19Ethereum Signed Message:\n32', type: 'string' },
+        { value: messageHash, type: 'bytes' }
       );
       const signer = this.ecrecover(dataHash, sig);
       return signer === relayer || this.relayerProxy[signer] === relayer;
@@ -72,7 +80,7 @@ export class AggregationResolver {
     @Args('relayer') relayer: string,
     @Args('token') token: string,
     @Args('order') order: string,
-    @Args('notsubmited') notsubmited: boolean,
+    @Args('notsubmited') notsubmited: boolean
   ) {
     const orderCondition = order?.split('_');
     const orderBy =
@@ -80,7 +88,7 @@ export class AggregationResolver {
         ? { [orderCondition[0]]: orderCondition[1] }
         : { startTime: Prisma.SortOrder.desc };
     const resultCondition = results && results.length ? { result: { in: results } } : {};
-    const submitCondition = notsubmited ? {  confirmedBlocks: { not: { contains: '0x' } } } : {};
+    const submitCondition = notsubmited ? { confirmedBlocks: { not: { contains: '0x' } } } : {};
 
     return this.aggregationService.queryHistoryRecordFirst(
       {
@@ -124,7 +132,9 @@ export class AggregationResolver {
       !Object.values(item).some((value) => isUndefined(value) || isNull(value) || value === '');
 
     const accFilters = [{ sender: sender?.toLowerCase() }, { recipient }].filter(isValid);
-    const relayerFilters = [{ relayer: relayer?.toLowerCase() }, { needWithdrawLiquidity }].filter(isValid); 
+    const relayerFilters = [{ relayer: relayer?.toLowerCase() }, { needWithdrawLiquidity }].filter(
+      isValid
+    );
     const accountCondition = accFilters.length ? { OR: accFilters } : {};
     const relayerCondition = relayerFilters.length ? { AND: relayerFilters } : {};
     const resultCondition = results && results.length ? { result: { in: results } } : {};
@@ -133,7 +143,9 @@ export class AggregationResolver {
     const toChainCondition = toChains && toChains.length ? { toChain: { in: toChains } } : {};
     const bridgeCondition = bridges && bridges.length ? { bridge: { in: bridges } } : {};
     const recvTokenCondition =
-      recvTokenAddress && recvTokenAddress.length ? { recvTokenAddress: recvTokenAddress?.toLowerCase() } : {};
+      recvTokenAddress && recvTokenAddress.length
+        ? { recvTokenAddress: recvTokenAddress?.toLowerCase() }
+        : {};
     const chainConditions = {
       AND: {
         ...resultCondition,
@@ -160,55 +172,11 @@ export class AggregationResolver {
     });
   }
 
-  // daily statistics
-  @Query()
-  async queryDailyStatistics(
-    @Args('timepast') timepast: number,
-    @Args('first') take: number,
-    @Args('from') fromChain: string,
-    @Args('to') toChain: string,
-    @Args('bridge') bridge: string,
-    @Args('token') token: string
-  ) {
-    const filter = [];
-    if (fromChain) {
-      filter.push({ fromChain });
-    }
-    if (toChain) {
-      filter.push({ toChain });
-    }
-    if (bridge) {
-      filter.push({ bridge });
-    }
-    if (token) {
-      filter.push({ token });
-    }
-
-    const now = Date.now() / 1000;
-    const timelimit = Math.floor(now - timepast);
-    const where = { AND: { timestamp: { gt: timelimit }, AND: filter } };
-    return this.aggregationService.queryDailyStatistics({
-      take,
-      where,
-    });
-  }
-
-  @Mutation()
-  async addGuardSignature(@Args('id') id: string, @Args('signature') signature: string) {
-    await this.aggregationService.addGuardSignature({
-      where: { id: id },
-      signature: signature,
-    });
-  }
-
   /**
-  * @deprecated instead, please use signConfirmedBlock
-  **/
+   * @deprecated instead, please use signConfirmedBlock
+   **/
   @Mutation()
-  async updateConfirmedBlock(
-      @Args('id') id: string,
-      @Args('block') block: string
-  ) {
+  async updateConfirmedBlock(@Args('id') id: string, @Args('block') block: string) {
     await this.aggregationService.updateConfirmedBlock({
       where: { id: id },
       block: block,
@@ -216,8 +184,8 @@ export class AggregationResolver {
   }
 
   /**
-  * @deprecated instead, please use signHeartBeat
-  **/
+   * @deprecated instead, please use signHeartBeat
+   **/
   @Mutation()
   async lnBridgeHeartBeat(
     @Args('fromChainId') fromChainId: string,
@@ -225,15 +193,15 @@ export class AggregationResolver {
     @Args('version') version: string,
     @Args('relayer') relayer: string,
     @Args('tokenAddress') tokenAddress: string,
-    @Args('softTransferLimit') softTransferLimit: string,
+    @Args('softTransferLimit') softTransferLimit: string
   ) {
     const id = `${version}-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
     const now = Math.floor(Date.now() / 1000);
 
-    let updateData = {
+    const updateData = {
       heartbeatTimestamp: now,
     };
-    
+
     if (softTransferLimit !== undefined && softTransferLimit !== '0') {
       // the softTransferLimit is on target chain, transfer it to source chain
       const transferLimit = this.aggregationService.targetAmountToSourceAmount({
@@ -241,7 +209,7 @@ export class AggregationResolver {
         sourceChainId: Number(fromChainId),
         targetChainId: Number(toChainId),
         sourceToken: tokenAddress,
-        version
+        version,
       });
       updateData['softTransferLimit'] = transferLimit;
     }
@@ -259,13 +227,18 @@ export class AggregationResolver {
 
   @Mutation()
   async signConfirmedBlock(
-      @Args('id') id: string,
-      @Args('relayer') relayer: string,
-      @Args('block') block: string,
-      @Args('timestamp') timestamp: number,
-      @Args('signature') signature: string
+    @Args('id') id: string,
+    @Args('relayer') relayer: string,
+    @Args('block') block: string,
+    @Args('timestamp') timestamp: number,
+    @Args('signature') signature: string
   ) {
-    const allowSetConfirmed = this.checkMessageSender(timestamp, block, relayer?.toLowerCase(), signature);
+    const allowSetConfirmed = this.checkMessageSender(
+      timestamp,
+      block,
+      relayer?.toLowerCase(),
+      signature
+    );
     if (!allowSetConfirmed) {
       return;
     }
@@ -289,15 +262,20 @@ export class AggregationResolver {
     const id = `${version}-${fromChainId}-${toChainId}-${relayer?.toLowerCase()}-${tokenAddress?.toLowerCase()}`;
     const now = Math.floor(Date.now() / 1000);
 
-    const allowHeartBeat = this.checkMessageSender(timestamp, softTransferLimit, relayer?.toLowerCase(), signature);
+    const allowHeartBeat = this.checkMessageSender(
+      timestamp,
+      softTransferLimit,
+      relayer?.toLowerCase(),
+      signature
+    );
     if (!allowHeartBeat) {
-      return
+      return;
     }
 
-    let updateData = {
+    const updateData = {
       heartbeatTimestamp: now,
     };
-    
+
     if (softTransferLimit !== undefined && softTransferLimit !== '0') {
       // the softTransferLimit is on target chain, transfer it to source chain
       const transferLimit = this.aggregationService.targetAmountToSourceAmount({
@@ -305,7 +283,7 @@ export class AggregationResolver {
         sourceChainId: Number(fromChainId),
         targetChainId: Number(toChainId),
         sourceToken: tokenAddress,
-        version
+        version,
       });
       updateData['softTransferLimit'] = transferLimit;
     }
@@ -336,9 +314,14 @@ export class AggregationResolver {
   ) {
     const id = `${version}-${fromChainId}-${toChainId}-${relayer?.toLowerCase()}-${tokenAddress?.toLowerCase()}`;
     const message = `${dynamicFee}:${dynamicFeeExpire}:${dynamicFeeSignature}`;
-    const allowSetDynamicFee = this.checkMessageSender(timestamp, message, relayer?.toLowerCase(), signature);
+    const allowSetDynamicFee = this.checkMessageSender(
+      timestamp,
+      message,
+      relayer?.toLowerCase(),
+      signature
+    );
     if (!allowSetDynamicFee) {
-      return
+      return;
     }
 
     try {
@@ -347,7 +330,7 @@ export class AggregationResolver {
         data: {
           dynamicFee,
           dynamicFeeExpire,
-          dynamicFeeSignature
+          dynamicFeeSignature,
         },
       });
     } catch (e) {
@@ -373,46 +356,17 @@ export class AggregationResolver {
   }
 
   @Query()
-  tasksHealthCheck(
-    @Args('name') name: string
-  ) {
-     const healthChecks = this.aggregationService.tasksHealthCheck();
-     if (name !== null) {
-       return [
-         {
-           name: name,
-           callTimes: healthChecks[name]
-         }
-       ];
-     }
-     return Array.from(healthChecks, ([name, callTimes]) => ({ name, callTimes }));
-  }
-
-  @Query()
-  async queryGuardNeedSignature(
-    @Args('fromChain') fromChain: string,
-    @Args('toChain') toChain: string,
-    @Args('bridge') bridge: string,
-    @Args('guardAddress') guardAddress: string,
-    @Args('row') row: number
-  ) {
-    const take = row || 10;
-    const statusPendingToClaim = 2;
-    const baseFilters = { fromChain, toChain, bridge };
-    const guardNotSigned = { guardSignatures: { search: '!' + guardAddress } };
-    const filterResponsed = { responseTxHash: '', result: statusPendingToClaim };
-
-    const where = {
-      ...baseFilters,
-      ...guardNotSigned,
-      ...filterResponsed,
-    };
-
-    return this.aggregationService.queryHistoryRecords({
-      skip: 0,
-      take,
-      where,
-    });
+  tasksHealthCheck(@Args('name') name: string) {
+    const healthChecks = this.aggregationService.tasksHealthCheck();
+    if (name !== null) {
+      return [
+        {
+          name: name,
+          callTimes: healthChecks[name],
+        },
+      ];
+    }
+    return Array.from(healthChecks, ([name, callTimes]) => ({ name, callTimes }));
   }
 
   @Query()
@@ -466,13 +420,11 @@ export class AggregationResolver {
   }
 
   @Query()
-  async queryLnBridgeSupportChains(
-    @Args('tokenKey') tokenKey: string
-  ) {
-    const baseFilters = { 
-        tokenKey,
-        paused: false,
-        OR: [{transferLimit: { not: '0' }}, {margin: { not: '0' }}]
+  async queryLnBridgeSupportChains(@Args('tokenKey') tokenKey: string) {
+    const baseFilters = {
+      tokenKey,
+      paused: false,
+      OR: [{ transferLimit: { not: '0' } }, { margin: { not: '0' } }],
     };
 
     const where = {
@@ -482,26 +434,26 @@ export class AggregationResolver {
     const records = await this.aggregationService.queryLnBridgeRelayInfos({
       where,
     });
-    let supportChains = new Map();
+    const supportChains = new Map();
     const now = Math.floor(Date.now() / 1000);
     for (const record of records.records) {
-        if (record.heartbeatTimestamp + this.heartbeatTimeout < now) {
-          continue;
-        }
+      if (record.heartbeatTimestamp + this.heartbeatTimeout < now) {
+        continue;
+      }
 
-        let toChains = supportChains.get(record.fromChain);
+      const toChains = supportChains.get(record.fromChain);
 
-        if (!toChains) {
-            supportChains.set(record.fromChain, [ record.toChain ]);
-        } else {
-            if (!toChains.includes(record.toChain)) {
-                toChains.push(record.toChain);
-            }
+      if (!toChains) {
+        supportChains.set(record.fromChain, [record.toChain]);
+      } else {
+        if (!toChains.includes(record.toChain)) {
+          toChains.push(record.toChain);
         }
+      }
     }
     return Array.from(supportChains, ([fromChain, toChains]) => ({
-        fromChain,
-        toChains,
+      fromChain,
+      toChains,
     }));
   }
 
@@ -534,19 +486,19 @@ export class AggregationResolver {
     // w=P * 0.5 + max(R - S*0.001, 0) * 0.1 + max(1-T_0 * 0.001, 0)*0.1 + T_1 * 0.2
     //const validRecords = records.records.filter((record) => BigInt(record.margin) > BigInt(amount));
     // query all pending txs
-    var sortedRelayers = [];
-    var transferLimit = BigInt(0);
+    const sortedRelayers = [];
+    let transferLimit = BigInt(0);
     const now = Math.floor(Date.now() / 1000);
     for (const record of records.records) {
       let limit = record.version == 'lnv2' ? BigInt(record.margin) : BigInt(record.transferLimit);
       try {
-          const softTransferLimit = BigInt(record.softTransferLimit);
-          if (limit > softTransferLimit && softTransferLimit > 0) {
-              limit = softTransferLimit;
-          }
-      } catch(e) {
-          console.log(`get softTransferLimit failed ${record.id}, exception: ${e}`);
-          continue;
+        const softTransferLimit = BigInt(record.softTransferLimit);
+        if (limit > softTransferLimit && softTransferLimit > 0) {
+          limit = softTransferLimit;
+        }
+      } catch (e) {
+        console.log(`get softTransferLimit failed ${record.id}, exception: ${e}`);
+        continue;
       }
       // offline
       if (record.heartbeatTimestamp + this.heartbeatTimeout < now) {
@@ -556,7 +508,9 @@ export class AggregationResolver {
       if (limit > transferLimit) {
         transferLimit = limit;
       }
-      const providerFee = BigInt(amount) * BigInt(record.liquidityFeeRate) / BigInt(100000) + BigInt(record.baseFee);
+      const providerFee =
+        (BigInt(amount) * BigInt(record.liquidityFeeRate)) / BigInt(100000) +
+        BigInt(record.baseFee);
       if (limit < BigInt(amount) + providerFee + BigInt(record.protocolFee) || record.paused) {
         continue;
       }
@@ -592,7 +546,7 @@ export class AggregationResolver {
     @Args('toChain') toChain: string,
     @Args('bridge') bridge: string,
     @Args('token') token: string,
-    @Args('balance') balance: string,
+    @Args('balance') balance: string
   ) {
     const sendToken = token?.toLowerCase();
     const baseFilters = { fromChain, toChain, sendToken, bridge };
@@ -605,7 +559,7 @@ export class AggregationResolver {
       skip: 0,
       where,
     });
-    var maxTransferAmount = BigInt(0);
+    let maxTransferAmount = BigInt(0);
     const now = Math.floor(Date.now() / 1000);
     const liquidityFeeScale = BigInt(100000);
     for (const record of records.records) {
@@ -615,24 +569,28 @@ export class AggregationResolver {
       }
 
       const fixFee = BigInt(record.baseFee) + BigInt(record.protocolFee);
-      const userBalanceRestrict = (BigInt(balance) - fixFee) * liquidityFeeScale / (liquidityFeeScale + BigInt(record.liquidityFeeRate));
-      let limitRestrict = record.version === 'lnv2' ?
-          (BigInt(record.margin) - fixFee) * liquidityFeeScale / (liquidityFeeScale + BigInt(record.liquidityFeeRate)) :
-          BigInt(record.transferLimit);
+      const userBalanceRestrict =
+        ((BigInt(balance) - fixFee) * liquidityFeeScale) /
+        (liquidityFeeScale + BigInt(record.liquidityFeeRate));
+      let limitRestrict =
+        record.version === 'lnv2'
+          ? ((BigInt(record.margin) - fixFee) * liquidityFeeScale) /
+            (liquidityFeeScale + BigInt(record.liquidityFeeRate))
+          : BigInt(record.transferLimit);
 
       try {
-          const softTransferLimit = BigInt(record.softTransferLimit);
-          if (limitRestrict > softTransferLimit && softTransferLimit > 0) {
-              limitRestrict = softTransferLimit;
-          }
-      } catch(e) {
-          console.log(`get softTransferLimit failed ${record.id}, exception: ${e}`);
-          continue;
+        const softTransferLimit = BigInt(record.softTransferLimit);
+        if (limitRestrict > softTransferLimit && softTransferLimit > 0) {
+          limitRestrict = softTransferLimit;
+        }
+      } catch (e) {
+        console.log(`get softTransferLimit failed ${record.id}, exception: ${e}`);
+        continue;
       }
 
       const limit = limitRestrict < userBalanceRestrict ? limitRestrict : userBalanceRestrict;
       if (maxTransferAmount < limit) {
-          maxTransferAmount = limit;
+        maxTransferAmount = limit;
       }
     }
     return maxTransferAmount;

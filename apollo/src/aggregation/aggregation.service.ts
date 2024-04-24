@@ -1,11 +1,9 @@
 import { INestApplication, Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { DailyStatistics, HistoryRecord, Prisma, PrismaClient } from '@prisma/client';
+import { HistoryRecord, Prisma, PrismaClient } from '@prisma/client';
 import { HistoryRecords, LnBridgeRelayInfo, LnBridgeRelayInfos } from '../graphql';
-import { GuardService } from '../guard/guard.service';
 // export lnbridge service configure
-import { last } from 'lodash';
-import { TransferService as Lnv2Service } from '../lnbridgev20/transfer.service';
-import { TransferService as Lnv3Service} from '../lnv3/transfer.service';
+import { TransferService as Lnv2Service } from '../lnv2/transfer.service';
+import { TransferService as Lnv3Service } from '../lnv3/transfer.service';
 import { TasksService } from '../tasks/tasks.service';
 
 @Injectable()
@@ -17,10 +15,9 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
   }
 
   constructor(
-      private guardService: GuardService,
-      private lnv2Service: Lnv2Service,
-      private lnv3Service: Lnv3Service,
-      private tasksService: TasksService
+    private lnv2Service: Lnv2Service,
+    private lnv3Service: Lnv3Service,
+    private tasksService: TasksService
   ) {
     super();
   }
@@ -107,52 +104,6 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     return { total, records };
   }
 
-  async addGuardSignature(params: {
-    where: Prisma.HistoryRecordWhereUniqueInput;
-    signature: string;
-  }) {
-    const { where, signature } = params;
-    try {
-      const record = await this.historyRecord.findUnique({
-        where,
-      });
-      // tx has been redeemed
-      if (record.responseTxHash !== '') {
-        return;
-      }
-      const guard = this.guardService.recoverPubkey(
-        record.fromChain,
-        record.toChain,
-        record.bridge,
-        BigInt(last(record.id.split('-'))).toString(),
-        record.endTime.toString(),
-        record.recvTokenAddress,
-        record.recvAmount,
-        record.extData,
-        signature
-      );
-      if (!guard) {
-        return;
-      }
-      const value = guard + '-' + signature;
-      const signatures = record.guardSignatures === null ? [] : record.guardSignatures.split(',');
-      const exist = signatures.find((sig) => sig === value);
-      if (exist) {
-        return;
-      }
-      signatures.push(value);
-
-      await this.historyRecord.update({
-        where,
-        data: {
-          guardSignatures: signatures.sort().join(','),
-        },
-      });
-    } catch (error) {
-      this.logger.warn(`add guard signature failed ${where}, ${signature}, ${error}`);
-    }
-  }
-
   async updateConfirmedBlock(params: {
     where: Prisma.HistoryRecordWhereUniqueInput;
     block: string;
@@ -213,93 +164,60 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     return { total, records };
   }
 
-  // daily statistics
-  async createDailyStatistics(data: Prisma.DailyStatisticsCreateInput): Promise<DailyStatistics> {
-    return this.dailyStatistics.create({
-      data,
-    });
-  }
-
-  async updateDailyStatistics(params: {
-    where: Prisma.DailyStatisticsWhereUniqueInput;
-    data: Prisma.DailyStatisticsUpdateInput;
-  }): Promise<DailyStatistics> {
-    const { where, data } = params;
-    return this.dailyStatistics.update({
-      data,
-      where,
-    });
-  }
-
-  async queryDailyStatistics(params: {
-    skip?: number;
-    take?: number;
-    where?: Prisma.DailyStatisticsWhereInput;
-  }): Promise<DailyStatistics[]> {
-    const { skip, take, where } = params;
-
-    return this.dailyStatistics.findMany({
-      skip,
-      take,
-      where,
-      orderBy: { timestamp: 'desc' },
-    });
-  }
-  
   tasksHealthCheck() {
-      return this.tasksService.queryHealthChecks();
+    return this.tasksService.queryHealthChecks();
   }
 
   targetAmountToSourceAmount(params: {
-      amount: string;
-      sourceChainId: number;
-      targetChainId: number;
-      sourceToken: string;
-      version: string;
+    amount: string;
+    sourceChainId: number;
+    targetChainId: number;
+    sourceToken: string;
+    version: string;
   }): string {
-      const { amount, sourceChainId, targetChainId, sourceToken, version } = params;
-      let transferDecimals = (value: string, decimals: number) => {
-          if (decimals > 0) {
-              return value.padEnd(value.length + decimals, '0');
-          } else if (value.length + decimals > 0) {
-              return value.substr(0, value.length + decimals);
-          } else {
-              return '0';
-          }
-      }
-
-      if (version === 'lnv2') {
-        const sourceNode = this.lnv2Service.transfers.find((item) => item.chainId === sourceChainId);
-        const sourceTokenInfo = sourceNode?.tokens.find(
-          (item) => item.fromAddress.toLowerCase() === sourceToken.toLowerCase()
-        );
-        if (sourceTokenInfo === undefined) {
-            return '0';
-        }
-        const targetNode = this.lnv2Service.transfers.find((item) => item.chainId === targetChainId);
-        const targetTokenInfo = targetNode?.tokens.find(
-          (item) => item.key === sourceTokenInfo.key
-        );
-        if (targetTokenInfo === undefined) {
-            return '0';
-        }
-
-        return transferDecimals(amount, sourceTokenInfo.decimals - targetTokenInfo.decimals);
+    const { amount, sourceChainId, targetChainId, sourceToken, version } = params;
+    const transferDecimals = (value: string, decimals: number) => {
+      if (decimals > 0) {
+        return value.padEnd(value.length + decimals, '0');
+      } else if (value.length + decimals > 0) {
+        return value.substr(0, value.length + decimals);
       } else {
-        const lnv3SourceBridge = this.lnv3Service.transfers.find((item) => item.chainId === sourceChainId);
-        const sourceSymbol = lnv3SourceBridge?.symbols.find(
-            (item) => item.address.toLowerCase() === sourceToken.toLowerCase()
-        );
-        if (sourceSymbol === undefined) {
-            return '0';
-        }
-        const lnv3TargetBridge = this.lnv3Service.transfers.find((item) => item.chainId === targetChainId);
-        const targetSymbol = lnv3TargetBridge?.symbols.find(
-            (item) => item.key === sourceSymbol.key 
-        );
-
-        return transferDecimals(amount, sourceSymbol.decimals - targetSymbol.decimals);
+        return '0';
       }
+    };
+
+    if (version === 'lnv2') {
+      const sourceNode = this.lnv2Service.transfers.find((item) => item.chainId === sourceChainId);
+      const sourceTokenInfo = sourceNode?.tokens.find(
+        (item) => item.fromAddress.toLowerCase() === sourceToken.toLowerCase()
+      );
+      if (sourceTokenInfo === undefined) {
+        return '0';
+      }
+      const targetNode = this.lnv2Service.transfers.find((item) => item.chainId === targetChainId);
+      const targetTokenInfo = targetNode?.tokens.find((item) => item.key === sourceTokenInfo.key);
+      if (targetTokenInfo === undefined) {
+        return '0';
+      }
+
+      return transferDecimals(amount, sourceTokenInfo.decimals - targetTokenInfo.decimals);
+    } else {
+      const lnv3SourceBridge = this.lnv3Service.transfers.find(
+        (item) => item.chainId === sourceChainId
+      );
+      const sourceSymbol = lnv3SourceBridge?.symbols.find(
+        (item) => item.address.toLowerCase() === sourceToken.toLowerCase()
+      );
+      if (sourceSymbol === undefined) {
+        return '0';
+      }
+      const lnv3TargetBridge = this.lnv3Service.transfers.find(
+        (item) => item.chainId === targetChainId
+      );
+      const targetSymbol = lnv3TargetBridge?.symbols.find((item) => item.key === sourceSymbol.key);
+
+      return transferDecimals(amount, sourceSymbol.decimals - targetSymbol.decimals);
+    }
   }
 
   checkLnBridgeConfigure(params: {
@@ -323,38 +241,34 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       }
       const targetInfo = tokenBridge.remoteInfos.find(
         (item) =>
-          item.toChain === targetChainId && item.toAddress.toLowerCase() === targetToken.toLowerCase()
+          item.toChain === targetChainId &&
+          item.toAddress.toLowerCase() === targetToken.toLowerCase()
       );
       return targetInfo !== undefined;
     } else {
-      const lnv3SourceBridge = this.lnv3Service.transfers.find((item) => item.chainId === sourceChainId);
+      const lnv3SourceBridge = this.lnv3Service.transfers.find(
+        (item) => item.chainId === sourceChainId
+      );
       if (lnv3SourceBridge === undefined) {
         return false;
       }
       const sourceSymbol = lnv3SourceBridge.symbols.find(
-          (item) => item.address.toLowerCase() === sourceToken.toLowerCase()
+        (item) => item.address.toLowerCase() === sourceToken.toLowerCase()
       );
       if (sourceSymbol === undefined) {
         return false;
       }
-      const lnv3TargetBridge = this.lnv3Service.transfers.find((item) => item.chainId === targetChainId);
+      const lnv3TargetBridge = this.lnv3Service.transfers.find(
+        (item) => item.chainId === targetChainId
+      );
       if (lnv3TargetBridge === undefined) {
         return false;
       }
       const targetSymbol = lnv3TargetBridge.symbols.find(
-          (item) => item.address.toLowerCase() === targetToken.toLowerCase()
+        (item) => item.address.toLowerCase() === targetToken.toLowerCase()
       );
       return targetSymbol !== undefined;
     }
-  }
-
-  async queryDailyStatisticsFirst(
-    dailyStatisticsWhereInput: Prisma.DailyStatisticsWhereInput
-  ): Promise<DailyStatistics | null> {
-    return this.dailyStatistics.findFirst({
-      where: dailyStatisticsWhereInput,
-      orderBy: { timestamp: 'desc' },
-    });
   }
 
   async calculateLnBridgeRelayerPoint(
@@ -377,7 +291,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     });
 
     if (relayerInfo.version == 'lnv2') {
-      var marginUsed = BigInt(0);
+      let marginUsed = BigInt(0);
       for (const pendingRecord of pendingRecords.records) {
         marginUsed += BigInt(pendingRecord.sendAmount);
       }
@@ -390,7 +304,8 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       }
     }
     const F =
-      BigInt(relayerInfo.baseFee) + BigInt(relayerInfo.protocolFee) +
+      BigInt(relayerInfo.baseFee) +
+      BigInt(relayerInfo.protocolFee) +
       (BigInt(relayerInfo.liquidityFeeRate) * amount) / BigInt(100000);
     const R = relayerInfo.slashCount;
     const w = 1 + R * 0.1;

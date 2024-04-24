@@ -35,16 +35,6 @@ type HistoryRecord {
   extData: String
 }
 
-type DailyStatistics {
-  fromChain: String!
-  toChain: String!
-  bridge: String!
-  timestamp: Int!
-  token: String!
-  dailyVolume: BigInt
-  dailyCount: BigInt
-}
-
 type HistoryRecords {
   total: Int!
   records: [HistoryRecord]
@@ -106,11 +96,9 @@ type Query {
   historyRecordById(id: String): HistoryRecord
   historyRecordByTxHash(txHash: String): HistoryRecord
   firstHistoryRecord(fromChain: String, toChain: String, bridge: String, results: [Int], relayer: String, token: String, order: String, notsubmited: Boolean): HistoryRecord
-  queryDailyStatistics(timepast: Int!, first: Int, from: String, to: String, bridge: String, token: String): [DailyStatistics]
   historyRecords(sender: String, recipient: String, relayer: String, needWithdrawLiquidity: Boolean, fromChains: [String], toChains: [String], bridges: [String], row: Int, page: Int, results: [Int], recvTokenAddress: String,  order: String): HistoryRecords
   checkLnBridgeExist(fromChainId: Int, toChainId: Int, fromToken: String, toToken: String, version: String): Boolean
   tasksHealthCheck(name: String): [HealthInfo]
-  queryGuardNeedSignature(fromChain: String, toChain: String, bridge: String, guardAddress: String, row: Int): HistoryRecords
   queryRelayRecords(fromChain: String, toChain: String, bridge: String, relayer: String, row: Int): HistoryRecords
   queryLnBridgeRelayInfos(fromChain: String, toChain: String, version: String, bridge: String, relayer: String, row: Int, page: Int): LnBridgeRelayInfos
   sortedLnBridgeRelayInfos(fromChain: String, toChain: String, version: String, bridge: String, token: String, row: Int, amount: String, decimals: Int): SortedLnBridgeRelayInfos
@@ -119,7 +107,6 @@ type Query {
 }
 
 type Mutation {
-  addGuardSignature(id: String, dataHash: String, signature: String): String
   updateConfirmedBlock(id: String, block: String): String
   lnBridgeHeartBeat(fromChainId: String, toChainId: String, version: String, relayer: String, tokenAddress: String, softTransferLimit: String): String
   signConfirmedBlock(id: String, relayer: String, block: String, timestamp: Int, signature: String): String
