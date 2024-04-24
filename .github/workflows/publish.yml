@@ -37,8 +37,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          #context: apollo
-          file: apollo/Dockerfile
+          context: apollo
+          file: Dockerfile
           tags: |
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ steps.short-sha.outputs.sha }}
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:${{ steps.tag-name.outputs.tag }}
