@@ -46,17 +46,6 @@ model HistoryRecord {
   extData String?
 }
 
-model DailyStatistics {
-  fromChain String
-  toChain String
-  bridge String
-  timestamp Int
-  token String
-  dailyVolume BigInt?
-  dailyCount BigInt?
-  @@unique([fromChain, toChain, bridge, timestamp, token], name: "daily_statistics_id")
-}
-
 model LnBridgeRelayInfo {
   id String @id
   version String

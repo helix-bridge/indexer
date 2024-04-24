@@ -1,5 +1,5 @@
 import { INestApplication, Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { DailyStatistics, HistoryRecord, Prisma, PrismaClient } from '@prisma/client';
+import { HistoryRecord, Prisma, PrismaClient } from '@prisma/client';
 import { HistoryRecords, LnBridgeRelayInfo, LnBridgeRelayInfos } from '../graphql';
 // export lnbridge service configure
 import { last } from 'lodash';
@@ -165,39 +165,6 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     return { total, records };
   }
 
-  // daily statistics
-  async createDailyStatistics(data: Prisma.DailyStatisticsCreateInput): Promise<DailyStatistics> {
-    return this.dailyStatistics.create({
-      data,
-    });
-  }
-
-  async updateDailyStatistics(params: {
-    where: Prisma.DailyStatisticsWhereUniqueInput;
-    data: Prisma.DailyStatisticsUpdateInput;
-  }): Promise<DailyStatistics> {
-    const { where, data } = params;
-    return this.dailyStatistics.update({
-      data,
-      where,
-    });
-  }
-
-  async queryDailyStatistics(params: {
-    skip?: number;
-    take?: number;
-    where?: Prisma.DailyStatisticsWhereInput;
-  }): Promise<DailyStatistics[]> {
-    const { skip, take, where } = params;
-
-    return this.dailyStatistics.findMany({
-      skip,
-      take,
-      where,
-      orderBy: { timestamp: 'desc' },
-    });
-  }
-  
   tasksHealthCheck() {
       return this.tasksService.queryHealthChecks();
   }
@@ -298,15 +265,6 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       );
       return targetSymbol !== undefined;
     }
-  }
-
-  async queryDailyStatisticsFirst(
-    dailyStatisticsWhereInput: Prisma.DailyStatisticsWhereInput
-  ): Promise<DailyStatistics | null> {
-    return this.dailyStatistics.findFirst({
-      where: dailyStatisticsWhereInput,
-      orderBy: { timestamp: 'desc' },
-    });
   }
 
   async calculateLnBridgeRelayerPoint(

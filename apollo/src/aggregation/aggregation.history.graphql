@@ -35,16 +35,6 @@ type HistoryRecord {
   extData: String
 }
 
-type DailyStatistics {
-  fromChain: String!
-  toChain: String!
-  bridge: String!
-  timestamp: Int!
-  token: String!
-  dailyVolume: BigInt
-  dailyCount: BigInt
-}
-
 type HistoryRecords {
   total: Int!
   records: [HistoryRecord]
@@ -106,7 +96,6 @@ type Query {
   historyRecordById(id: String): HistoryRecord
   historyRecordByTxHash(txHash: String): HistoryRecord
   firstHistoryRecord(fromChain: String, toChain: String, bridge: String, results: [Int], relayer: String, token: String, order: String, notsubmited: Boolean): HistoryRecord
-  queryDailyStatistics(timepast: Int!, first: Int, from: String, to: String, bridge: String, token: String): [DailyStatistics]
   historyRecords(sender: String, recipient: String, relayer: String, needWithdrawLiquidity: Boolean, fromChains: [String], toChains: [String], bridges: [String], row: Int, page: Int, results: [Int], recvTokenAddress: String,  order: String): HistoryRecords
   checkLnBridgeExist(fromChainId: Int, toChainId: Int, fromToken: String, toToken: String, version: String): Boolean
   tasksHealthCheck(name: String): [HealthInfo]

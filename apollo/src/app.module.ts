@@ -5,12 +5,10 @@ import { GraphQLModule, Scalar } from '@nestjs/graphql';
 import { ScheduleModule } from '@nestjs/schedule';
 import BigInt from 'apollo-type-bigint';
 import { join } from 'path';
-import { AccountModule } from './account/account.module';
 import { AggregationModule } from './aggregation/aggregation.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TasksModule } from './tasks/tasks.module';
-import { StatisticModule } from './statistic/statistic.module';
 import { Lnv2Module } from './lnv2/lnv2.module';
 import { Lnv3Module } from './lnv3/lnv3.module';
 
@@ -29,7 +27,6 @@ export class BigIntScalar extends BigInt {}
         outputAs: 'class',
       },
     }),
-    AccountModule,
     ConfigModule.forRoot({
       envFilePath: ['.env', chainEnvFilePath],
       isGlobal: true,
@@ -37,7 +34,6 @@ export class BigIntScalar extends BigInt {}
     ScheduleModule.forRoot(),
     TasksModule,
     AggregationModule,
-    StatisticModule,
     Lnv2Module,
     Lnv3Module,
   ],

@@ -1,7 +1,0 @@
-type Accounts {
-  total: Int!
-}
-
-type Query {
-  accounts(chain: String): Accounts
-}
