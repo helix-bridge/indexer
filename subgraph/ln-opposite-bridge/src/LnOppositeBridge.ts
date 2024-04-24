@@ -14,7 +14,6 @@ const WITHDRAW = 2;
 
 const lockRecordNonceId = "0x01";
 const marginUpdateNonce = "0x02";
-const feeUpdated = "0x03";
 
 // source chain start
 export function handleTokenLocked(event: TokenLocked): void {
