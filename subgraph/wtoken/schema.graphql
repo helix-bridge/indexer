@@ -1,8 +1,0 @@
-type TransferRecord @entity {
-  id: ID! # tx hash
-  account: Bytes!
-  amount: BigInt!
-  timestamp: BigInt!
-  direction: Int!
-}
-

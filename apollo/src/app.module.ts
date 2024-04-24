@@ -11,12 +11,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TasksModule } from './tasks/tasks.module';
 import { StatisticModule } from './statistic/statistic.module';
-import { XcmModule } from './xcm/xcm.module';
-import { Sub2ethv2Module } from './sub2ethv2/sub2ethv2.module';
-import { S2sv21Module } from './s2sv21/s2sv21.module';
-import { LnbridgeModule } from './lnbridge/lnbridge.module';
-import { Lnbridgev20Module } from './lnbridgev20/lnbridgev20.module';
-import { xTokenModule } from './xtoken/xtoken.module';
+import { Lnv2Module } from './lnv2/lnv2.module';
 import { Lnv3Module } from './lnv3/lnv3.module';
 
 const chainEnvFilePath = `.env.${process.env.NODE_ENV || 'prod'}`;
@@ -43,12 +38,7 @@ export class BigIntScalar extends BigInt {}
     TasksModule,
     AggregationModule,
     StatisticModule,
-    //XcmModule,
-    //Sub2ethv2Module,
-    //LnbridgeModule,
-    //S2sv21Module,
-    Lnbridgev20Module,
-    xTokenModule,
+    Lnv2Module,
     Lnv3Module,
   ],
   controllers: [AppController],

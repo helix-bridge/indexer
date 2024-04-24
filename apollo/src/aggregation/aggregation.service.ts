@@ -1,10 +1,9 @@
 import { INestApplication, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { DailyStatistics, HistoryRecord, Prisma, PrismaClient } from '@prisma/client';
 import { HistoryRecords, LnBridgeRelayInfo, LnBridgeRelayInfos } from '../graphql';
-import { GuardService } from '../guard/guard.service';
 // export lnbridge service configure
 import { last } from 'lodash';
-import { TransferService as Lnv2Service } from '../lnbridgev20/transfer.service';
+import { TransferService as Lnv2Service } from '../lnv2/transfer.service';
 import { TransferService as Lnv3Service} from '../lnv3/transfer.service';
 import { TasksService } from '../tasks/tasks.service';
 
@@ -17,7 +16,6 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
   }
 
   constructor(
-      private guardService: GuardService,
       private lnv2Service: Lnv2Service,
       private lnv3Service: Lnv3Service,
       private tasksService: TasksService
@@ -105,52 +103,6 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     const total = await this.lnBridgeRelayInfo.count({ where });
 
     return { total, records };
-  }
-
-  async addGuardSignature(params: {
-    where: Prisma.HistoryRecordWhereUniqueInput;
-    signature: string;
-  }) {
-    const { where, signature } = params;
-    try {
-      const record = await this.historyRecord.findUnique({
-        where,
-      });
-      // tx has been redeemed
-      if (record.responseTxHash !== '') {
-        return;
-      }
-      const guard = this.guardService.recoverPubkey(
-        record.fromChain,
-        record.toChain,
-        record.bridge,
-        BigInt(last(record.id.split('-'))).toString(),
-        record.endTime.toString(),
-        record.recvTokenAddress,
-        record.recvAmount,
-        record.extData,
-        signature
-      );
-      if (!guard) {
-        return;
-      }
-      const value = guard + '-' + signature;
-      const signatures = record.guardSignatures === null ? [] : record.guardSignatures.split(',');
-      const exist = signatures.find((sig) => sig === value);
-      if (exist) {
-        return;
-      }
-      signatures.push(value);
-
-      await this.historyRecord.update({
-        where,
-        data: {
-          guardSignatures: signatures.sort().join(','),
-        },
-      });
-    } catch (error) {
-      this.logger.warn(`add guard signature failed ${where}, ${signature}, ${error}`);
-    }
   }
 
   async updateConfirmedBlock(params: {
