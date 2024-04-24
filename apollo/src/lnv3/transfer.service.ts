@@ -44,7 +44,7 @@ export class TransferService extends BaseTransferServiceT2 {
           outerAddress: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
           protocolFee: 100000,
           decimals: 6,
-        }
+        },
       ],
       channels: [
         {
@@ -79,7 +79,7 @@ export class TransferService extends BaseTransferServiceT2 {
           chain: 'darwinia-dvm',
           channel: 'msgline',
         },
-      ]
+      ],
     },
     {
       chainId: 42161,
@@ -110,7 +110,7 @@ export class TransferService extends BaseTransferServiceT2 {
           outerAddress: '0x0000000000000000000000000000000000000000',
           protocolFee: 10000000000000,
           decimals: 18,
-        }
+        },
       ],
       channels: [
         {
@@ -152,8 +152,8 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           chain: 'astar-zkevm',
           channel: 'layerzero',
-        }
-      ]
+        },
+      ],
     },
     {
       chainId: 56,
@@ -168,7 +168,7 @@ export class TransferService extends BaseTransferServiceT2 {
           outerAddress: '0x55d398326f99059fF775485246999027B3197955',
           protocolFee: 100000000000000000,
           decimals: 18,
-        }
+        },
       ],
       channels: [
         {
@@ -198,8 +198,8 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           chain: 'scroll',
           channel: 'layerzero',
-        }
-      ]
+        },
+      ],
     },
     {
       chainId: 59144,
@@ -222,7 +222,7 @@ export class TransferService extends BaseTransferServiceT2 {
           outerAddress: '0x0000000000000000000000000000000000000000',
           protocolFee: 10000000000000,
           decimals: 18,
-        }
+        },
       ],
       channels: [
         {
@@ -252,8 +252,8 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           chain: 'scroll',
           channel: 'layerzero',
-        }
-      ]
+        },
+      ],
     },
     {
       chainId: 10,
@@ -268,7 +268,7 @@ export class TransferService extends BaseTransferServiceT2 {
           outerAddress: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
           protocolFee: 100000,
           decimals: 6,
-        }
+        },
       ],
       channels: [
         {
@@ -298,8 +298,8 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           chain: 'scroll',
           channel: 'layerzero',
-        }
-      ]
+        },
+      ],
     },
     {
       chainId: 100,
@@ -314,7 +314,7 @@ export class TransferService extends BaseTransferServiceT2 {
           outerAddress: '0x4ECaBa5870353805a9F068101A40E0f32ed605C6',
           protocolFee: 100000,
           decimals: 6,
-        }
+        },
       ],
       channels: [
         {
@@ -344,8 +344,8 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           chain: 'scroll',
           channel: 'layerzero',
-        }
-      ]
+        },
+      ],
     },
     {
       chainId: 5000,
@@ -360,7 +360,7 @@ export class TransferService extends BaseTransferServiceT2 {
           outerAddress: '0x201EBa5CC46D216Ce6DC03F6a759e8E766e956aE',
           protocolFee: 100000,
           decimals: 6,
-        }
+        },
       ],
       channels: [
         {
@@ -390,8 +390,8 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           chain: 'scroll',
           channel: 'layerzero',
-        }
-      ]
+        },
+      ],
     },
     {
       chainId: 534352,
@@ -406,7 +406,7 @@ export class TransferService extends BaseTransferServiceT2 {
           outerAddress: '0xf55BEC9cafDbE8730f096Aa55dad6D22d44099Df',
           protocolFee: 100000,
           decimals: 6,
-        }
+        },
       ],
       channels: [
         {
@@ -436,8 +436,8 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           chain: 'mantle',
           channel: 'layerzero',
-        }
-      ]
+        },
+      ],
     },
     {
       chainId: 46,
@@ -452,7 +452,7 @@ export class TransferService extends BaseTransferServiceT2 {
           outerAddress: '0x0000000000000000000000000000000000000000',
           protocolFee: 30000000000000000000,
           decimals: 18,
-        }
+        },
       ],
       channels: [
         {
@@ -462,8 +462,8 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           chain: 'polygon',
           channel: 'msgline',
-        }
-      ]
+        },
+      ],
     },
     {
       chainId: 81457,
@@ -478,14 +478,14 @@ export class TransferService extends BaseTransferServiceT2 {
           outerAddress: '0x0000000000000000000000000000000000000000',
           protocolFee: 10000000000000,
           decimals: 18,
-        }
+        },
       ],
       channels: [
         {
           chain: 'arbitrum',
           channel: 'layerzero',
-        }
-      ]
+        },
+      ],
     },
     {
       chainId: 3776,
@@ -500,15 +500,15 @@ export class TransferService extends BaseTransferServiceT2 {
           outerAddress: '0x0000000000000000000000000000000000000000',
           protocolFee: 10000000000000,
           decimals: 18,
-        }
+        },
       ],
       channels: [
         {
           chain: 'arbitrum',
           channel: 'layerzero',
-        }
-      ]
-    }
+        },
+      ],
+    },
   ];
 
   testChainTransfers: PartnerT2[] = [

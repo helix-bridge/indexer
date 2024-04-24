@@ -280,7 +280,7 @@ export class Lnv2Service implements OnModuleInit {
         .catch((err) => {
           this.logger.warn(`query transfer records failed err ${err}`);
         });
-      var ignored = 0;
+      let ignored = 0;
       if (records && records.length > 0) {
         for (const record of records) {
           const tokenPair = this.findTokenPair(
@@ -506,13 +506,13 @@ export class Lnv2Service implements OnModuleInit {
   }
 
   transferDecimals(value: string, decimals: number): string {
-      if (decimals > 0) {
-          return value.padEnd(value.length + decimals, '0');
-      } else if (value.length + decimals > 0) {
-          return value.substr(0, value.length + decimals);
-      } else {
-          return '0';
-      }
+    if (decimals > 0) {
+      return value.padEnd(value.length + decimals, '0');
+    } else if (value.length + decimals > 0) {
+      return value.substr(0, value.length + decimals);
+    } else {
+      return '0';
+    }
   }
 
   async fetchMarginInfoFromTarget(transfer: PartnerT3, indexInfo: BridgeIndexInfo) {
@@ -551,7 +551,9 @@ export class Lnv2Service implements OnModuleInit {
         );
         const sourcePartner = this.findPartnerByChainId(record.remoteChainId);
         if (sourcePartner === null) {
-          this.logger.warn(`can't find partner chain source:${transfer.chainId} remote:${record.remoteChainId}`);
+          this.logger.warn(
+            `can't find partner chain source:${transfer.chainId} remote:${record.remoteChainId}`
+          );
           latestNonce += 1;
           this.fetchCache[index].latestRelayerInfoTargetNonce = latestNonce;
           return;
@@ -571,7 +573,10 @@ export class Lnv2Service implements OnModuleInit {
         const relayerInfo = await this.aggregationService.queryLnBridgeRelayInfoById({
           id: id,
         });
-        const sourceMargin = this.transferDecimals(record.margin, tokenPair.fromDecimals - tokenPair.toDecimals);
+        const sourceMargin = this.transferDecimals(
+          record.margin,
+          tokenPair.fromDecimals - tokenPair.toDecimals
+        );
         if (relayerInfo) {
           // transfer target margin to source margin
           const updateData = {
@@ -660,8 +665,8 @@ export class Lnv2Service implements OnModuleInit {
         });
 
       if (records === undefined) {
-          this.logger.warn(`query record failed, url: ${indexInfo.url}, query: ${query}`);
-          return;
+        this.logger.warn(`query record failed, url: ${indexInfo.url}, query: ${query}`);
+        return;
       }
       // query nonce big then latestNonce
       for (const record of records) {
@@ -772,8 +777,8 @@ export class Lnv2Service implements OnModuleInit {
         });
 
       if (records === undefined) {
-          this.logger.warn(`query record failed, url: ${indexInfo.url}, query: ${query}`);
-          return;
+        this.logger.warn(`query record failed, url: ${indexInfo.url}, query: ${query}`);
+        return;
       }
       // query nonce big then latestNonce
       for (const record of records) {

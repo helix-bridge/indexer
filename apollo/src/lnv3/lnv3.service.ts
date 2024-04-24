@@ -195,7 +195,7 @@ export class Lnv3Service implements OnModuleInit {
 
           if (relayRecord) {
             let needWithdrawLiquidity = record.needWithdrawLiquidity;
-            let requestWithdrawTimestamp = Number(relayRecord.requestWithdrawTimestamp);
+            const requestWithdrawTimestamp = Number(relayRecord.requestWithdrawTimestamp);
             let endTxHash = record.endTxHash;
             if (record.result !== RecordStatus.success) {
               const providerId = this.genRelayInfoID(
@@ -235,10 +235,10 @@ export class Lnv3Service implements OnModuleInit {
                 where: { id: record.id },
                 data: updateData,
               });
-              
+
               const cost = relayRecord.slashed ? 0 : relayRecord.fee;
               const profit = relayRecord.slashed ? 0 : record.fee;
-              
+
               await this.aggregationService.updateLnBridgeRelayInfo({
                 where: { id: providerId },
                 data: {
@@ -256,12 +256,16 @@ export class Lnv3Service implements OnModuleInit {
               // query result on source
               const query = `query { lnv3TransferRecord(id: "${transferId}") { id, hasWithdrawn }}`;
               const transferRecord = await axios
-              .post(transfer.url, {
-                query: query,
-                variables: null,
-              })
-              .then((res) => res.data?.data?.lnv3TransferRecord);
-              if (transferRecord && (transferRecord.hasWithdrawn || record.lastRequestWithdraw < requestWithdrawTimestamp)) {
+                .post(transfer.url, {
+                  query: query,
+                  variables: null,
+                })
+                .then((res) => res.data?.data?.lnv3TransferRecord);
+              if (
+                transferRecord &&
+                (transferRecord.hasWithdrawn ||
+                  record.lastRequestWithdraw < requestWithdrawTimestamp)
+              ) {
                 await this.aggregationService.updateHistoryRecord({
                   where: { id: record.id },
                   data: {
@@ -324,8 +328,8 @@ export class Lnv3Service implements OnModuleInit {
 
       // maybe this query is archived and can't access
       if (records === undefined) {
-          this.logger.warn(`query record failed, url: ${transfer.url}, query: ${query}`);
-          return;
+        this.logger.warn(`query record failed, url: ${transfer.url}, query: ${query}`);
+        return;
       }
 
       // query nonce big then latestNonce

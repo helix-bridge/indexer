@@ -761,7 +761,7 @@ export class TransferService extends BaseTransferServiceT3 {
               decimals: 6,
               bridgeType: 'default',
               channel: 'layerzero',
-            }
+            },
           ],
         },
         {
@@ -903,7 +903,7 @@ export class TransferService extends BaseTransferServiceT3 {
           ],
         },
       ],
-    }
+    },
   ];
 
   readonly isTest = this.configService.get<string>('CHAIN_TYPE') === 'test';

@@ -2,9 +2,8 @@ import { INestApplication, Injectable, Logger, OnModuleInit } from '@nestjs/comm
 import { HistoryRecord, Prisma, PrismaClient } from '@prisma/client';
 import { HistoryRecords, LnBridgeRelayInfo, LnBridgeRelayInfos } from '../graphql';
 // export lnbridge service configure
-import { last } from 'lodash';
 import { TransferService as Lnv2Service } from '../lnv2/transfer.service';
-import { TransferService as Lnv3Service} from '../lnv3/transfer.service';
+import { TransferService as Lnv3Service } from '../lnv3/transfer.service';
 import { TasksService } from '../tasks/tasks.service';
 
 @Injectable()
@@ -16,9 +15,9 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
   }
 
   constructor(
-      private lnv2Service: Lnv2Service,
-      private lnv3Service: Lnv3Service,
-      private tasksService: TasksService
+    private lnv2Service: Lnv2Service,
+    private lnv3Service: Lnv3Service,
+    private tasksService: TasksService
   ) {
     super();
   }
@@ -166,59 +165,59 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
   }
 
   tasksHealthCheck() {
-      return this.tasksService.queryHealthChecks();
+    return this.tasksService.queryHealthChecks();
   }
 
   targetAmountToSourceAmount(params: {
-      amount: string;
-      sourceChainId: number;
-      targetChainId: number;
-      sourceToken: string;
-      version: string;
+    amount: string;
+    sourceChainId: number;
+    targetChainId: number;
+    sourceToken: string;
+    version: string;
   }): string {
-      const { amount, sourceChainId, targetChainId, sourceToken, version } = params;
-      let transferDecimals = (value: string, decimals: number) => {
-          if (decimals > 0) {
-              return value.padEnd(value.length + decimals, '0');
-          } else if (value.length + decimals > 0) {
-              return value.substr(0, value.length + decimals);
-          } else {
-              return '0';
-          }
-      }
-
-      if (version === 'lnv2') {
-        const sourceNode = this.lnv2Service.transfers.find((item) => item.chainId === sourceChainId);
-        const sourceTokenInfo = sourceNode?.tokens.find(
-          (item) => item.fromAddress.toLowerCase() === sourceToken.toLowerCase()
-        );
-        if (sourceTokenInfo === undefined) {
-            return '0';
-        }
-        const targetNode = this.lnv2Service.transfers.find((item) => item.chainId === targetChainId);
-        const targetTokenInfo = targetNode?.tokens.find(
-          (item) => item.key === sourceTokenInfo.key
-        );
-        if (targetTokenInfo === undefined) {
-            return '0';
-        }
-
-        return transferDecimals(amount, sourceTokenInfo.decimals - targetTokenInfo.decimals);
+    const { amount, sourceChainId, targetChainId, sourceToken, version } = params;
+    const transferDecimals = (value: string, decimals: number) => {
+      if (decimals > 0) {
+        return value.padEnd(value.length + decimals, '0');
+      } else if (value.length + decimals > 0) {
+        return value.substr(0, value.length + decimals);
       } else {
-        const lnv3SourceBridge = this.lnv3Service.transfers.find((item) => item.chainId === sourceChainId);
-        const sourceSymbol = lnv3SourceBridge?.symbols.find(
-            (item) => item.address.toLowerCase() === sourceToken.toLowerCase()
-        );
-        if (sourceSymbol === undefined) {
-            return '0';
-        }
-        const lnv3TargetBridge = this.lnv3Service.transfers.find((item) => item.chainId === targetChainId);
-        const targetSymbol = lnv3TargetBridge?.symbols.find(
-            (item) => item.key === sourceSymbol.key 
-        );
-
-        return transferDecimals(amount, sourceSymbol.decimals - targetSymbol.decimals);
+        return '0';
       }
+    };
+
+    if (version === 'lnv2') {
+      const sourceNode = this.lnv2Service.transfers.find((item) => item.chainId === sourceChainId);
+      const sourceTokenInfo = sourceNode?.tokens.find(
+        (item) => item.fromAddress.toLowerCase() === sourceToken.toLowerCase()
+      );
+      if (sourceTokenInfo === undefined) {
+        return '0';
+      }
+      const targetNode = this.lnv2Service.transfers.find((item) => item.chainId === targetChainId);
+      const targetTokenInfo = targetNode?.tokens.find((item) => item.key === sourceTokenInfo.key);
+      if (targetTokenInfo === undefined) {
+        return '0';
+      }
+
+      return transferDecimals(amount, sourceTokenInfo.decimals - targetTokenInfo.decimals);
+    } else {
+      const lnv3SourceBridge = this.lnv3Service.transfers.find(
+        (item) => item.chainId === sourceChainId
+      );
+      const sourceSymbol = lnv3SourceBridge?.symbols.find(
+        (item) => item.address.toLowerCase() === sourceToken.toLowerCase()
+      );
+      if (sourceSymbol === undefined) {
+        return '0';
+      }
+      const lnv3TargetBridge = this.lnv3Service.transfers.find(
+        (item) => item.chainId === targetChainId
+      );
+      const targetSymbol = lnv3TargetBridge?.symbols.find((item) => item.key === sourceSymbol.key);
+
+      return transferDecimals(amount, sourceSymbol.decimals - targetSymbol.decimals);
+    }
   }
 
   checkLnBridgeConfigure(params: {
@@ -242,26 +241,31 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       }
       const targetInfo = tokenBridge.remoteInfos.find(
         (item) =>
-          item.toChain === targetChainId && item.toAddress.toLowerCase() === targetToken.toLowerCase()
+          item.toChain === targetChainId &&
+          item.toAddress.toLowerCase() === targetToken.toLowerCase()
       );
       return targetInfo !== undefined;
     } else {
-      const lnv3SourceBridge = this.lnv3Service.transfers.find((item) => item.chainId === sourceChainId);
+      const lnv3SourceBridge = this.lnv3Service.transfers.find(
+        (item) => item.chainId === sourceChainId
+      );
       if (lnv3SourceBridge === undefined) {
         return false;
       }
       const sourceSymbol = lnv3SourceBridge.symbols.find(
-          (item) => item.address.toLowerCase() === sourceToken.toLowerCase()
+        (item) => item.address.toLowerCase() === sourceToken.toLowerCase()
       );
       if (sourceSymbol === undefined) {
         return false;
       }
-      const lnv3TargetBridge = this.lnv3Service.transfers.find((item) => item.chainId === targetChainId);
+      const lnv3TargetBridge = this.lnv3Service.transfers.find(
+        (item) => item.chainId === targetChainId
+      );
       if (lnv3TargetBridge === undefined) {
         return false;
       }
       const targetSymbol = lnv3TargetBridge.symbols.find(
-          (item) => item.address.toLowerCase() === targetToken.toLowerCase()
+        (item) => item.address.toLowerCase() === targetToken.toLowerCase()
       );
       return targetSymbol !== undefined;
     }
@@ -287,7 +291,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     });
 
     if (relayerInfo.version == 'lnv2') {
-      var marginUsed = BigInt(0);
+      let marginUsed = BigInt(0);
       for (const pendingRecord of pendingRecords.records) {
         marginUsed += BigInt(pendingRecord.sendAmount);
       }
@@ -300,7 +304,8 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       }
     }
     const F =
-      BigInt(relayerInfo.baseFee) + BigInt(relayerInfo.protocolFee) +
+      BigInt(relayerInfo.baseFee) +
+      BigInt(relayerInfo.protocolFee) +
       (BigInt(relayerInfo.liquidityFeeRate) * amount) / BigInt(100000);
     const R = relayerInfo.slashCount;
     const w = 1 + R * 0.1;
