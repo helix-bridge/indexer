@@ -269,6 +269,14 @@ export class TransferService extends BaseTransferServiceT2 {
           protocolFee: 100000,
           decimals: 6,
         },
+        {
+          key: 'ETH',
+          symbol: 'ETH',
+          address: '0x0000000000000000000000000000000000000000',
+          outerAddress: '0x0000000000000000000000000000000000000000',
+          protocolFee: 10000000000000,
+          decimals: 18,
+        }
       ],
       channels: [
         {
