@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BaseTransferServiceT2, PartnerT2 } from '../base/TransferServiceT2';
+import { BaseTransferServiceT2, PartnerT2, Level0Indexer } from '../base/TransferServiceT2';
 import { AddressTokenMap } from '../base/AddressToken';
 
 @Injectable()
@@ -22,11 +22,14 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly astarZkEVMEndpoint = this.configService.get<string>('ASTAR_ZKEVM_LNV3_ENDPOINT');
   private readonly morphEndpoint = this.configService.get<string>('MORPH_LNV3_ENDPOINT');
 
+  public readonly ponderEndpoint = this.configService.get<string>('PONDER_LNV3_ENDPOINT');
+
   formalChainTransfers: PartnerT2[] = [
     {
       chainId: 137,
       chain: 'polygon',
       url: this.polygonEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -85,6 +88,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 42161,
       chain: 'arbitrum',
       url: this.arbitrumEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -159,6 +163,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 56,
       chain: 'bsc',
       url: this.bscEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -205,6 +210,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 59144,
       chain: 'linea',
       url: this.lineaEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -259,6 +265,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 10,
       chain: 'op',
       url: this.opEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -313,6 +320,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 100,
       chain: 'gnosis',
       url: this.gnosisEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -359,6 +367,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 5000,
       chain: 'mantle',
       url: this.mantleEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -405,6 +414,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 534352,
       chain: 'scroll',
       url: this.scrollEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -451,6 +461,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 46,
       chain: 'darwinia-dvm',
       url: this.darwiniaEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -477,6 +488,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 81457,
       chain: 'blast',
       url: this.blastEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -499,6 +511,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 3776,
       chain: 'astar-zkevm',
       url: this.astarZkEVMEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -524,6 +537,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 11155111,
       chain: 'sepolia',
       url: this.ethereumEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -566,6 +580,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 421614,
       chain: 'arbitrum-sepolia',
       url: this.arbitrumEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -620,6 +635,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 300,
       chain: 'zksync-sepolia',
       url: this.zksyncEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -662,6 +678,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 167008,
       chain: 'taiko',
       url: this.taikoEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -692,6 +709,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 80085,
       chain: 'bera',
       url: this.beraEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {
@@ -722,6 +740,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 2710,
       chain: 'morph',
       url: this.morphEndpoint,
+      level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
       symbols: [
         {

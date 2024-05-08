@@ -18,6 +18,11 @@ export enum RecordStatus {
   failed,
 }
 
+export enum Level0Indexer {
+  thegraph,
+  ponder,
+}
+
 export interface FetchCacheInfo {
   latestNonce: number;
   isSyncingHistory: boolean;
@@ -49,6 +54,7 @@ export interface PartnerT2 {
   chainId: number;
   chain: string;
   url: string; // record api endpoint
+  level0Indexer: number;
   bridge: string;
   symbols: PartnerSymbol[];
   channels: Channel[];
