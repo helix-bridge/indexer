@@ -537,7 +537,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 11155111,
       chain: 'sepolia',
       url: this.ethereumEndpoint,
-      level0Indexer: Level0Indexer.ponder,
+      level0Indexer: Level0Indexer.thegraph,
       bridge: 'lnv3',
       symbols: [
         {
@@ -635,7 +635,7 @@ export class TransferService extends BaseTransferServiceT2 {
       chainId: 300,
       chain: 'zksync-sepolia',
       url: this.zksyncEndpoint,
-      level0Indexer: Level0Indexer.ponder,
+      level0Indexer: Level0Indexer.thegraph,
       bridge: 'lnv3',
       symbols: [
         {
