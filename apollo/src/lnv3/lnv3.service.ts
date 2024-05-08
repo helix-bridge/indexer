@@ -22,7 +22,7 @@ export class Lnv3Service implements OnModuleInit {
 
   protected fetchSendDataInterval = 10000;
 
-  private readonly takeEachTime = 3;
+  private readonly takeEachTime = 50;
   private skip = new Array(this.transferService.transfers.length).fill(0);
 
   constructor(
@@ -85,7 +85,7 @@ export class Lnv3Service implements OnModuleInit {
   async queryRecordInfo(transfer: PartnerT2, latestNonce: number) {
       if (transfer.level0Indexer === Level0Indexer.ponder) {
           const url = this.transferService.ponderEndpoint;
-          const query = `query { lnv3TransferRecords(limit: 10, orderBy: "nonce", orderDirection: "asc", where: {localChainId: "${transfer.chainId}", nonce_gt: "${latestNonce}"}) { items { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }}`;
+          const query = `query { lnv3TransferRecords(limit: 50, orderBy: "nonce", orderDirection: "asc", where: {localChainId: "${transfer.chainId}", nonce_gt: "${latestNonce}"}) { items { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }}`;
           return await axios
           .post(url, {
               query: query,
@@ -93,7 +93,7 @@ export class Lnv3Service implements OnModuleInit {
           }).then((res) => res.data?.data?.lnv3TransferRecords.items);
       } else {
           const url = transfer.url;
-          const query = `query { lnv3TransferRecords(first: 10, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }`;
+          const query = `query { lnv3TransferRecords(first: 20, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }`;
           return await axios
           .post(url, {
               query: query,
@@ -105,14 +105,14 @@ export class Lnv3Service implements OnModuleInit {
   async queryProviderInfo(transfer: PartnerT2, latestNonce: number) {
       if (transfer.level0Indexer === Level0Indexer.ponder) {
           const url = this.transferService.ponderEndpoint;
-          const query = `query { lnv3RelayUpdateRecords(limit: 10, orderBy: "nonce", orderDirection: "asc", where: {localChainId: "${transfer.chainId}", nonce_gt: "${latestNonce}"}) { items { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, penalty, baseFee, liquidityFeeRate, transferLimit, paused } }}`;
+          const query = `query { lnv3RelayUpdateRecords(limit: 50, orderBy: "nonce", orderDirection: "asc", where: {localChainId: "${transfer.chainId}", nonce_gt: "${latestNonce}"}) { items { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, penalty, baseFee, liquidityFeeRate, transferLimit, paused } }}`;
 
           return await axios.post(url, {
               query: query,
               variables: null,
           }).then((res) => res.data?.data?.lnv3RelayUpdateRecords.items);
       } else {
-          const query = `query { lnv3RelayUpdateRecords(first: 10, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, penalty, baseFee, liquidityFeeRate, transferLimit, paused } }`;
+          const query = `query { lnv3RelayUpdateRecords(first: 20, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, penalty, baseFee, liquidityFeeRate, transferLimit, paused } }`;
           return await axios.post(transfer.url, {
               query: query,
               variables: null,

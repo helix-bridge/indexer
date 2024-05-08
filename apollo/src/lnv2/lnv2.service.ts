@@ -48,7 +48,7 @@ export class Lnv2Service implements OnModuleInit {
     name: 'lnBridgeV2',
     fetchHistoryDataFirst: 10,
     fetchSendDataInterval: 10000,
-    takeEachTime: 3,
+    takeEachTime: 10,
   };
 
   // default cache, opposite cache
@@ -269,7 +269,7 @@ export class Lnv2Service implements OnModuleInit {
         );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
-      const query = `query { lnv2TransferRecords(first: 10, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, remoteChainId, nonce, provider, sender, receiver, sourceToken, targetToken, amount, transactionHash, timestamp, fee } }`;
+      const query = `query { lnv2TransferRecords(first: 20, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, remoteChainId, nonce, provider, sender, receiver, sourceToken, targetToken, amount, transactionHash, timestamp, fee } }`;
 
       const records = await axios
         .post(indexInfo.url, {
@@ -529,7 +529,7 @@ export class Lnv2Service implements OnModuleInit {
         );
         latestNonce = firstRecord ? Number(firstRecord.targetNonce) : 0;
       }
-      const query = `query { lnv2RelayUpdateRecords(first: 10, orderBy: nonce, orderDirection: asc, where: {updateType_in: [${RelayUpdateType.SLASH}, ${RelayUpdateType.WITHDRAW}]}, skip: ${latestNonce}) { id, remoteChainId, provider, margin, updateType, withdrawNonce, transactionHash, timestamp, sourceToken, targetToken } }`;
+      const query = `query { lnv2RelayUpdateRecords(first: 20, orderBy: nonce, orderDirection: asc, where: {updateType_in: [${RelayUpdateType.SLASH}, ${RelayUpdateType.WITHDRAW}]}, skip: ${latestNonce}) { id, remoteChainId, provider, margin, updateType, withdrawNonce, transactionHash, timestamp, sourceToken, targetToken } }`;
       const records = await axios
         .post(indexInfo.url, {
           query: query,
@@ -652,7 +652,7 @@ export class Lnv2Service implements OnModuleInit {
         );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
-      const query = `query { lnv2RelayUpdateRecords(first: 10, orderBy: nonce, orderDirection: asc, where: {updateType: ${RelayUpdateType.PROVIDER_UPDATE}}, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, baseFee, liquidityFeeRate } }`;
+      const query = `query { lnv2RelayUpdateRecords(first: 20, orderBy: nonce, orderDirection: asc, where: {updateType: ${RelayUpdateType.PROVIDER_UPDATE}}, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, baseFee, liquidityFeeRate } }`;
 
       const records = await axios
         .post(indexInfo.url, {
@@ -764,7 +764,7 @@ export class Lnv2Service implements OnModuleInit {
         );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
-      const query = `query { lnv2RelayUpdateRecords(first: 10, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, margin, baseFee, liquidityFeeRate } }`;
+      const query = `query { lnv2RelayUpdateRecords(first: 20, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, margin, baseFee, liquidityFeeRate } }`;
 
       const records = await axios
         .post(indexInfo.url, {
