@@ -22,7 +22,7 @@ export class Lnv3Service implements OnModuleInit {
 
   protected fetchSendDataInterval = 5000;
 
-  private readonly takeEachTime = 10;
+  private readonly takeEachTime = 6;
   private skip = new Array(this.transferService.transfers.length).fill(0);
 
   constructor(
@@ -93,7 +93,7 @@ export class Lnv3Service implements OnModuleInit {
           }).then((res) => res.data?.data?.lnv3TransferRecords.items);
       } else {
           const url = transfer.url;
-          const query = `query { lnv3TransferRecords(first: 20, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }`;
+          const query = `query { lnv3TransferRecords(first: 10, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }`;
           return await axios
           .post(url, {
               query: query,
@@ -112,7 +112,7 @@ export class Lnv3Service implements OnModuleInit {
               variables: null,
           }).then((res) => res.data?.data?.lnv3RelayUpdateRecords.items);
       } else {
-          const query = `query { lnv3RelayUpdateRecords(first: 20, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, penalty, baseFee, liquidityFeeRate, transferLimit, paused } }`;
+          const query = `query { lnv3RelayUpdateRecords(first: 10, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, penalty, baseFee, liquidityFeeRate, transferLimit, paused } }`;
           return await axios.post(transfer.url, {
               query: query,
               variables: null,
@@ -169,23 +169,23 @@ export class Lnv3Service implements OnModuleInit {
             this.fetchCache[index].latestNonce = latestNonce;
             continue;
           }
-          const fromToken = this.getTokenInfo(transfer, record.sourceToken);
-          const toToken = this.getTokenInfo(toChain, record.targetToken);
+          const fromToken = this.getTokenInfo(transfer, record.sourceToken.toLowerCase());
+          const toToken = this.getTokenInfo(toChain, record.targetToken.toLowerCase());
 
           const responseHash = '';
           const result = RecordStatus.pending;
           const endTime = 0;
           await this.aggregationService.createHistoryRecord({
             id: this.genID(transfer, transfer.chainId.toString(), record.remoteChainId, record.id),
-            relayer: record.provider,
+            relayer: record.provider.toLowerCase(),
             fromChain: transfer.chain,
             toChain: toChain.chain,
             bridge: `lnv3`,
             messageNonce: record.messageNonce,
             nonce: latestNonce + 1,
             requestTxHash: record.transactionHash,
-            sender: record.sender,
-            recipient: record.receiver,
+            sender: record.sender.toLowerCase(),
+            recipient: record.receiver.toLowerCase(),
             sendToken: fromToken.symbol,
             recvToken: toToken.symbol,
             sendAmount: record.sourceAmount,
@@ -197,8 +197,8 @@ export class Lnv3Service implements OnModuleInit {
             feeToken: fromToken.symbol,
             responseTxHash: responseHash,
             reason: '',
-            sendTokenAddress: record.sourceToken,
-            recvTokenAddress: record.targetToken,
+            sendTokenAddress: record.sourceToken.toLowerCase(),
+            recvTokenAddress: record.targetToken.toLowerCase(),
             endTxHash: '',
             confirmedBlocks: '',
             needWithdrawLiquidity: !record.hasWithdrawn,
@@ -281,7 +281,7 @@ export class Lnv3Service implements OnModuleInit {
                 responseTxHash: relayRecord.transactionHash,
                 endTxHash: endTxHash,
                 endTime: Number(relayRecord.timestamp),
-                relayer: relayRecord.relayer,
+                relayer: relayRecord.relayer.toLowerCase(),
                 needWithdrawLiquidity: needWithdrawLiquidity,
                 lastRequestWithdraw: requestWithdrawTimestamp,
               };
@@ -376,8 +376,8 @@ export class Lnv3Service implements OnModuleInit {
         const id = this.genRelayInfoID(
           transfer.chainId,
           record.remoteChainId,
-          record.provider,
-          record.sourceToken
+          record.provider.toLowerCase(),
+          record.sourceToken.toLowerCase(),
         );
         const relayerInfo = await this.aggregationService.queryLnBridgeRelayInfoById({
           id: id,
@@ -391,7 +391,7 @@ export class Lnv3Service implements OnModuleInit {
         }
         const penalty = record.penalty ?? '0';
         if (!relayerInfo) {
-          const fromToken = this.getTokenInfo(transfer, record.sourceToken);
+          const fromToken = this.getTokenInfo(transfer, record.sourceToken.toLowerCase());
           const channel = this.getMessageChannel(transfer, toChain.chain);
           if (fromToken === null || channel === null) {
             latestNonce += 1;
@@ -407,8 +407,8 @@ export class Lnv3Service implements OnModuleInit {
             toChain: toChain.chain,
             bridge: `lnv3`,
             nonce: latestNonce + 1,
-            relayer: record.provider,
-            sendToken: record.sourceToken,
+            relayer: record.provider.toLowerCase(),
+            sendToken: record.sourceToken.toLowerCase(),
             tokenKey: fromToken.key,
             transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),

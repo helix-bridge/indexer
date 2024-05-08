@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "ponder dev",
-    "test": "cp ponder.config.ts.testnet ponder.config.ts; ponder start",
     "start": "ponder start",
+    "testnet": "cp ponder.config.ts.testnet ponder.config.ts; ponder start",
+    "mainnet": "cp ponder.config.ts.mainnet ponder.config.ts; ponder start -p 4005",
     "codegen": "ponder codegen",
     "lint": "eslint .",
     "typecheck": "tsc"

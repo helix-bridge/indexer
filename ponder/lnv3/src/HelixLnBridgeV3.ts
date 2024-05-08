@@ -161,7 +161,7 @@ ponder.on("HelixLnBridgeV3:PenaltyReserveUpdated", async ({ event, context }) =>
   const { Lnv3PenaltyReserve } = context.db;
   const provider = event.args.provider;
   const sourceToken = event.args.sourceToken;
-  let id = `${context.network.chainId}-${provider}-${sourceToken}`;
+  let id = `${context.network.chainId}-${provider.toLowerCase()}-${sourceToken.toLowerCase()}`;
 
   await Lnv3PenaltyReserve.upsert({
       id: id,
