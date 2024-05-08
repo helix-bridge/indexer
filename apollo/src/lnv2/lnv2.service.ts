@@ -48,7 +48,7 @@ export class Lnv2Service implements OnModuleInit {
     name: 'lnBridgeV2',
     fetchHistoryDataFirst: 10,
     fetchSendDataInterval: 10000,
-    takeEachTime: 10,
+    takeEachTime: 5,
   };
 
   // default cache, opposite cache

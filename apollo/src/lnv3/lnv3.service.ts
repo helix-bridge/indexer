@@ -20,9 +20,9 @@ export class Lnv3Service implements OnModuleInit {
     .fill('')
     .map((_) => ({ latestNonce: -1, latestRelayerInfoNonce: -1, isSyncingHistory: false }));
 
-  protected fetchSendDataInterval = 10000;
+  protected fetchSendDataInterval = 5000;
 
-  private readonly takeEachTime = 50;
+  private readonly takeEachTime = 10;
   private skip = new Array(this.transferService.transfers.length).fill(0);
 
   constructor(
