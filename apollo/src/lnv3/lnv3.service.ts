@@ -171,7 +171,6 @@ export class Lnv3Service implements OnModuleInit {
             this.fetchCache[index].latestNonce = latestNonce;
             continue;
           }
-          // the deprecated chain
           if (toChain.url === null) {
             continue;
           }
