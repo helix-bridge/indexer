@@ -706,6 +706,15 @@ export class TransferService extends BaseTransferServiceT2 {
       ],
     },
     {
+      chainId: 167008,
+      chain: 'taiko-old',
+      url: null,
+      level0Indexer: null,
+      bridge: 'lnv3',
+      symbols: [],
+      channels: [],
+    },
+    {
       chainId: 80085,
       chain: 'bera',
       url: this.beraEndpoint,
