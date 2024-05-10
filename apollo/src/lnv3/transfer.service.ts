@@ -618,7 +618,7 @@ export class TransferService extends BaseTransferServiceT2 {
           channel: 'layerzero',
         },
         {
-          chain: 'taiko',
+          chain: 'taiko-hekla',
           channel: 'layerzero',
         },
         {
@@ -675,8 +675,8 @@ export class TransferService extends BaseTransferServiceT2 {
       ],
     },
     {
-      chainId: 167008,
-      chain: 'taiko',
+      chainId: 167009,
+      chain: 'taiko-hekla',
       url: this.taikoEndpoint,
       level0Indexer: Level0Indexer.ponder,
       bridge: 'lnv3',
@@ -684,16 +684,16 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           key: 'USDC',
           symbol: 'USDC',
-          address: '0x3F7DF5866591e7E48D18C8EbeAE61Bc343a63283',
-          outerAddress: '0x3F7DF5866591e7E48D18C8EbeAE61Bc343a63283',
+          address: '0x89AF830781A2C1d3580Db930bea11094F55AfEae',
+          outerAddress: '0x89AF830781A2C1d3580Db930bea11094F55AfEae',
           protocolFee: 1000000000000000,
           decimals: 18,
         },
         {
           key: 'USDT',
           symbol: 'USDT',
-          address: '0x89AF830781A2C1d3580Db930bea11094F55AfEae',
-          outerAddress: '0x89AF830781A2C1d3580Db930bea11094F55AfEae',
+          address: '0x463D1730a8527CA58d48EF70C7460B9920346567',
+          outerAddress: '0x463D1730a8527CA58d48EF70C7460B9920346567',
           protocolFee: 1000000000000000,
           decimals: 18,
         },
