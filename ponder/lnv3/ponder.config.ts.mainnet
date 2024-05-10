@@ -1,0 +1,100 @@
+import { createConfig } from "@ponder/core";
+import { http } from "viem";
+
+import { HelixLnBridgeV3Abi } from "./abis/HelixLnBridgeV3Abi";
+
+export default createConfig({
+  networks: {
+    "arbitrum": {
+      chainId: 42161,
+      transport: http(process.env.PONDER_RPC_URL_42161),
+      pollingInterval: 1000,
+      maxRequestsPerSecond: 2,
+      maxHistoricalTaskConcurrency: 3
+    },
+    "optimistic": {
+      chainId: 10,
+      transport: http(process.env.PONDER_RPC_URL_10),
+      pollingInterval: 1000,
+      maxRequestsPerSecond: 1,
+      maxHistoricalTaskConcurrency: 1
+    },
+    "polygon-pos": {
+      chainId: 137,
+      transport: http(process.env.PONDER_RPC_URL_137),
+      pollingInterval: 1000,
+      maxRequestsPerSecond: 1,
+      maxHistoricalTaskConcurrency: 1
+    },
+    "astar-zkevm": {
+      chainId: 3776,
+      transport: http(process.env.PONDER_RPC_URL_3776),
+      pollingInterval: 1000,
+      maxRequestsPerSecond: 1,
+      maxHistoricalTaskConcurrency: 1
+    },
+    "linea": {
+      chainId: 59144,
+      transport: http(process.env.PONDER_RPC_URL_59144),
+      pollingInterval: 1000,
+      maxRequestsPerSecond: 1,
+      maxHistoricalTaskConcurrency: 1
+    },
+    "blast": {
+      chainId: 81457,
+      transport: http(process.env.PONDER_RPC_URL_81457),
+      pollingInterval: 1000,
+      maxRequestsPerSecond: 1,
+      maxHistoricalTaskConcurrency: 1
+    },
+    "darwinia": {
+      chainId: 46,
+      transport: http(process.env.PONDER_RPC_URL_46),
+      pollingInterval: 1000,
+      maxRequestsPerSecond: 1,
+      maxHistoricalTaskConcurrency: 1
+    },
+    "mantle": {
+      chainId: 5000,
+      transport: http(process.env.PONDER_RPC_URL_5000),
+      pollingInterval: 1000,
+      maxRequestsPerSecond: 1,
+      maxHistoricalTaskConcurrency: 1
+    },
+  },
+  contracts: {
+    HelixLnBridgeV3: {
+      abi: HelixLnBridgeV3Abi,
+      maxBlockRange: 2000,
+      address: "0xbA5D580B18b6436411562981e02c8A9aA1776D10",
+      network: {
+        "arbitrum": {
+          startBlock: 175050634,
+        },
+        "optimistic": {
+          startBlock: 115540206,
+        },
+        "polygon-pos": {
+          startBlock: 52848029,
+        },
+        "astar-zkevm": {
+          address: "0xD476650e03a45E70202b0bcAfa04E1513920f83a",
+          startBlock: 1039985,
+        },
+        "linea": {
+          startBlock: 1938417,
+        },
+        "blast": {
+          address: "0xB180D7DcB5CC161C862aD60442FA37527546cAFC",
+          startBlock: 459939,
+        },
+        "darwinia": {
+          startBlock: 2013481,
+        },
+        "mantle": {
+          startBlock: 51738488,
+        }
+      },
+    },
+  },
+});

@@ -135,7 +135,7 @@ export function handleLnProviderUpdated(event: LnProviderUpdated): void {
 
 export function handlePenaltyReserveUpdated(event: PenaltyReserveUpdated): void {
   const provider = event.params.provider;
-  const sourceToken = event.params.provider;
+  const sourceToken = event.params.sourceToken;
   let id = `${provider.toHexString()}-${sourceToken.toHexString()}`;
   let entity = Lnv3PenaltyReserve.load(id);
   if (entity == null) {
