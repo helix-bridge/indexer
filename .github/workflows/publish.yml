@@ -4,16 +4,15 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
-# on:
-#   pull_request:
 
 env:
   DOCKER_REGISTRY: ghcr.io
 
 jobs:
-  publish-apollo:
-    name: Publish apollo
+  publish-indexer:
+    name: Publish indexer
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -33,12 +32,24 @@ jobs:
       - uses: olegtarasov/get-tag@v2.1
         id: tag-name
 
-      - name: Build and push
+      - name: Build apollo
         uses: docker/build-push-action@v3
         with:
           push: true
           context: .
           file: apollo/Dockerfile
           tags: |
-            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ steps.short-sha.outputs.sha }}
-            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:${{ steps.tag-name.outputs.tag }}
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/apollo:sha-${{ steps.short-sha.outputs.sha }}
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/apollo:${{ steps.tag-name.outputs.tag }}
+
+      - name: Build ponder
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          context: .
+          file: ponder/lnv3/Dockerfile
+          tags: |
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:sha-${{ steps.short-sha.outputs.sha }}
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:${{ steps.tag-name.outputs.tag }}
+
+
