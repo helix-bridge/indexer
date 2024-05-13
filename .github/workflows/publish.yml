@@ -32,7 +32,7 @@ jobs:
       - uses: olegtarasov/get-tag@v2.1
         id: tag-name
 
-      - name: Build apollo
+      - name: Build apollo with sha
         uses: docker/build-push-action@v3
         with:
           push: true
@@ -40,16 +40,32 @@ jobs:
           file: apollo/Dockerfile
           tags: |
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/apollo:sha-${{ steps.short-sha.outputs.sha }}
-            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/apollo:${{ steps.tag-name.outputs.tag }}
 
-      - name: Build ponder
+      - name: Build apollo with tag
         uses: docker/build-push-action@v3
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
           push: true
           context: .
-          file: ponder/lnv3/Dockerfile
+          file: apollo/Dockerfile
+          tags: |
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/apollo:${{ steps.tag-name.outputs.tag }}
+
+      - name: Build ponder with sha
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          context: ponder/lnv3
           tags: |
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:sha-${{ steps.short-sha.outputs.sha }}
+
+      - name: Build ponder with tag
+        uses: docker/build-push-action@v3
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          push: true
+          context: ponder/lnv3
+          tags: |
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:${{ steps.tag-name.outputs.tag }}
 
 
