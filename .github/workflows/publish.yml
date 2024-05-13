@@ -4,9 +4,8 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
-# on:
-#   pull_request:
 
 env:
   DOCKER_REGISTRY: ghcr.io
