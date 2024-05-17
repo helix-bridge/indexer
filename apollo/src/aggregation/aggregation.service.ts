@@ -157,7 +157,7 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
       skip,
       take,
       where,
-      orderBy,
+      orderBy: orderBy ?? { startTime: Prisma.SortOrder.asc },
     });
     const total = await this.historyRecord.count({ where });
 
