@@ -21,6 +21,7 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly taikoEndpoint = this.configService.get<string>('TAIKO_LNV3_ENDPOINT');
   private readonly astarZkEVMEndpoint = this.configService.get<string>('ASTAR_ZKEVM_LNV3_ENDPOINT');
   private readonly morphEndpoint = this.configService.get<string>('MORPH_LNV3_ENDPOINT');
+  private readonly moonbeamEndpoint = this.configService.get<string>('MOONBEAM_LNV3_ENDPOINT');
 
   public readonly ponderEndpoint = this.configService.get<string>('PONDER_LNV3_ENDPOINT');
 
@@ -472,6 +473,22 @@ export class TransferService extends BaseTransferServiceT2 {
           protocolFee: 30000000000000000000,
           decimals: 18,
         },
+        {
+          key: 'PINK',
+          symbol: 'ahPINK',
+          address: '0x0000000000000000000000000000000000000404',
+          outerAddress: '0x0000000000000000000000000000000000000404',
+          protocolFee: 10000000,
+          decimals: 10,
+        },
+        {
+          key: 'USDT',
+          symbol: 'ahUSDT',
+          address: '0x0000000000000000000000000000000000000403',
+          outerAddress: '0x0000000000000000000000000000000000000403',
+          protocolFee: 1000,
+          decimals: 6,
+        },
       ],
       channels: [
         {
@@ -480,6 +497,10 @@ export class TransferService extends BaseTransferServiceT2 {
         },
         {
           chain: 'polygon',
+          channel: 'msgline',
+        },
+        {
+          chain: 'moonbeam',
           channel: 'msgline',
         },
       ],
@@ -527,6 +548,37 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           chain: 'arbitrum',
           channel: 'layerzero',
+        },
+      ],
+    },
+    {
+      chainId: 1284,
+      chain: 'moonbeam',
+      url: this.moonbeamEndpoint,
+      level0Indexer: Level0Indexer.thegraph,
+      bridge: 'lnv3',
+      symbols: [
+        {
+          key: 'PINK',
+          symbol: 'xcPINK',
+          address: '0xffffffff30478fafbe935e466da114e14fb3563d',
+          outerAddress: '0xffffffff30478fafbe935e466da114e14fb3563d',
+          protocolFee: 10000000,
+          decimals: 10,
+        },
+        {
+          key: 'USDT',
+          symbol: 'xcUSDT',
+          address: '0xFFFFFFfFea09FB06d082fd1275CD48b191cbCD1d',
+          outerAddress: '0xFFFFFFfFea09FB06d082fd1275CD48b191cbCD1d',
+          protocolFee: 1000,
+          decimals: 6,
+        },
+      ],
+      channels: [
+        {
+          chain: 'darwinia-dvm',
+          channel: 'msgline',
         },
       ],
     },

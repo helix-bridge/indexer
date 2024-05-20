@@ -21,6 +21,7 @@
     "build-darwinia": "sh generate.sh darwinia2 0xbA5D580B18b6436411562981e02c8A9aA1776D10 2013481 && graph codegen && graph build",
     "build-blast": "sh generate.sh blast-mainnet 0xB180D7DcB5CC161C862aD60442FA37527546cAFC 459939 && graph codegen && graph build",
     "build-astar-zkevm": "sh generate.sh astar-zkevm-mainnet 0xD476650e03a45E70202b0bcAfa04E1513920f83a 1039985 && graph codegen && graph build",
+    "build-moonbeam": "sh generate.sh moonbeam 0xbA5D580B18b6436411562981e02c8A9aA1776D10 6154143 && graph codegen && graph build",
     "create-remote-dev": "graph create --access-token ${KEY} --node https://thegraph-g2.darwinia.network/helix/deploy/ lnv3/${NETWORK}",
     "deploy-remote-dev": "graph deploy --access-token $KEY --node https://thegraph-g2.darwinia.network/helix/deploy/ --ipfs https://ipfs.network.thegraph.com lnv3/$NETWORK",
     "create-remote-pro": "graph create --access-token ${KEY} --node https://thegraph.darwinia.network/helix/deploy/ lnv3/${NETWORK}",
