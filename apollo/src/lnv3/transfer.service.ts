@@ -158,6 +158,10 @@ export class TransferService extends BaseTransferServiceT2 {
           chain: 'astar-zkevm',
           channel: 'layerzero',
         },
+        {
+          chain: 'moonbeam',
+          channel: 'layerzero',
+        }
       ],
     },
     {
@@ -580,6 +584,10 @@ export class TransferService extends BaseTransferServiceT2 {
           chain: 'darwinia-dvm',
           channel: 'msgline',
         },
+        {
+          chain: 'arbitrum',
+          channel: 'layerzero',
+        }
       ],
     },
   ];
