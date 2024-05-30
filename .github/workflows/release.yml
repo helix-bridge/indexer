@@ -11,8 +11,8 @@ env:
   DOCKER_REGISTRY: ghcr.io
 
 jobs:
-  publish-indexer:
-    name: Publish indexer
+  publish-docker-image:
+    name: Publish 
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -68,4 +68,24 @@ jobs:
           tags: |
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:${{ steps.tag-name.outputs.tag }}
 
+
+  deploy-railway:
+    name: Deploy railway
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Deploy apollo-prd
+        uses: fewensa/railway-deploy@main
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN_PRD }}
+          service: "apollo-prd"
+
+      - name: Deploy apollo-stg
+        uses: fewensa/railway-deploy@main
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN_STG }}
+          service: "apollo-stg"
 
