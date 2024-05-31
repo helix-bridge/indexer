@@ -82,7 +82,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          environment_id: "97eba9bb-0d0e-43ce-a9c1-5ea78b7891ef"
+          environment_id: "5ff5ac60-0640-4f67-9ab1-0c96847a1a32"
           service_id: "15b7ef1b-90f0-4fae-8404-97a4d790c271"
 
       - name: Deploy apollo-stg
