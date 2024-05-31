@@ -40,6 +40,7 @@ jobs:
           file: apollo/Dockerfile
           tags: |
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/apollo:sha-${{ steps.short-sha.outputs.sha }}
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/apollo:staging
 
       - name: Build apollo with tag
         uses: docker/build-push-action@v3
@@ -50,6 +51,7 @@ jobs:
           file: apollo/Dockerfile
           tags: |
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/apollo:${{ steps.tag-name.outputs.tag }}
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/apollo:latest
 
       - name: Build ponder with sha
         uses: docker/build-push-action@v3
@@ -58,6 +60,7 @@ jobs:
           context: ponder/lnv3
           tags: |
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:sha-${{ steps.short-sha.outputs.sha }}
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:staging
 
       - name: Build ponder with tag
         uses: docker/build-push-action@v3
@@ -67,27 +70,28 @@ jobs:
           context: ponder/lnv3
           tags: |
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:${{ steps.tag-name.outputs.tag }}
-
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:latest
 
   deploy-railway:
     name: Deploy railway
     runs-on: ubuntu-latest
+    needs: [publish-docker-image]
     steps:
       - uses: actions/checkout@v2
 
       - name: Deploy apollo-prd
-        uses: fewensa/railway-deploy@main
+        uses: fewensa/railway-redeploy@main
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN_PRD }}
-          service: apollo-prd
-          path: apollo
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          environment_id: "97eba9bb-0d0e-43ce-a9c1-5ea78b7891ef"
+          service_id: "15b7ef1b-90f0-4fae-8404-97a4d790c271"
 
       - name: Deploy apollo-stg
-        uses: fewensa/railway-deploy@main
+        uses: fewensa/railway-redeploy@main
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN_STG }}
-          service: apollo-stg
-          path: apollo
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          environment_id: "97eba9bb-0d0e-43ce-a9c1-5ea78b7891ef"
+          service_id: "07ce396e-d868-459e-a0f2-5563483d7aba"
 
