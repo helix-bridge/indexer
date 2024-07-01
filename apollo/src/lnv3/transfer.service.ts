@@ -17,6 +17,7 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly scrollEndpoint = this.configService.get<string>('SCROLL_LNV3_ENDPOINT');
   private readonly darwiniaEndpoint = this.configService.get<string>('DARWINIA_LNV3_ENDPOINT');
   private readonly blastEndpoint = this.configService.get<string>('BLAST_LNV3_ENDPOINT');
+  private readonly baseEndpoint = this.configService.get<string>('BASE_LNV3_ENDPOINT');
   private readonly beraEndpoint = this.configService.get<string>('BERA_LNV3_ENDPOINT');
   private readonly taikoEndpoint = this.configService.get<string>('TAIKO_LNV3_ENDPOINT');
   private readonly astarZkEVMEndpoint = this.configService.get<string>('ASTAR_ZKEVM_LNV3_ENDPOINT');
@@ -823,6 +824,29 @@ export class TransferService extends BaseTransferServiceT2 {
       channels: [
         {
           chain: 'arbitrum-sepolia',
+          channel: 'layerzero',
+        },
+      ],
+    },
+    {
+      chainId: 84532,
+      chain: 'base-sepolia',
+      url: this.baseEndpoint,
+      level0Indexer: Level0Indexer.thegraph,
+      bridge: 'lnv3',
+      symbols: [
+        {
+          key: 'USDT',
+          symbol: 'USDT',
+          address: '0x61B6B8c7C00aA7F060a2BEDeE6b11927CC9c3eF1',
+          outerAddress: '0x61B6B8c7C00aA7F060a2BEDeE6b11927CC9c3eF1',
+          protocolFee: 1000000000000000,
+          decimals: 18,
+        },
+      ],
+      channels: [
+        {
+          chain: 'sepolia',
           channel: 'layerzero',
         },
       ],
