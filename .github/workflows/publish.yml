@@ -78,18 +78,18 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Deploy apollo-prd
-        uses: fewensa/action-railway-redeploy@main
+        uses: fewensa/actions/railway-redeploy@main
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          environment_id: "5ff5ac60-0640-4f67-9ab1-0c96847a1a32"
-          service_id: "15b7ef1b-90f0-4fae-8404-97a4d790c271"
+          environment_id: "9d6071f4-e0b1-4ce3-8140-e8dc0bffba16"
+          service_id: "0aa747bc-37f5-43dd-a550-927db7c97f03"
 
       - name: Deploy apollo-stg
-        uses: fewensa/action-railway-redeploy@main
+        uses: fewensa/action/railway-redeploy@main
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         with:
           railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          environment_id: "97eba9bb-0d0e-43ce-a9c1-5ea78b7891ef"
-          service_id: "07ce396e-d868-459e-a0f2-5563483d7aba"
+          environment_id: "eb4af12e-a303-420f-929f-bcd1432017ba"
+          service_id: "ab41e9d2-8ee4-4c23-b6fe-3e60a37cbec7"
 
