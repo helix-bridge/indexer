@@ -175,59 +175,6 @@ export class AggregationResolver {
     });
   }
 
-  /**
-   * @deprecated instead, please use signConfirmedBlock
-   **/
-  @Mutation()
-  async updateConfirmedBlock(@Args('id') id: string, @Args('block') block: string) {
-    await this.aggregationService.updateConfirmedBlock({
-      where: { id: id },
-      block: block,
-    });
-  }
-
-  /**
-   * @deprecated instead, please use signHeartBeat
-   **/
-  @Mutation()
-  async lnBridgeHeartBeat(
-    @Args('fromChainId') fromChainId: string,
-    @Args('toChainId') toChainId: string,
-    @Args('version') version: string,
-    @Args('relayer') relayer: string,
-    @Args('tokenAddress') tokenAddress: string,
-    @Args('softTransferLimit') softTransferLimit: string
-  ) {
-    const id = `${version}-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
-    const now = Math.floor(Date.now() / 1000);
-
-    const updateData = {
-      heartbeatTimestamp: now,
-    };
-
-    if (softTransferLimit !== undefined && softTransferLimit !== '0') {
-      // the softTransferLimit is on target chain, transfer it to source chain
-      const transferLimit = this.aggregationService.targetAmountToSourceAmount({
-        amount: softTransferLimit,
-        sourceChainId: Number(fromChainId),
-        targetChainId: Number(toChainId),
-        sourceToken: tokenAddress,
-        version,
-      });
-      updateData['softTransferLimit'] = transferLimit;
-    }
-
-    try {
-      await this.aggregationService.updateLnBridgeRelayInfo({
-        where: { id: id },
-        data: updateData,
-      });
-    } catch (e) {
-      console.log(`heart beat failed ${id}, exception: ${e}`);
-      return;
-    }
-  }
-
   @Mutation()
   async signConfirmedBlock(
     @Args('id') id: string,
