@@ -17,6 +17,7 @@ export class AggregationResolver {
     '0x3f63bce51d3c6665bfe919816780a2109d42238d': '0x000000000bb6a011db294ce3f3423f00eac4959e',
     '0x9c02a1a56474247a48f1090070d2817a2a5607d9': '0x0000000cf324fed44fb52e9a519cbb5bd8217f77',
     '0x44c224d93b0f5e30b1a930d362e2bcfbb7807078': '0x0000000cf324fed44fb52e9a519cbb5bd8217f77',
+    '0x3b9e571adecb0c277486036d6097e9c2cccfa9d9': '0x0b425baaf0443275d40ce854734b06e7e976387d',
   };
   constructor(private aggregationService: AggregationService) {}
 
