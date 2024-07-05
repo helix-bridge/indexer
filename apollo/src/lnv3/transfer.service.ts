@@ -635,6 +635,10 @@ export class TransferService extends BaseTransferServiceT2 {
           chain: 'zksync-sepolia',
           channel: 'layerzero',
         },
+        {
+          chain: 'base-sepolia',
+          channel: 'layerzero',
+        },
       ],
     },
     {
@@ -841,6 +845,14 @@ export class TransferService extends BaseTransferServiceT2 {
           address: '0x61B6B8c7C00aA7F060a2BEDeE6b11927CC9c3eF1',
           outerAddress: '0x61B6B8c7C00aA7F060a2BEDeE6b11927CC9c3eF1',
           protocolFee: 1000000000000000,
+          decimals: 18,
+        },
+        {
+          key: 'ETH',
+          symbol: 'ETH',
+          address: '0x0000000000000000000000000000000000000000',
+          outerAddress: '0x0000000000000000000000000000000000000000',
+          protocolFee: 10000000000000,
           decimals: 18,
         },
       ],
