@@ -18,6 +18,7 @@ export class AggregationResolver {
     '0x9c02a1a56474247a48f1090070d2817a2a5607d9': '0x0000000cf324fed44fb52e9a519cbb5bd8217f77',
     '0x44c224d93b0f5e30b1a930d362e2bcfbb7807078': '0x0000000cf324fed44fb52e9a519cbb5bd8217f77',
     '0x3b9e571adecb0c277486036d6097e9c2cccfa9d9': '0x0b425baaf0443275d40ce854734b06e7e976387d',
+    '0x2fdec62e57e1a77db6984424c01a3c13fbca7cc1': '0x00000c377b096e0c904d7736be14e653e500481c',
   };
   constructor(private aggregationService: AggregationService) {}
 
@@ -173,59 +174,6 @@ export class AggregationResolver {
       where,
       orderBy,
     });
-  }
-
-  /**
-   * @deprecated instead, please use signConfirmedBlock
-   **/
-  @Mutation()
-  async updateConfirmedBlock(@Args('id') id: string, @Args('block') block: string) {
-    await this.aggregationService.updateConfirmedBlock({
-      where: { id: id },
-      block: block,
-    });
-  }
-
-  /**
-   * @deprecated instead, please use signHeartBeat
-   **/
-  @Mutation()
-  async lnBridgeHeartBeat(
-    @Args('fromChainId') fromChainId: string,
-    @Args('toChainId') toChainId: string,
-    @Args('version') version: string,
-    @Args('relayer') relayer: string,
-    @Args('tokenAddress') tokenAddress: string,
-    @Args('softTransferLimit') softTransferLimit: string
-  ) {
-    const id = `${version}-${fromChainId}-${toChainId}-${relayer.toLowerCase()}-${tokenAddress.toLowerCase()}`;
-    const now = Math.floor(Date.now() / 1000);
-
-    const updateData = {
-      heartbeatTimestamp: now,
-    };
-
-    if (softTransferLimit !== undefined && softTransferLimit !== '0') {
-      // the softTransferLimit is on target chain, transfer it to source chain
-      const transferLimit = this.aggregationService.targetAmountToSourceAmount({
-        amount: softTransferLimit,
-        sourceChainId: Number(fromChainId),
-        targetChainId: Number(toChainId),
-        sourceToken: tokenAddress,
-        version,
-      });
-      updateData['softTransferLimit'] = transferLimit;
-    }
-
-    try {
-      await this.aggregationService.updateLnBridgeRelayInfo({
-        where: { id: id },
-        data: updateData,
-      });
-    } catch (e) {
-      console.log(`heart beat failed ${id}, exception: ${e}`);
-      return;
-    }
   }
 
   @Mutation()
