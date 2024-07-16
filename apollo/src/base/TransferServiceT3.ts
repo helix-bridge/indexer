@@ -1,4 +1,5 @@
 import { ConfigService } from '@nestjs/config';
+import { HelixChainConf } from 'helixconf';
 
 /*
 This model is suitable for multi-chain interconnection scenarios,
@@ -30,30 +31,10 @@ export interface BridgeBaseConfigure {
   takeEachTime: number;
 }
 
-export interface RemoteInfo {
-  toChain: number;
-  toSymbol: string;
-  toAddress: string;
-  protocolFee: number;
-  decimals: number;
-  bridgeType: string;
-  channel: string;
-}
-
-export interface Token {
-  key: string;
-  fromSymbol: string;
-  fromAddress: string;
-  decimals: number;
-  remoteInfos: RemoteInfo[];
-}
-
 export interface PartnerT3 {
-  chainId: number;
-  chainName: string;
   defaultEndpoint: string;
   oppositeEndpoint: string;
-  tokens: Token[];
+  chainConfig: HelixChainConf;
 }
 
 export abstract class BaseTransferServiceT3 {

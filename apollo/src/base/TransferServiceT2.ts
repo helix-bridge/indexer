@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { AddressToken } from './AddressToken';
+import { HelixChainConf } from 'helixconf';
 
 /*
 This model is suitable for multi-chain interconnection scenarios,
@@ -36,28 +37,10 @@ export interface BridgeBaseConfigure {
   takeEachTime: number;
 }
 
-export interface PartnerSymbol {
-  key: string;
-  symbol: string;
-  address: string;
-  outerAddress: string;
-  protocolFee: number;
-  decimals: number;
-}
-
-export interface Channel {
-  chain: string;
-  channel: string;
-}
-
 export interface PartnerT2 {
-  chainId: number;
-  chain: string;
-  url: string; // record api endpoint
   level0Indexer: number;
-  bridge: string;
-  symbols: PartnerSymbol[];
-  channels: Channel[];
+  indexerUrl: string;
+  chainConfig: HelixChainConf;
 }
 
 export abstract class BaseTransferServiceT2 extends AddressToken {
