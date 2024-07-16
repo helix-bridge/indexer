@@ -363,81 +363,81 @@ export class Lnv2Service implements OnModuleInit {
 
   // batch get status from target chain on sycing historical phase
   async queryFillInfos(indexInfo: BridgeIndexInfo, latestTimestamp: number) {
-       const url = indexInfo.url;
-       const query = `query { lnv2RelayRecords(first: 30, orderBy: timestamp, orderDirection: asc, where: {timestamp_gt: "${latestTimestamp}", slasher: null}) { id, timestamp, transactionHash, fee } }`;
-       return await axios
-       .post(url, {
-           query: query,
-           variables: null,
-       }).then((res) => res.data?.data?.lnv2RelayRecords);
+    const url = indexInfo.url;
+    const query = `query { lnv2RelayRecords(first: 30, orderBy: timestamp, orderDirection: asc, where: {timestamp_gt: "${latestTimestamp}", slasher: null}) { id, timestamp, transactionHash, fee } }`;
+    return await axios
+      .post(url, {
+        query: query,
+        variables: null,
+      })
+      .then((res) => res.data?.data?.lnv2RelayRecords);
   }
 
   async batchFetchStatus(transfer: PartnerT3, indexInfo: BridgeIndexInfo) {
-      try {
-          let latestTimestamp = this.fetchCache[indexInfo.index].latestFillInfoTimestamp;
-          // stop sync history when timestamp set to zero
-          if (latestTimestamp === 0) {
-              return;
-          } else if (latestTimestamp === -1) {
-              const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
-                  {
-                      toChain: transfer.chainConfig.code,
-                      bridge: this.bridgeName(indexInfo),
-                      result: RecordStatus.success,
-                  },
-                  { nonce: 'desc' }
-              );
-              latestTimestamp = firstRecord ? firstRecord.endTime : -1;
-          }
-          const relayRecords = await this.queryFillInfos(indexInfo, latestTimestamp);
-          if (relayRecords.length === 0) {
-              this.fetchCache[indexInfo.index].latestFillInfoTimestamp = 0;
-              this.logger.log(`lnv2 the batch sync end, chain: ${transfer.chainConfig.code}, lastTime: ${latestTimestamp}`);
-              return;
-          }
-          let batchAddCount = 0;
-          for (const relayRecord of relayRecords) {
-              // ignore slashed transfer
-              let rmvedTransferId = relayRecord.id;
-              if (rmvedTransferId.startsWith(`${transfer.chainConfig.id}-`)) {
-                  rmvedTransferId = rmvedTransferId.replace(`${transfer.chainConfig.id}-`, '');
-              }
-              const uncheckedRecord = await this.aggregationService
-              .queryHistoryRecordFirst({
-                 id: {
-                     endsWith: rmvedTransferId,
-                 }
-              });
-              // the record exist but not finished
-              if (uncheckedRecord?.endTxHash === '' ) {
-                  const updateData = {
-                      result: RecordStatus.success,
-                      responseTxHash: relayRecord.transactionHash,
-                      endTxHash: relayRecord.transactionHash,
-                      endTime: Number(relayRecord.timestamp),
-                  };
-
-                  await this.aggregationService.updateHistoryRecord({
-                      where: { id: uncheckedRecord.id },
-                      data: updateData,
-                  });
-                  this.fetchCache[indexInfo.index].latestFillInfoTimestamp = updateData.endTime;
-                  batchAddCount += 1;
-              } else if (uncheckedRecord) {
-                  this.fetchCache[indexInfo.index].latestFillInfoTimestamp = Number(relayRecord.timestamp);
-              }
-          }
-          if (batchAddCount > 0) {
-              this.logger.log(
-                  `lnv2 [${transfer.chainConfig.code}] batch fetch status, count: ${batchAddCount}`
-              );
-          }
-      } catch(error) {
-          this.logger.warn(`batch fetch lnv2 status failed, error ${error}`);
+    try {
+      let latestTimestamp = this.fetchCache[indexInfo.index].latestFillInfoTimestamp;
+      // stop sync history when timestamp set to zero
+      if (latestTimestamp === 0) {
+        return;
+      } else if (latestTimestamp === -1) {
+        const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
+          {
+            toChain: transfer.chainConfig.code,
+            bridge: this.bridgeName(indexInfo),
+            result: RecordStatus.success,
+          },
+          { nonce: 'desc' }
+        );
+        latestTimestamp = firstRecord ? firstRecord.endTime : -1;
       }
+      const relayRecords = await this.queryFillInfos(indexInfo, latestTimestamp);
+      if (relayRecords.length === 0) {
+        this.fetchCache[indexInfo.index].latestFillInfoTimestamp = 0;
+        this.logger.log(
+          `lnv2 the batch sync end, chain: ${transfer.chainConfig.code}, lastTime: ${latestTimestamp}`
+        );
+        return;
+      }
+      let batchAddCount = 0;
+      for (const relayRecord of relayRecords) {
+        // ignore slashed transfer
+        let rmvedTransferId = relayRecord.id;
+        if (rmvedTransferId.startsWith(`${transfer.chainConfig.id}-`)) {
+          rmvedTransferId = rmvedTransferId.replace(`${transfer.chainConfig.id}-`, '');
+        }
+        const uncheckedRecord = await this.aggregationService.queryHistoryRecordFirst({
+          id: {
+            endsWith: rmvedTransferId,
+          },
+        });
+        // the record exist but not finished
+        if (uncheckedRecord?.endTxHash === '') {
+          const updateData = {
+            result: RecordStatus.success,
+            responseTxHash: relayRecord.transactionHash,
+            endTxHash: relayRecord.transactionHash,
+            endTime: Number(relayRecord.timestamp),
+          };
+
+          await this.aggregationService.updateHistoryRecord({
+            where: { id: uncheckedRecord.id },
+            data: updateData,
+          });
+          this.fetchCache[indexInfo.index].latestFillInfoTimestamp = updateData.endTime;
+          batchAddCount += 1;
+        } else if (uncheckedRecord) {
+          this.fetchCache[indexInfo.index].latestFillInfoTimestamp = Number(relayRecord.timestamp);
+        }
+      }
+      if (batchAddCount > 0) {
+        this.logger.log(
+          `lnv2 [${transfer.chainConfig.code}] batch fetch status, count: ${batchAddCount}`
+        );
+      }
+    } catch (error) {
+      this.logger.warn(`batch fetch lnv2 status failed, error ${error}`);
+    }
   }
-
-
 
   // fetch status from target chain and source chain(slash result)
   // 1. relayed, finished
@@ -454,7 +454,7 @@ export class Lnv2Service implements OnModuleInit {
             fromChain: transfer.chainConfig.code,
             bridge: this.bridgeName(indexInfo),
             endTxHash: '',
-          }
+          },
         })
         .then((result) => result.records);
 
@@ -543,11 +543,15 @@ export class Lnv2Service implements OnModuleInit {
   }
 
   private findPartnerByChainId(chainId: number) {
-    return this.transferService.transfers.find((item) => Number(item.chainConfig.id) === chainId) ?? null;
+    return (
+      this.transferService.transfers.find((item) => Number(item.chainConfig.id) === chainId) ?? null
+    );
   }
 
   private findPartnerByChainName(chainName: string) {
-    return this.transferService.transfers.find((item) => item.chainConfig.code === chainName) ?? null;
+    return (
+      this.transferService.transfers.find((item) => item.chainConfig.code === chainName) ?? null
+    );
   }
 
   private findTokenPair(
@@ -586,9 +590,10 @@ export class Lnv2Service implements OnModuleInit {
       );
       return null;
     }
-    const targetInfo = targetPartner.chainConfig.tokens.find(
-      (item) => item.address.toLowerCase() === targetAddress.toLowerCase()
-    ) ?? null;
+    const targetInfo =
+      targetPartner.chainConfig.tokens.find(
+        (item) => item.address.toLowerCase() === targetAddress.toLowerCase()
+      ) ?? null;
     if (targetInfo?.symbol.toLowerCase() !== couple.symbol.to.toLowerCase()) {
       this.logger.warn(
         `verify target token failed ${transfer.chainConfig.code}-${sourceAddress}->${targetChainId}-${targetAddress}, symbol ${targetInfo?.symbol}, couple-to ${couple.symbol.to}`
@@ -664,7 +669,7 @@ export class Lnv2Service implements OnModuleInit {
           record.sourceToken,
           Number(transfer.chainConfig.id),
           record.targetToken,
-          indexInfo.bridgeType,
+          indexInfo.bridgeType
         );
         if (tokenPair === null) {
           // add nonce to skip this record
@@ -788,7 +793,7 @@ export class Lnv2Service implements OnModuleInit {
           record.sourceToken,
           record.remoteChainId,
           record.targetToken,
-          indexInfo.bridgeType,
+          indexInfo.bridgeType
         );
         if (tokenPair === null) {
           // add nonce to skip this record
@@ -847,9 +852,7 @@ export class Lnv2Service implements OnModuleInit {
         size += 1;
       }
       if (size > 0) {
-          this.logger.log(
-              `update lnv2 relay info from source, size: ${size}`
-          );
+        this.logger.log(`update lnv2 relay info from source, size: ${size}`);
       }
     } catch (error) {
       this.logger.warn(`fetchFeeInfoFromSource failed, error ${error}`);
@@ -905,7 +908,7 @@ export class Lnv2Service implements OnModuleInit {
           record.sourceToken,
           record.remoteChainId,
           record.targetToken,
-          indexInfo.bridgeType,
+          indexInfo.bridgeType
         );
         if (tokenPair === null) {
           // add nonce to skip this record
@@ -974,9 +977,7 @@ export class Lnv2Service implements OnModuleInit {
         size += 1;
       }
       if (size > 0) {
-          this.logger.log(
-              `update lnv2 relay info for opposite, size ${size}`
-          );
+        this.logger.log(`update lnv2 relay info for opposite, size ${size}`);
       }
     } catch (error) {
       this.logger.warn(`fetchRelayInfo failed, error ${error}`);
