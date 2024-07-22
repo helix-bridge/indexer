@@ -102,6 +102,8 @@ export class HealthInfo {
 export abstract class IQuery {
     abstract historyRecordById(id?: Nullable<string>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
 
+    abstract historyRecordByNonce(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, nonce?: Nullable<number>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
+
     abstract historyRecordByTxHash(txHash?: Nullable<string>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
 
     abstract firstHistoryRecord(fromChain?: Nullable<string>, toChain?: Nullable<string>, bridge?: Nullable<string>, results?: Nullable<Nullable<number>[]>, relayer?: Nullable<string>, token?: Nullable<string>, order?: Nullable<string>, notsubmited?: Nullable<boolean>): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;

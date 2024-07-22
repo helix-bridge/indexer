@@ -67,6 +67,21 @@ export class AggregationResolver {
     });
   }
 
+  @Query()
+  async historyRecordByNonce(
+    @Args('fromChain') fromChain: string,
+    @Args('toChain') toChain: string,
+    @Args('bridge') bridge: string,
+    @Args('nonce') nonce: number 
+  ) {
+    return this.aggregationService.queryHistoryRecordFirst({
+      fromChain,
+      toChain,
+      bridge,
+      nonce
+    });
+  }
+
   // query by source tx hash
   @Query()
   async historyRecordByTxHash(@Args('txHash') txHash: string) {
