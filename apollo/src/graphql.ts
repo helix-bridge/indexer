@@ -103,6 +103,15 @@ export abstract class IQuery {
     id?: Nullable<string>
   ): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
 
+  abstract previousHistoryRecord(
+    fromChain?: Nullable<string>,
+    toChain?: Nullable<string>,
+    bridge?: Nullable<string>,
+    relayer?: Nullable<string>,
+    token?: Nullable<string>,
+    nonce?: Nullable<number>
+  ): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;
+
   abstract historyRecordByTxHash(
     txHash?: Nullable<string>
   ): Nullable<HistoryRecord> | Promise<Nullable<HistoryRecord>>;

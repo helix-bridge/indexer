@@ -17,14 +17,12 @@ export enum RelayUpdateType {
 export class Lnv3Service implements OnModuleInit {
   private readonly logger = new Logger('lnv3');
 
-  private fetchCache = new Array(this.transferService.transfers.length)
-    .fill('')
-    .map((_) => ({
-      latestNonce: -1,
-      latestRelayerInfoNonce: -1,
-      latestFillInfoTimestamp: -1,
-      isSyncingHistory: false,
-    }));
+  private fetchCache = new Array(this.transferService.transfers.length).fill('').map((_) => ({
+    latestNonce: -1,
+    latestRelayerInfoNonce: -1,
+    latestFillInfoTimestamp: -1,
+    isSyncingHistory: false,
+  }));
 
   protected fetchSendDataInterval = 5000;
 
