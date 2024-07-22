@@ -94,7 +94,7 @@ type HealthInfo {
 
 type Query {
   historyRecordById(id: String): HistoryRecord
-  historyRecordByNonce(fromChain: String, toChain: String, bridge: String, nonce: Int): HistoryRecord
+  previousHistoryRecord(fromChain: String, toChain: String, bridge: String, relayer: String, token: String, nonce: Int): HistoryRecord
   historyRecordByTxHash(txHash: String): HistoryRecord
   firstHistoryRecord(fromChain: String, toChain: String, bridge: String, results: [Int], relayer: String, token: String, order: String, notsubmited: Boolean): HistoryRecord
   historyRecords(sender: String, recipient: String, relayer: String, needWithdrawLiquidity: Boolean, fromChains: [String], toChains: [String], bridges: [String], row: Int, page: Int, results: [Int], recvTokenAddress: String,  order: String): HistoryRecords

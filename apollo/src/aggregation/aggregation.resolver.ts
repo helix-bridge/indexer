@@ -68,18 +68,30 @@ export class AggregationResolver {
   }
 
   @Query()
-  async historyRecordByNonce(
+  async previousHistoryRecord(
     @Args('fromChain') fromChain: string,
     @Args('toChain') toChain: string,
     @Args('bridge') bridge: string,
-    @Args('nonce') nonce: number 
+    @Args('relayer') relayer: string,
+    @Args('token') token: string,
+    @Args('nonce') nonce: number
   ) {
-    return this.aggregationService.queryHistoryRecordFirst({
-      fromChain,
-      toChain,
-      bridge,
-      nonce
-    });
+    const orderBy = { nonce: Prisma.SortOrder.desc };
+    return this.aggregationService.queryHistoryRecordFirst(
+      {
+        AND: {
+          fromChain: fromChain,
+          toChain: toChain,
+          bridge: bridge,
+          relayer: relayer,
+          sendTokenAddress: token,
+          nonce: {
+            lt: nonce,
+          },
+        },
+      },
+      orderBy
+    );
   }
 
   // query by source tx hash
