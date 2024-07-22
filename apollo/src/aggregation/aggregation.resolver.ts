@@ -67,6 +67,33 @@ export class AggregationResolver {
     });
   }
 
+  @Query()
+  async previousHistoryRecord(
+    @Args('fromChain') fromChain: string,
+    @Args('toChain') toChain: string,
+    @Args('bridge') bridge: string,
+    @Args('relayer') relayer: string,
+    @Args('token') token: string,
+    @Args('nonce') nonce: number
+  ) {
+    const orderBy = { nonce: Prisma.SortOrder.desc };
+    return this.aggregationService.queryHistoryRecordFirst(
+      {
+        AND: {
+          fromChain: fromChain,
+          toChain: toChain,
+          bridge: bridge,
+          relayer: relayer,
+          sendTokenAddress: token,
+          nonce: {
+            lt: nonce,
+          },
+        },
+      },
+      orderBy
+    );
+  }
+
   // query by source tx hash
   @Query()
   async historyRecordByTxHash(@Args('txHash') txHash: string) {
