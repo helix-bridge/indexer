@@ -122,11 +122,6 @@ export class TransferService extends BaseTransferServiceT2 {
       chainConfig: HelixChain.morph,
     },
     {
-      level0Indexer: Level0Indexer.ponder,
-      indexerUrl: this.morphEndpoint,
-      chainConfig: HelixChain.morph,
-    },
-    {
       level0Indexer: Level0Indexer.thegraph,
       indexerUrl: this.baseEndpoint,
       chainConfig: HelixChain.baseSepolia,

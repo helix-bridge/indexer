@@ -578,7 +578,7 @@ export class Lnv2Service implements OnModuleInit {
       ) ?? null;
     if (couple === null) {
       this.logger.warn(
-        `target info not find ${transfer.chainConfig.code}-${sourceAddress}->${targetChainId}-${targetAddress}`
+        `[${bridgeType}] target info not find ${transfer.chainConfig.code}-${sourceAddress}->${targetChainId}-${targetAddress}`
       );
       return null;
     }
@@ -586,7 +586,7 @@ export class Lnv2Service implements OnModuleInit {
     const targetPartner = this.findPartnerByChainId(targetChainId);
     if (targetPartner === null) {
       this.logger.warn(
-        `targetPartner not find ${transfer.chainConfig.code}-${sourceAddress}->${targetChainId}-${targetAddress}`
+        `[${bridgeType}] targetPartner not find ${transfer.chainConfig.code}-${sourceAddress}->${targetChainId}-${targetAddress}`
       );
       return null;
     }
@@ -596,7 +596,7 @@ export class Lnv2Service implements OnModuleInit {
       ) ?? null;
     if (targetInfo?.symbol.toLowerCase() !== couple.symbol.to.toLowerCase()) {
       this.logger.warn(
-        `verify target token failed ${transfer.chainConfig.code}-${sourceAddress}->${targetChainId}-${targetAddress}, symbol ${targetInfo?.symbol}, couple-to ${couple.symbol.to}`
+        `[${bridgeType}] verify target token failed ${transfer.chainConfig.code}-${sourceAddress}->${targetChainId}-${targetAddress}, symbol ${targetInfo?.symbol}, couple-to ${couple.symbol.to}`
       );
       return null;
     }
