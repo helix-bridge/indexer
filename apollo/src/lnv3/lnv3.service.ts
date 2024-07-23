@@ -3,9 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { PartnerT2, PartnerSymbol, RecordStatus, Channel, Level0Indexer } from '../base/TransferServiceT2';
+import { PartnerT2, RecordStatus, Level0Indexer } from '../base/TransferServiceT2';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
+import { ChainToken, ChainMessager, ChainCouple } from '@helixbridge/helixconf';
 
 export enum RelayUpdateType {
   PROVIDER_UPDATE,
@@ -16,9 +17,12 @@ export enum RelayUpdateType {
 export class Lnv3Service implements OnModuleInit {
   private readonly logger = new Logger('lnv3');
 
-  private fetchCache = new Array(this.transferService.transfers.length)
-    .fill('')
-    .map((_) => ({ latestNonce: -1, latestRelayerInfoNonce: -1, latestFillInfoTimestamp: -1, isSyncingHistory: false }));
+  private fetchCache = new Array(this.transferService.transfers.length).fill('').map((_) => ({
+    latestNonce: -1,
+    latestRelayerInfoNonce: -1,
+    latestFillInfoTimestamp: -1,
+    isSyncingHistory: false,
+  }));
 
   protected fetchSendDataInterval = 5000;
 
@@ -35,7 +39,7 @@ export class Lnv3Service implements OnModuleInit {
   async onModuleInit() {
     this.transferService.transfers.forEach((item, index) => {
       this.taskService.addInterval(
-        `${item.chain}-${item.bridge}-lnv3-fetch_history_data`,
+        `${item.chainConfig.code}-lnv3-fetch_history_data`,
         this.fetchSendDataInterval,
         async () => {
           if (this.fetchCache[index].isSyncingHistory) {
@@ -55,16 +59,16 @@ export class Lnv3Service implements OnModuleInit {
   private getDestChain(idOrName: string): PartnerT2 | null {
     return (
       this.transferService.transfers.find(
-        (transfer) => transfer.chainId.toString() === idOrName || transfer.chain === idOrName
+        (transfer) =>
+          transfer.chainConfig.id.toString() === idOrName || transfer.chainConfig.code === idOrName
       ) ?? null
     );
   }
 
-  private getTokenInfo(transfer: PartnerT2, addressOrKey: string): PartnerSymbol | null {
+  private getTokenInfo(transfer: PartnerT2, address: string): ChainToken | null {
     return (
-      transfer.symbols.find(
-        (symbol) =>
-          symbol.key === addressOrKey || symbol.address.toLowerCase() === addressOrKey.toLowerCase()
+      transfer.chainConfig.tokens.find(
+        (token) => token.address.toLowerCase() === address.toLowerCase()
       ) ?? null
     );
   }
@@ -76,71 +80,89 @@ export class Lnv3Service implements OnModuleInit {
     transferId: string
   ): string {
     if (transferId.startsWith(`${fromChainId}-`)) {
-        const rmvedChainId = transferId.replace(`${fromChainId}-`, '');
-        return `${transfer.chain.split('-')[0]}-${fromChainId}-${toChainId}-lnv3-${rmvedChainId}`;
+      const rmvedChainId = transferId.replace(`${fromChainId}-`, '');
+      return `${transfer.chainConfig.code.split('-')[0]}-${fromChainId}-${toChainId}-lnv3-${rmvedChainId}`;
     } else {
-        return `${transfer.chain.split('-')[0]}-${fromChainId}-${toChainId}-lnv3-${transferId}`;
+      return `${transfer.chainConfig.code.split('-')[0]}-${fromChainId}-${toChainId}-lnv3-${transferId}`;
     }
   }
 
   async queryRecordInfo(transfer: PartnerT2, latestNonce: number) {
-      if (transfer.level0Indexer === Level0Indexer.ponder) {
-          const url = this.transferService.ponderEndpoint;
-          const query = `query { lnv3TransferRecords(limit: 50, orderBy: "nonce", orderDirection: "asc", where: {localChainId: "${transfer.chainId}", nonce_gt: "${latestNonce}"}) { items { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }}`;
-          return await axios
-          .post(url, {
-              query: query,
-              variables: null,
-          }).then((res) => res.data?.data?.lnv3TransferRecords.items);
-      } else {
-          const url = transfer.url;
-          const query = `query { lnv3TransferRecords(first: 20, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }`;
-          return await axios
-          .post(url, {
-              query: query,
-              variables: null,
-          }).then((res) => res.data?.data?.lnv3TransferRecords);
-      }
+    if (transfer.level0Indexer === Level0Indexer.ponder) {
+      const url = this.transferService.ponderEndpoint;
+      const query = `query { lnv3TransferRecords(limit: 50, orderBy: "nonce", orderDirection: "asc", where: {localChainId: "${transfer.chainConfig.id}", nonce_gt: "${latestNonce}"}) { items { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }}`;
+      return await axios
+        .post(url, {
+          query: query,
+          variables: null,
+        })
+        .then((res) => res.data?.data?.lnv3TransferRecords.items);
+    } else {
+      const url = transfer.indexerUrl;
+      const query = `query { lnv3TransferRecords(first: 20, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }`;
+      return await axios
+        .post(url, {
+          query: query,
+          variables: null,
+        })
+        .then((res) => res.data?.data?.lnv3TransferRecords);
+    }
   }
 
   async queryProviderInfo(transfer: PartnerT2, latestNonce: number) {
-      if (transfer.level0Indexer === Level0Indexer.ponder) {
-          const url = this.transferService.ponderEndpoint;
-          const query = `query { lnv3RelayUpdateRecords(limit: 50, orderBy: "nonce", orderDirection: "asc", where: {localChainId: "${transfer.chainId}", nonce_gt: "${latestNonce}"}) { items { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, penalty, baseFee, liquidityFeeRate, transferLimit, paused } }}`;
+    if (transfer.level0Indexer === Level0Indexer.ponder) {
+      const url = this.transferService.ponderEndpoint;
+      const query = `query { lnv3RelayUpdateRecords(limit: 50, orderBy: "nonce", orderDirection: "asc", where: {localChainId: "${transfer.chainConfig.id}", nonce_gt: "${latestNonce}"}) { items { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, penalty, baseFee, liquidityFeeRate, transferLimit, paused } }}`;
 
-          return await axios.post(url, {
-              query: query,
-              variables: null,
-          }).then((res) => res.data?.data?.lnv3RelayUpdateRecords.items);
-      } else {
-          const query = `query { lnv3RelayUpdateRecords(first: 50, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, penalty, baseFee, liquidityFeeRate, transferLimit, paused } }`;
-          return await axios.post(transfer.url, {
-              query: query,
-              variables: null,
-          }).then((res) => res.data?.data?.lnv3RelayUpdateRecords);
-      }
+      return await axios
+        .post(url, {
+          query: query,
+          variables: null,
+        })
+        .then((res) => res.data?.data?.lnv3RelayUpdateRecords.items);
+    } else {
+      const query = `query { lnv3RelayUpdateRecords(first: 50, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, penalty, baseFee, liquidityFeeRate, transferLimit, paused } }`;
+      return await axios
+        .post(transfer.indexerUrl, {
+          query: query,
+          variables: null,
+        })
+        .then((res) => res.data?.data?.lnv3RelayUpdateRecords);
+    }
   }
 
   async queryRecordRelayStatus(toChain: PartnerT2, transferId: string) {
-      const url = toChain.level0Indexer === Level0Indexer.ponder ? this.transferService.ponderEndpoint : toChain.url;
-      const id = toChain.level0Indexer === Level0Indexer.ponder ? `${toChain.chainId}-${transferId}` : transferId;
-      const query = `query { lnv3RelayRecord(id: "${id}") { id, relayer, timestamp, transactionHash, slashed, requestWithdrawTimestamp, fee }}`;
-      return await axios
+    const url =
+      toChain.level0Indexer === Level0Indexer.ponder
+        ? this.transferService.ponderEndpoint
+        : toChain.indexerUrl;
+    const id =
+      toChain.level0Indexer === Level0Indexer.ponder
+        ? `${toChain.chainConfig.id}-${transferId}`
+        : transferId;
+    const query = `query { lnv3RelayRecord(id: "${id}") { id, relayer, timestamp, transactionHash, slashed, requestWithdrawTimestamp, fee }}`;
+    return await axios
       .post(url, {
-          query: query,
-          variables: null,
+        query: query,
+        variables: null,
       })
       .then((res) => res.data?.data?.lnv3RelayRecord);
   }
 
   async queryRecordWithdrawStatus(transfer: PartnerT2, transferId: string) {
-      const url = transfer.level0Indexer === Level0Indexer.ponder ? this.transferService.ponderEndpoint : transfer.url;
-      const id = transfer.level0Indexer === Level0Indexer.ponder ? `${transfer.chainId}-${transferId}` : transferId;
-      const query = `query { lnv3TransferRecord(id: "${id}") { id, hasWithdrawn }}`;
-      return await axios
+    const url =
+      transfer.level0Indexer === Level0Indexer.ponder
+        ? this.transferService.ponderEndpoint
+        : transfer.indexerUrl;
+    const id =
+      transfer.level0Indexer === Level0Indexer.ponder
+        ? `${transfer.chainConfig.id}-${transferId}`
+        : transferId;
+    const query = `query { lnv3TransferRecord(id: "${id}") { id, hasWithdrawn }}`;
+    return await axios
       .post(url, {
-          query: query,
-          variables: null,
+        query: query,
+        variables: null,
       })
       .then((res) => res.data?.data?.lnv3TransferRecord);
   }
@@ -151,7 +173,7 @@ export class Lnv3Service implements OnModuleInit {
       if (latestNonce === -1) {
         const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
           {
-            fromChain: transfer.chain,
+            fromChain: transfer.chainConfig.code,
             bridge: `lnv3`,
           },
           { nonce: 'desc' }
@@ -171,20 +193,25 @@ export class Lnv3Service implements OnModuleInit {
             this.fetchCache[index].latestNonce = latestNonce;
             continue;
           }
-          if (toChain.url === null) {
+          if (toChain.indexerUrl === null) {
             continue;
           }
-          const fromToken = this.getTokenInfo(transfer, record.sourceToken.toLowerCase());
-          const toToken = this.getTokenInfo(toChain, record.targetToken.toLowerCase());
+          const fromToken = this.getTokenInfo(transfer, record.sourceToken);
+          const toToken = this.getTokenInfo(toChain, record.targetToken);
 
           const responseHash = '';
           const result = RecordStatus.pending;
           const endTime = 0;
           await this.aggregationService.createHistoryRecord({
-            id: this.genID(transfer, transfer.chainId.toString(), record.remoteChainId, record.id),
+            id: this.genID(
+              transfer,
+              transfer.chainConfig.id.toString(),
+              record.remoteChainId,
+              record.id
+            ),
             relayer: record.provider.toLowerCase(),
-            fromChain: transfer.chain,
-            toChain: toChain.chain,
+            fromChain: transfer.chainConfig.code,
+            toChain: toChain.chainConfig.code,
             bridge: `lnv3`,
             messageNonce: record.messageNonce,
             nonce: latestNonce + 1,
@@ -214,7 +241,7 @@ export class Lnv3Service implements OnModuleInit {
         }
         if (size > 0) {
           this.logger.log(
-            `lnv3 [${transfer.chain}] save new send records succeeded nonce: ${latestNonce}, size: ${size}`
+            `lnv3 [${transfer.chainConfig.code}] save new send records succeeded nonce: ${latestNonce}, size: ${size}`
           );
         }
 
@@ -222,98 +249,97 @@ export class Lnv3Service implements OnModuleInit {
       }
     } catch (error) {
       this.logger.warn(
-        `lnv3 [${transfer.chain}->] save new send record failed ${latestNonce}, ${error}`
+        `lnv3 [${transfer.chainConfig.code}->] save new send record failed ${latestNonce}, ${error}`
       );
     }
   }
 
   // batch get status from target chain on sycing historical phase
   async queryFillInfos(transfer: PartnerT2, latestTimestamp: number) {
-      if (transfer.level0Indexer === Level0Indexer.ponder) {
-          const url = this.transferService.ponderEndpoint;
-          const query = `query { lnv3RelayRecords(limit: 50, orderBy: "timestamp", orderDirection: "asc", where: {localChainId: "${transfer.chainId}", slashed: false, timestamp_gt: "${latestTimestamp}"}) { items { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }}`;
-          return await axios
-          .post(url, {
-              query: query,
-              variables: null,
-          }).then((res) => res.data?.data?.lnv3RelayRecords.items);
-      } else {
-          const url = transfer.url;
-          const query = `query { lnv3RelayRecords(first: 20, orderBy: timestamp, orderDirection: asc, where: {timestamp_gt: "${latestTimestamp}", slashed: false}) { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }`;
-          return await axios
-          .post(url, {
-              query: query,
-              variables: null,
-          }).then((res) => res.data?.data?.lnv3RelayRecords);
-      }
+    if (transfer.level0Indexer === Level0Indexer.ponder) {
+      const url = this.transferService.ponderEndpoint;
+      const query = `query { lnv3RelayRecords(limit: 50, orderBy: "timestamp", orderDirection: "asc", where: {localChainId: "${transfer.chainConfig.id}", slashed: false, timestamp_gt: "${latestTimestamp}"}) { items { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }}`;
+      return await axios
+        .post(url, {
+          query: query,
+          variables: null,
+        })
+        .then((res) => res.data?.data?.lnv3RelayRecords.items);
+    } else {
+      const url = transfer.indexerUrl;
+      const query = `query { lnv3RelayRecords(first: 20, orderBy: timestamp, orderDirection: asc, where: {timestamp_gt: "${latestTimestamp}", slashed: false}) { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }`;
+      return await axios
+        .post(url, {
+          query: query,
+          variables: null,
+        })
+        .then((res) => res.data?.data?.lnv3RelayRecords);
+    }
   }
 
   async batchFetchStatus(transfer: PartnerT2, index: number) {
-      try {
-          let latestTimestamp = this.fetchCache[index].latestFillInfoTimestamp;
-          // stop sync history when timestamp set to zero
-          if (latestTimestamp === 0) {
-              return;
-          } else if (latestTimestamp === -1) {
-              const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
-                  {
-                      toChain: transfer.chain,
-                      bridge: `lnv3`,
-                  },
-                  { nonce: 'desc' }
-              );
-              latestTimestamp = firstRecord ? firstRecord.endTime : -1;
-          }
-          const relayRecords = await this.queryFillInfos(transfer, latestTimestamp);
-          if (relayRecords.length === 0) {
-              this.fetchCache[index].latestFillInfoTimestamp = 0;
-              this.logger.log(`the batch sync end, chain: ${transfer.chain}`);
-              return;
-          }
-          let size = 0;
-          for (const relayRecord of relayRecords) {
-              // ignore slashed transfer
-              if (relayRecord.slashed) continue;
-              let rmvedTransferId = relayRecord.id;
-              if (rmvedTransferId.startsWith(`${transfer.chainId}-`)) {
-                  rmvedTransferId = rmvedTransferId.replace(`${transfer.chainId}-`, '');
-              }
-              const uncheckedRecord = await this.aggregationService
-              .queryHistoryRecordFirst({
-                 id: {
-                     endsWith: rmvedTransferId,
-                 }
-              });
-              // the record exist but not finished
-              if (uncheckedRecord?.endTxHash === '' ) {
-                  const updateData = {
-                      result: RecordStatus.success,
-                      responseTxHash: relayRecord.transactionHash,
-                      endTxHash: relayRecord.transactionHash,
-                      endTime: Number(relayRecord.timestamp),
-                      relayer: relayRecord.relayer.toLowerCase(),
-                      needWithdrawLiquidity: false,
-                      lastRequestWithdraw: Number(relayRecord.requestWithdrawTimestamp),
-                  };
-
-                  await this.aggregationService.updateHistoryRecord({
-                      where: { id: uncheckedRecord.id },
-                      data: updateData,
-                  });
-                  this.fetchCache[index].latestFillInfoTimestamp = updateData.endTime;
-                  size += 1;
-              } else if (uncheckedRecord) {
-                  this.fetchCache[index].latestFillInfoTimestamp = Number(relayRecord.timestamp);
-              }
-          }
-          if (size > 0) {
-            this.logger.log(
-              `lnv3 [${transfer.chain}] batch fetch status, size: ${size}`
-            );
-          }
-      } catch(error) {
-          this.logger.warn(`batch fetch lnv3 status failed, error ${error}`);
+    try {
+      let latestTimestamp = this.fetchCache[index].latestFillInfoTimestamp;
+      // stop sync history when timestamp set to zero
+      if (latestTimestamp === 0) {
+        return;
+      } else if (latestTimestamp === -1) {
+        const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
+          {
+            toChain: transfer.chainConfig.code,
+            bridge: `lnv3`,
+          },
+          { nonce: 'desc' }
+        );
+        latestTimestamp = firstRecord ? firstRecord.endTime : -1;
       }
+      const relayRecords = await this.queryFillInfos(transfer, latestTimestamp);
+      if (relayRecords.length === 0) {
+        this.fetchCache[index].latestFillInfoTimestamp = 0;
+        this.logger.log(`the batch sync end, chain: ${transfer.chainConfig.code}`);
+        return;
+      }
+      let size = 0;
+      for (const relayRecord of relayRecords) {
+        // ignore slashed transfer
+        if (relayRecord.slashed) continue;
+        let rmvedTransferId = relayRecord.id;
+        if (rmvedTransferId.startsWith(`${transfer.chainConfig.id}-`)) {
+          rmvedTransferId = rmvedTransferId.replace(`${transfer.chainConfig.id}-`, '');
+        }
+        const uncheckedRecord = await this.aggregationService.queryHistoryRecordFirst({
+          id: {
+            endsWith: rmvedTransferId,
+          },
+        });
+        // the record exist but not finished
+        if (uncheckedRecord?.endTxHash === '') {
+          const updateData = {
+            result: RecordStatus.success,
+            responseTxHash: relayRecord.transactionHash,
+            endTxHash: relayRecord.transactionHash,
+            endTime: Number(relayRecord.timestamp),
+            relayer: relayRecord.relayer.toLowerCase(),
+            needWithdrawLiquidity: false,
+            lastRequestWithdraw: Number(relayRecord.requestWithdrawTimestamp),
+          };
+
+          await this.aggregationService.updateHistoryRecord({
+            where: { id: uncheckedRecord.id },
+            data: updateData,
+          });
+          this.fetchCache[index].latestFillInfoTimestamp = updateData.endTime;
+          size += 1;
+        } else if (uncheckedRecord) {
+          this.fetchCache[index].latestFillInfoTimestamp = Number(relayRecord.timestamp);
+        }
+      }
+      if (size > 0) {
+        this.logger.log(`lnv3 [${transfer.chainConfig.code}] batch fetch status, size: ${size}`);
+      }
+    } catch (error) {
+      this.logger.warn(`batch fetch lnv3 status failed, error ${error}`);
+    }
   }
 
   async fetchStatus(transfer: PartnerT2, index: number) {
@@ -323,7 +349,7 @@ export class Lnv3Service implements OnModuleInit {
           skip: this.skip[index],
           take: this.takeEachTime,
           where: {
-            fromChain: transfer.chain,
+            fromChain: transfer.chainConfig.code,
             bridge: `lnv3`,
             endTxHash: '',
           },
@@ -352,8 +378,8 @@ export class Lnv3Service implements OnModuleInit {
             let endTxHash = record.endTxHash;
             if (record.result !== RecordStatus.success) {
               const providerId = this.genRelayInfoID(
-                transfer.chainId,
-                toChain.chainId,
+                transfer.chainConfig.id,
+                toChain.chainConfig.id,
                 record.relayer,
                 record.sendTokenAddress
               );
@@ -363,7 +389,7 @@ export class Lnv3Service implements OnModuleInit {
               // waiting for relayer info update
               if (!relayerInfo) {
                 this.logger.log(
-                  `lnv3 [${transfer.chain}->${toChain.chain}] waiting for relayer info update, id: ${providerId}`
+                  `lnv3 [${transfer.chainConfig.code}->${toChain.chainConfig.code}] waiting for relayer info update, id: ${providerId}`
                 );
                 continue;
               }
@@ -402,7 +428,7 @@ export class Lnv3Service implements OnModuleInit {
 
               size += 1;
               //this.logger.log(
-                //`lnv3 [${transfer.chain}->${toChain.chain}] new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
+              //`lnv3 [${transfer.chain}->${toChain.chain}] new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
               //);
             }
             // query withdrawLiquidity result
@@ -423,18 +449,16 @@ export class Lnv3Service implements OnModuleInit {
                   },
                 });
                 this.logger.log(
-                  `lnv3 [${transfer.chain}->${toChain.chain}] tx withdrawn id: ${record.id}, time: ${requestWithdrawTimestamp}, done: ${transferRecord.hasWithdrawn}`
+                  `lnv3 [${transfer.chainConfig.code}->${toChain.chainConfig.code}] tx withdrawn id: ${record.id}, time: ${requestWithdrawTimestamp}, done: ${transferRecord.hasWithdrawn}`
                 );
               }
             }
           }
         }
       }
-      
+
       if (size > 0) {
-        this.logger.log(
-          `lnv3 [${transfer.chain}] update record status, size: ${size}`
-        );
+        this.logger.log(`lnv3 [${transfer.chainConfig.code}] update record status, size: ${size}`);
       }
     } catch (error) {
       this.logger.warn(`fetch lnv3 status failed, error ${error}`);
@@ -442,16 +466,35 @@ export class Lnv3Service implements OnModuleInit {
   }
 
   private genRelayInfoID(
-    fromChainId: number,
-    toChainId: number,
+    fromChainId: number | BigInt,
+    toChainId: number | BigInt,
     provider: string,
     sourceToken: string
   ): string {
     return `lnv3-${fromChainId}-${toChainId}-${provider}-${sourceToken}`;
   }
 
-  private getMessageChannel(transfer: PartnerT2, toChain: string): Channel | null {
-    return transfer.channels.find((channel) => channel.chain === toChain) ?? null;
+  private getMessageChannel(transfer: PartnerT2, toChain: string): ChainMessager | null {
+    return (
+      transfer.chainConfig.couples.find(
+        (couple) => couple.chain.code === toChain && couple.protocol.name === 'lnv3'
+      )?.messager ?? null
+    );
+  }
+
+  private getCouple(
+    transfer: PartnerT2,
+    toChain: string,
+    fromTokenSymbol: string
+  ): ChainCouple | null {
+    return (
+      transfer.chainConfig.couples.find(
+        (couple) =>
+          couple.chain.code === toChain &&
+          couple.protocol.name === 'lnv3' &&
+          couple.symbol.from === fromTokenSymbol
+      ) ?? null
+    );
   }
 
   async fetchProviderInfo(transfer: PartnerT2, index: number) {
@@ -461,7 +504,7 @@ export class Lnv3Service implements OnModuleInit {
         const firstRecord = await this.aggregationService.queryLnBridgeRelayInfoFirst(
           {
             version: 'lnv3',
-            fromChain: transfer.chain,
+            fromChain: transfer.chainConfig.code,
             bridge: `lnv3`,
           },
           { nonce: 'desc' }
@@ -471,7 +514,7 @@ export class Lnv3Service implements OnModuleInit {
       const records = await this.queryProviderInfo(transfer, latestNonce);
       // maybe this query is archived and can't access
       if (records === undefined) {
-        this.logger.warn(`query record failed, url: ${transfer.url}`);
+        this.logger.warn(`query record failed, url: ${transfer.indexerUrl}`);
         return;
       }
 
@@ -480,10 +523,10 @@ export class Lnv3Service implements OnModuleInit {
       for (const record of records) {
         // query by relayer
         const id = this.genRelayInfoID(
-          transfer.chainId,
+          transfer.chainConfig.id,
           record.remoteChainId,
           record.provider.toLowerCase(),
-          record.sourceToken.toLowerCase(),
+          record.sourceToken.toLowerCase()
         );
         const relayerInfo = await this.aggregationService.queryLnBridgeRelayInfoById({
           id: id,
@@ -497,29 +540,31 @@ export class Lnv3Service implements OnModuleInit {
         }
         const penalty = record.penalty ?? '0';
         if (!relayerInfo) {
-          const fromToken = this.getTokenInfo(transfer, record.sourceToken.toLowerCase());
-          const channel = this.getMessageChannel(transfer, toChain.chain);
-          if (fromToken === null || channel === null) {
+          const fromToken = this.getTokenInfo(transfer, record.sourceToken);
+          const couple = this.getCouple(transfer, toChain.chainConfig.code, fromToken?.symbol);
+          if (fromToken === null || couple === null) {
             latestNonce += 1;
             this.fetchCache[index].latestRelayerInfoNonce = latestNonce;
-            this.logger.warn(`cannot find fromToken or channel, channel ${channel}`);
+            this.logger.warn(
+              `cannot find fromToken or couple, couple ${couple}, fromToken ${fromToken?.symbol}, fromChain: ${transfer.chainConfig.code}, toChain: ${toChain.chainConfig.code}`
+            );
             continue;
           }
           // if not exist create
           await this.aggregationService.createLnBridgeRelayInfo({
             id: id,
             version: 'lnv3',
-            fromChain: transfer.chain,
-            toChain: toChain.chain,
+            fromChain: transfer.chainConfig.code,
+            toChain: toChain.chainConfig.code,
             bridge: `lnv3`,
             nonce: latestNonce + 1,
             relayer: record.provider.toLowerCase(),
             sendToken: record.sourceToken.toLowerCase(),
-            tokenKey: fromToken.key,
+            tokenKey: couple.category,
             transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),
             margin: penalty,
-            protocolFee: BigInt(fromToken.protocolFee).toString(),
+            protocolFee: BigInt(couple.fee).toString(),
             baseFee: BigInt(record.baseFee ?? 0).toString(),
             liquidityFeeRate: Number(record.liquidityFeeRate),
             slashCount: 0,
@@ -532,7 +577,7 @@ export class Lnv3Service implements OnModuleInit {
             transferLimit: record.transferLimit ?? '0',
             softTransferLimit: '0',
             paused: record.paused ?? false,
-            messageChannel: channel.channel,
+            messageChannel: couple.messager.name,
           });
           size += 1;
         } else {
@@ -564,9 +609,7 @@ export class Lnv3Service implements OnModuleInit {
         this.fetchCache[index].latestRelayerInfoNonce = latestNonce;
       }
       if (size > 0) {
-        this.logger.log(
-          `lnv3 [${transfer.chain}] update relayer info, size: ${size}`
-        );
+        this.logger.log(`lnv3 [${transfer.chainConfig.code}] update relayer info, size: ${size}`);
       }
     } catch (error) {
       this.logger.warn(`fetch lnv3bridge relayer records failed, error ${error}`);

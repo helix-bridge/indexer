@@ -187,36 +187,62 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     };
 
     if (version === 'lnv2') {
-      const sourceNode = this.lnv2Service.transfers.find((item) => item.chainId === sourceChainId);
-      const sourceTokenInfo = sourceNode?.tokens.find(
-        (item) => item.fromAddress.toLowerCase() === sourceToken.toLowerCase()
+      const sourceNode = this.lnv2Service.transfers.find(
+        (item) => Number(item.chainConfig.id) === sourceChainId
+      );
+      const sourceTokenInfo = sourceNode?.chainConfig.tokens.find(
+        (item) => item.address.toLowerCase() === sourceToken.toLowerCase()
       );
       if (sourceTokenInfo === undefined) {
         return '0';
       }
-      const targetNode = this.lnv2Service.transfers.find((item) => item.chainId === targetChainId);
-      const targetTokenInfo = targetNode?.tokens.find((item) => item.key === sourceTokenInfo.key);
+      const couple = sourceNode.chainConfig.couples.find(
+        (item) =>
+          Number(item.chain.id) === targetChainId &&
+          item.protocol.name.startsWith('lnv2') &&
+          item.symbol.from === sourceTokenInfo.symbol
+      );
+      if (couple === undefined) {
+        return '0';
+      }
+      const targetNode = this.lnv2Service.transfers.find(
+        (item) => Number(item.chainConfig.id) === targetChainId
+      );
+      const targetTokenInfo = targetNode?.chainConfig.tokens.find(
+        (item) => item.symbol === couple.symbol.to
+      );
       if (targetTokenInfo === undefined) {
         return '0';
       }
 
       return transferDecimals(amount, sourceTokenInfo.decimals - targetTokenInfo.decimals);
     } else {
-      const lnv3SourceBridge = this.lnv3Service.transfers.find(
-        (item) => item.chainId === sourceChainId
+      const srcChainConfig = this.lnv3Service.transfers.find(
+        (item) => Number(item.chainConfig.id) === sourceChainId
+      )?.chainConfig;
+      const dstChainConfig = this.lnv3Service.transfers.find(
+        (item) => Number(item.chainConfig.id) === targetChainId
+      )?.chainConfig;
+
+      const srcToken = srcChainConfig?.tokens.find(
+        (token) => token.address.toLowerCase() === sourceToken.toLowerCase()
       );
-      const sourceSymbol = lnv3SourceBridge?.symbols.find(
-        (item) => item.address.toLowerCase() === sourceToken.toLowerCase()
+      const couple = srcChainConfig?.couples.find(
+        (couple) =>
+          Number(couple.chain.id) === targetChainId &&
+          couple.protocol.name === 'lnv3' &&
+          couple.symbol.from === srcToken.symbol
       );
-      if (sourceSymbol === undefined) {
+      const dstTokenSymbol = couple?.symbol.to;
+      const dstToken = dstChainConfig?.tokens.find((token) => token.symbol === dstTokenSymbol);
+
+      const srcDecimals = srcToken?.decimals;
+      const dstDecimals = dstToken?.decimals;
+      if (srcDecimals === undefined || dstDecimals === undefined) {
         return '0';
       }
-      const lnv3TargetBridge = this.lnv3Service.transfers.find(
-        (item) => item.chainId === targetChainId
-      );
-      const targetSymbol = lnv3TargetBridge?.symbols.find((item) => item.key === sourceSymbol.key);
 
-      return transferDecimals(amount, sourceSymbol.decimals - targetSymbol.decimals);
+      return transferDecimals(amount, srcDecimals - dstDecimals);
     }
   }
 
@@ -229,45 +255,72 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
   }): boolean {
     const { sourceChainId, targetChainId, sourceToken, targetToken, version } = params;
     if (version === 'lnv2') {
-      const bridge = this.lnv2Service.transfers.find((item) => item.chainId === sourceChainId);
-      if (bridge === undefined) {
+      const sourceNode = this.lnv2Service.transfers.find(
+        (item) => Number(item.chainConfig.id) === sourceChainId
+      );
+      if (sourceNode === undefined) {
         return false;
       }
-      const tokenBridge = bridge.tokens.find(
-        (item) => item.fromAddress.toLowerCase() === sourceToken.toLowerCase()
-      );
-      if (tokenBridge === undefined) {
-        return false;
-      }
-      const targetInfo = tokenBridge.remoteInfos.find(
-        (item) =>
-          item.toChain === targetChainId &&
-          item.toAddress.toLowerCase() === targetToken.toLowerCase()
-      );
-      return targetInfo !== undefined;
-    } else {
-      const lnv3SourceBridge = this.lnv3Service.transfers.find(
-        (item) => item.chainId === sourceChainId
-      );
-      if (lnv3SourceBridge === undefined) {
-        return false;
-      }
-      const sourceSymbol = lnv3SourceBridge.symbols.find(
+      const sourceTokenInfo = sourceNode.chainConfig.tokens.find(
         (item) => item.address.toLowerCase() === sourceToken.toLowerCase()
       );
-      if (sourceSymbol === undefined) {
+      if (sourceTokenInfo === undefined) {
         return false;
       }
-      const lnv3TargetBridge = this.lnv3Service.transfers.find(
-        (item) => item.chainId === targetChainId
+      const couple = sourceNode.chainConfig.couples.find(
+        (item) =>
+          Number(item.chain.id) === targetChainId &&
+          item.protocol.name.startsWith('lnv2') &&
+          item.symbol.from === sourceTokenInfo.symbol
       );
-      if (lnv3TargetBridge === undefined) {
+      if (couple === undefined) {
         return false;
       }
-      const targetSymbol = lnv3TargetBridge.symbols.find(
-        (item) => item.address.toLowerCase() === targetToken.toLowerCase()
+      const targetNode = this.lnv2Service.transfers.find(
+        (item) => Number(item.chainConfig.id) === targetChainId
       );
-      return targetSymbol !== undefined;
+      if (targetNode === undefined) {
+        return false;
+      }
+      const targetTokenInfo = targetNode.chainConfig.tokens.find(
+        (item) => item.address.toLowerCase() === couple.symbol.to.toLowerCase()
+      );
+      return targetTokenInfo.address.toLowerCase() === targetToken.toLowerCase();
+    } else {
+      const srcChainConfig = this.lnv3Service.transfers.find(
+        (item) => Number(item.chainConfig.id) === sourceChainId
+      )?.chainConfig;
+      const dstChainConfig = this.lnv3Service.transfers.find(
+        (item) => Number(item.chainConfig.id) === targetChainId
+      )?.chainConfig;
+
+      if (srcChainConfig === undefined || dstChainConfig === undefined) {
+        return false;
+      }
+      const srcToken = srcChainConfig.tokens.find(
+        (token) => token.address.toLowerCase() === sourceToken.toLowerCase()
+      );
+      const dstToken = dstChainConfig.tokens.find(
+        (token) => token.address.toLowerCase() === targetToken.toLowerCase()
+      );
+      if (srcToken === undefined || dstToken === undefined) {
+        return false;
+      }
+      const srcCouple = srcChainConfig?.couples.find(
+        (couple) =>
+          Number(couple.chain.id) === targetChainId &&
+          couple.protocol.name === 'lnv3' &&
+          couple.symbol.from === srcToken.symbol &&
+          couple.symbol.to === dstToken.symbol
+      );
+      const dstCouple = dstChainConfig?.couples.find(
+        (couple) =>
+          Number(couple.chain.id) === sourceChainId &&
+          couple.protocol.name === 'lnv3' &&
+          couple.symbol.from === dstToken.symbol &&
+          couple.symbol.to === srcToken.symbol
+      );
+      return srcCouple !== undefined && dstCouple !== undefined;
     }
   }
 
