@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BaseTransferServiceT3, PartnerT3 } from '../base/TransferServiceT3';
-import { HelixChain } from 'helixconf';
+import { HelixChain } from '@helixbridge/helixconf';
 
 @Injectable()
 export class TransferService extends BaseTransferServiceT3 {

@@ -1,5 +1,5 @@
 import { ConfigService } from '@nestjs/config';
-import { HelixChainConf } from 'helixconf';
+import { HelixChainConf } from '@helixbridge/helixconf';
 
 /*
 This model is suitable for multi-chain interconnection scenarios,

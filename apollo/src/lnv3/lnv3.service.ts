@@ -6,7 +6,7 @@ import { AggregationService } from '../aggregation/aggregation.service';
 import { PartnerT2, RecordStatus, Level0Indexer } from '../base/TransferServiceT2';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
-import { ChainToken, ChainMessager, ChainCouple } from 'helixconf';
+import { ChainToken, ChainMessager, ChainCouple } from '@helixbridge/helixconf';
 
 export enum RelayUpdateType {
   PROVIDER_UPDATE,

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HelixChain } from 'helixconf';
+import { HelixChain } from '@helixbridge/helixconf';
 import { BaseTransferServiceT2, PartnerT2, Level0Indexer } from '../base/TransferServiceT2';
 import { AddressTokenMap } from '../base/AddressToken';
 

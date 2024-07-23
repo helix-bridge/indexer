@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { AddressToken } from './AddressToken';
-import { HelixChainConf } from 'helixconf';
+import { HelixChainConf } from '@helixbridge/helixconf';
 
 /*
 This model is suitable for multi-chain interconnection scenarios,
