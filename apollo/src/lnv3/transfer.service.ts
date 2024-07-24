@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HelixChain } from '@helixbridge/helixconf';
-import { BaseTransferServiceT2, PartnerT2, Level0Indexer } from '../base/TransferServiceT2';
+import { BaseTransferServiceT2, PartnerT2, Level0IndexerType } from '../base/TransferServiceT2';
 import { AddressTokenMap } from '../base/AddressToken';
 
 @Injectable()
@@ -29,101 +29,177 @@ export class TransferService extends BaseTransferServiceT2 {
 
   formalChainTransfers: PartnerT2[] = [
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.polygonEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.polygonEndpoint,
+        },
+      ],
       chainConfig: HelixChain.polygon,
     },
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.arbitrumEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.arbitrumEndpoint,
+        },
+      ],
       chainConfig: HelixChain.arbitrum,
     },
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.bscEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.bscEndpoint,
+        },
+      ],
       chainConfig: HelixChain.bsc,
     },
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.lineaEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.lineaEndpoint,
+        },
+      ],
       chainConfig: HelixChain.linea,
     },
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.opEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.opEndpoint,
+        },
+      ],
       chainConfig: HelixChain.op,
     },
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.gnosisEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.gnosisEndpoint,
+        },
+      ],
       chainConfig: HelixChain.gnosis,
     },
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.mantleEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.mantleEndpoint,
+        },
+      ],
       chainConfig: HelixChain.mantle,
     },
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.scrollEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.scrollEndpoint,
+        },
+      ],
       chainConfig: HelixChain.scroll,
     },
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.darwiniaEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.darwiniaEndpoint,
+        },
+      ],
       chainConfig: HelixChain.darwiniaDvm,
     },
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.blastEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.blastEndpoint,
+        },
+      ],
       chainConfig: HelixChain.blast,
     },
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.astarZkEVMEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.astarZkEVMEndpoint,
+        },
+      ],
       chainConfig: HelixChain.astarZkevm,
     },
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.moonbeamEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.moonbeamEndpoint,
+        },
+      ],
       chainConfig: HelixChain.moonbeam,
     },
   ];
 
   testChainTransfers: PartnerT2[] = [
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.ethereumEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.ethereumEndpoint,
+        },
+      ],
       chainConfig: HelixChain.sepolia,
     },
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.arbitrumEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.arbitrumEndpoint,
+        },
+      ],
       chainConfig: HelixChain.arbitrumSepolia,
     },
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.zksyncEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.zksyncEndpoint,
+        },
+      ],
       chainConfig: HelixChain.zksyncSepolia,
     },
     {
-      level0Indexer: Level0Indexer.ponder,
-      indexerUrl: this.taikoEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.ponder,
+          url: this.taikoEndpoint,
+        },
+      ],
       chainConfig: HelixChain.taikoHekla,
     },
     {
-      level0Indexer: Level0Indexer.ponder,
-      indexerUrl: this.beraEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.beraEndpoint,
+        },
+      ],
       chainConfig: HelixChain.bera,
     },
     {
-      level0Indexer: Level0Indexer.ponder,
-      indexerUrl: this.morphEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.morphEndpoint,
+        },
+      ],
       chainConfig: HelixChain.morph,
     },
     {
-      level0Indexer: Level0Indexer.thegraph,
-      indexerUrl: this.baseEndpoint,
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.baseEndpoint,
+        },
+      ],
       chainConfig: HelixChain.baseSepolia,
     },
   ];
