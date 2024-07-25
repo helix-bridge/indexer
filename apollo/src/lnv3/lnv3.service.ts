@@ -92,16 +92,19 @@ export class Lnv3Service implements OnModuleInit {
   ): string {
     if (transferId.startsWith(`${fromChainId}-`)) {
       const rmvedChainId = transferId.replace(`${fromChainId}-`, '');
-      return `${transfer.chainConfig.code.split('-')[0]}-${fromChainId}-${toChainId}-lnv3-${rmvedChainId}`;
+      return `${
+        transfer.chainConfig.code.split('-')[0]
+      }-${fromChainId}-${toChainId}-lnv3-${rmvedChainId}`;
     } else {
-      return `${transfer.chainConfig.code.split('-')[0]}-${fromChainId}-${toChainId}-lnv3-${transferId}`;
+      return `${
+        transfer.chainConfig.code.split('-')[0]
+      }-${fromChainId}-${toChainId}-lnv3-${transferId}`;
     }
   }
 
   async queryRecordInfo(transfer: PartnerT2, latestNonce: number) {
     let result = [];
     for (const level0Indexer of transfer.level0Indexers) {
-      const url = level0Indexer.url;
       const service = this.sourceServices.get(level0Indexer.indexerType);
       try {
         const response = await service.queryRecordInfo(
@@ -124,7 +127,6 @@ export class Lnv3Service implements OnModuleInit {
   async queryProviderInfo(transfer: PartnerT2, latestNonce: number) {
     let result = [];
     for (const level0Indexer of transfer.level0Indexers) {
-      const url = level0Indexer.url;
       const service = this.sourceServices.get(level0Indexer.indexerType);
       try {
         const response = await service.queryProviderInfo(
@@ -146,7 +148,6 @@ export class Lnv3Service implements OnModuleInit {
 
   async queryRecordRelayStatus(toChain: PartnerT2, transferId: string) {
     for (const level0Indexer of toChain.level0Indexers) {
-      const url = level0Indexer.url;
       const service = this.sourceServices.get(level0Indexer.indexerType);
       try {
         const response = await service.queryRelayStatus(
@@ -167,7 +168,6 @@ export class Lnv3Service implements OnModuleInit {
 
   async queryMultiRecordRelayStatus(toChain: PartnerT2, transferIds: string[]) {
     for (const level0Indexer of toChain.level0Indexers) {
-      const url = level0Indexer.url;
       const service = this.sourceServices.get(level0Indexer.indexerType);
       try {
         return await service.queryMultiRelayStatus(
@@ -186,7 +186,6 @@ export class Lnv3Service implements OnModuleInit {
 
   async queryRecordWithdrawStatus(transfer: PartnerT2, transferId: string) {
     for (const level0Indexer of transfer.level0Indexers) {
-      const url = level0Indexer.url;
       const service = this.sourceServices.get(level0Indexer.indexerType);
       try {
         const response = await service.queryWithdrawStatus(
@@ -293,7 +292,6 @@ export class Lnv3Service implements OnModuleInit {
   async queryFillInfos(transfer: PartnerT2, latestTimestamp: number) {
     let result = [];
     for (const level0Indexer of transfer.level0Indexers) {
-      const url = level0Indexer.url;
       const service = this.sourceServices.get(level0Indexer.indexerType);
       try {
         const response = await service.batchQueryRelayStatus(
@@ -381,7 +379,7 @@ export class Lnv3Service implements OnModuleInit {
   }
 
   async fetchWithdrawCacheStatus(transfer: PartnerT2, index: number) {
-    let cache = this.fetchCache[index];
+    const cache = this.fetchCache[index];
     cache.waitingWithdrawInterval += 1;
     if (cache.waitingWithdrawInterval < 60) {
       return;
@@ -389,7 +387,7 @@ export class Lnv3Service implements OnModuleInit {
     cache.waitingWithdrawInterval = 0;
     const records = cache.waitingWithdrawRecords;
     const transferIdMap = new Map<string, string[]>();
-    for (let record of records) {
+    for (const record of records) {
       const recordSplitted = record.id.split('-');
       const transferId: string = last(recordSplitted);
       const chainId = recordSplitted[2];
@@ -400,7 +398,7 @@ export class Lnv3Service implements OnModuleInit {
         transferIds.push(transferId);
       }
     }
-    for (let [chainId, transferIds] of transferIdMap) {
+    for (const [chainId, transferIds] of transferIdMap) {
       const toChain = this.getDestChain(chainId);
       const relayRecords = await this.queryMultiRecordRelayStatus(toChain, transferIds);
       for (const relayRecord of relayRecords) {
@@ -597,7 +595,7 @@ export class Lnv3Service implements OnModuleInit {
   }
 
   async fetchProviderInfo(transfer: PartnerT2, index: number) {
-    let cache = this.fetchCache[index];
+    const cache = this.fetchCache[index];
     cache.fetchProviderInfoInterval += 1;
     if (cache.fetchProviderInfoInterval <= 5) {
       return;

@@ -349,9 +349,9 @@ export class Lnv2Service implements OnModuleInit {
         }
         if (records && records.length > 0) {
           this.logger.log(
-            `lnv2 new records, from ${transfer.chainConfig.id}, latest nonce ${latestNonce}, added ${
-              records.length - ignored
-            }, ignored ${ignored}`
+            `lnv2 new records, from ${
+              transfer.chainConfig.id
+            }, latest nonce ${latestNonce}, added ${records.length - ignored}, ignored ${ignored}`
           );
         }
         this.fetchCache[index].latestNonce = latestNonce;

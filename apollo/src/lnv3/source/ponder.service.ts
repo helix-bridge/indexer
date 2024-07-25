@@ -48,10 +48,16 @@ export class Lnv3PonderService extends SourceService {
   }
   async queryMultiRelayStatus(
     url: string,
-    chainId: number,
+    localId: number,
     transferIds: string[]
   ): Promise<Lnv3RelayRecord[]> {
-    return [];
+    const query = `query { lnv3RelayRecords(limit: 20, orderBy: "timestamp", orderDirection: "asc", where: {localChainId: "${localId}", id_in: ${transferIds} }) { items { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }}`;
+    return await axios
+      .post(url, {
+        query: query,
+        variables: null,
+      })
+      .then((res) => res.data?.data?.lnv3RelayRecords.items);
   }
   async batchQueryRelayStatus(
     url: string,
