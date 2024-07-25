@@ -46,6 +46,13 @@ export class Lnv3PonderService extends SourceService {
       })
       .then((res) => res.data?.data?.lnv3RelayRecord);
   }
+  async queryMultiRelayStatus(
+    url: string,
+    chainId: number,
+    transferIds: string[]
+  ): Promise<Lnv3RelayRecord[]> {
+    return [];
+  }
   async batchQueryRelayStatus(
     url: string,
     localId: number,

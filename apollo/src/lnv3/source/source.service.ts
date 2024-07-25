@@ -65,6 +65,12 @@ export abstract class SourceService {
     chainId: number,
     transferId: string
   ): Promise<Lnv3RelayRecord>;
+  abstract queryMultiRelayStatus(
+    url: string,
+    chainId: number,
+    transferIds: string[]
+  ): Promise<Lnv3RelayRecord[]>;
+
   abstract batchQueryRelayStatus(
     url: string,
     chainId: number,

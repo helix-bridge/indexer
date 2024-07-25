@@ -23,6 +23,9 @@ export class Lnv3Service implements OnModuleInit {
     latestRelayerInfoNonce: -1,
     latestFillInfoTimestamp: -1,
     isSyncingHistory: false,
+    waitingWithdrawInterval: 0,
+    waitingWithdrawRecords: [],
+    fetchProviderInfoInterval: 0,
   }));
 
   protected fetchSendDataInterval = 5000;
@@ -43,6 +46,8 @@ export class Lnv3Service implements OnModuleInit {
 
   async onModuleInit() {
     this.transferService.transfers.forEach((item, index) => {
+      this.fetchCache[index].waitingWithdrawInterval = index * 3;
+      this.fetchCache[index].fetchProviderInfoInterval = index;
       this.taskService.addInterval(
         `${item.chainConfig.code}-lnv3-fetch_history_data`,
         this.fetchSendDataInterval,
@@ -55,6 +60,7 @@ export class Lnv3Service implements OnModuleInit {
           await this.fetchRecords(item, index);
           await this.batchFetchStatus(item, index);
           await this.fetchStatus(item, index);
+          await this.fetchWithdrawCacheStatus(item, index);
           this.fetchCache[index].isSyncingHistory = false;
         }
       );
@@ -108,7 +114,7 @@ export class Lnv3Service implements OnModuleInit {
         }
       } catch (err) {
         this.logger.warn(
-          `try to get records failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}`
+          `try to get records failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
         );
       }
     }
@@ -131,7 +137,7 @@ export class Lnv3Service implements OnModuleInit {
         }
       } catch (err) {
         this.logger.warn(
-          `try to get provider infos failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}`
+          `try to get provider infos failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
         );
       }
     }
@@ -153,8 +159,27 @@ export class Lnv3Service implements OnModuleInit {
         }
       } catch (err) {
         this.logger.warn(
-          `try to get relay status failed, id ${toChain.chainConfig.id}, type ${level0Indexer.indexerType}`
+          `try to get relay status failed, id ${toChain.chainConfig.id}, type ${level0Indexer.indexerType}, transferId ${transferId} err ${err}`
         );
+      }
+    }
+  }
+
+  async queryMultiRecordRelayStatus(toChain: PartnerT2, transferIds: string[]) {
+    for (const level0Indexer of toChain.level0Indexers) {
+      const url = level0Indexer.url;
+      const service = this.sourceServices.get(level0Indexer.indexerType);
+      try {
+        return await service.queryMultiRelayStatus(
+          level0Indexer.url,
+          toChain.chainConfig.id,
+          transferIds
+        );
+      } catch (err) {
+        this.logger.warn(
+          `try to get multi relay status failed, id ${toChain.chainConfig.id}, type ${level0Indexer.indexerType}, transferIds ${transferIds} err ${err}`
+        );
+        return [];
       }
     }
   }
@@ -174,7 +199,7 @@ export class Lnv3Service implements OnModuleInit {
         }
       } catch (err) {
         this.logger.warn(
-          `try to get withdraw status failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}`
+          `try to get withdraw status failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
         );
       }
     }
@@ -281,7 +306,7 @@ export class Lnv3Service implements OnModuleInit {
         }
       } catch (err) {
         this.logger.warn(
-          `try to batch get fill infos failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}`
+          `try to batch get fill infos failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
         );
       }
     }
@@ -325,13 +350,15 @@ export class Lnv3Service implements OnModuleInit {
         });
         // the record exist but not finished
         if (uncheckedRecord?.endTxHash === '') {
+          const endTxHash = uncheckedRecord.needWithdrawLiquidity
+            ? ''
+            : relayRecord.transactionHash;
           const updateData = {
             result: RecordStatus.success,
             responseTxHash: relayRecord.transactionHash,
-            endTxHash: relayRecord.transactionHash,
+            endTxHash: endTxHash,
             endTime: Number(relayRecord.timestamp),
             relayer: relayRecord.relayer.toLowerCase(),
-            needWithdrawLiquidity: false,
             lastRequestWithdraw: Number(relayRecord.requestWithdrawTimestamp),
           };
 
@@ -351,6 +378,55 @@ export class Lnv3Service implements OnModuleInit {
     } catch (error) {
       this.logger.warn(`batch fetch lnv3 status failed, error ${error}`);
     }
+  }
+
+  async fetchWithdrawCacheStatus(transfer: PartnerT2, index: number) {
+    let cache = this.fetchCache[index];
+    cache.waitingWithdrawInterval += 1;
+    if (cache.waitingWithdrawInterval < 60) {
+      return;
+    }
+    cache.waitingWithdrawInterval = 0;
+    const records = cache.waitingWithdrawRecords;
+    const transferIdMap = new Map<string, string[]>();
+    for (let record of records) {
+      const recordSplitted = record.id.split('-');
+      const transferId: string = last(recordSplitted);
+      const chainId = recordSplitted[2];
+      const transferIds = transferIdMap.get(chainId);
+      if (!transferIds) {
+        transferIdMap.set(chainId, [transferId]);
+      } else {
+        transferIds.push(transferId);
+      }
+    }
+    for (let [chainId, transferIds] of transferIdMap) {
+      const toChain = this.getDestChain(chainId);
+      const relayRecords = await this.queryMultiRecordRelayStatus(toChain, transferIds);
+      for (const relayRecord of relayRecords) {
+        const requestWithdrawTimestamp = Number(relayRecord.requestWithdrawTimestamp);
+        if (requestWithdrawTimestamp > 0) {
+          const transferRecord = await this.queryRecordWithdrawStatus(transfer, relayRecord.id);
+          if (transferRecord) {
+            const id = this.genID(
+              transfer,
+              transfer.chainConfig.id.toString(),
+              transferRecord.remoteChainId,
+              transferRecord.id
+            );
+            await this.aggregationService.updateHistoryRecord({
+              where: { id: id },
+              data: {
+                needWithdrawLiquidity: !transferRecord.hasWithdrawn,
+                endTxHash: transferRecord.hasWithdrawn ? relayRecord.transactionHash : '',
+                lastRequestWithdraw: requestWithdrawTimestamp,
+              },
+            });
+          }
+        }
+      }
+    }
+    cache.waitingWithdrawRecords = [];
   }
 
   async fetchStatus(transfer: PartnerT2, index: number) {
@@ -380,6 +456,18 @@ export class Lnv3Service implements OnModuleInit {
         const dstChainId = recordSplitted[2];
 
         if (record.endTxHash === '') {
+          // if record.result === RecordStatus.success, it must wait for withdraw liquidity
+          // then we need to reduce the frequency of requests
+          // push the request to the cache
+          if (record.result === RecordStatus.success && record.needWithdrawLiquidity) {
+            if (
+              !this.fetchCache[index].waitingWithdrawRecords.some((item) => item.id === record.id)
+            ) {
+              this.fetchCache[index].waitingWithdrawRecords.push(record);
+            }
+            continue;
+          }
+
           const toChain = this.getDestChain(dstChainId);
           const relayRecord = await this.queryRecordRelayStatus(toChain, transferId);
 
@@ -455,7 +543,7 @@ export class Lnv3Service implements OnModuleInit {
                   where: { id: record.id },
                   data: {
                     needWithdrawLiquidity: !transferRecord.hasWithdrawn,
-                    endTxHash: transferRecord.responseTxHash,
+                    endTxHash: transferRecord.hasWithdrawn ? record.responseTxHash : '',
                     lastRequestWithdraw: requestWithdrawTimestamp,
                   },
                 });
@@ -509,6 +597,12 @@ export class Lnv3Service implements OnModuleInit {
   }
 
   async fetchProviderInfo(transfer: PartnerT2, index: number) {
+    let cache = this.fetchCache[index];
+    cache.fetchProviderInfoInterval += 1;
+    if (cache.fetchProviderInfoInterval <= 5) {
+      return;
+    }
+    cache.fetchProviderInfoInterval = 0;
     let latestNonce = this.fetchCache[index].latestRelayerInfoNonce;
     try {
       if (latestNonce == -1) {

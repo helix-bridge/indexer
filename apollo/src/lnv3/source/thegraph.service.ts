@@ -44,6 +44,20 @@ export class Lnv3ThegraphService extends SourceService {
       })
       .then((res) => res.data?.data?.lnv3RelayRecord);
   }
+  async queryMultiRelayStatus(
+    url: string,
+    chainId: number,
+    transferIds: string[]
+  ): Promise<Lnv3RelayRecord[]> {
+    const idArray = '["' + transferIds.join('","') + '"]';
+    const query = `query { lnv3RelayRecords(first: 20, where: {id_in: ${idArray}}) { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }`;
+    return await axios
+      .post(url, {
+        query: query,
+        variables: null,
+      })
+      .then((res) => res.data?.data?.lnv3RelayRecords);
+  }
   async batchQueryRelayStatus(
     url: string,
     chainId: number,
