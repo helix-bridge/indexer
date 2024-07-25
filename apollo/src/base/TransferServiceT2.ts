@@ -19,7 +19,7 @@ export enum RecordStatus {
   failed,
 }
 
-export enum Level0Indexer {
+export enum Level0IndexerType {
   thegraph,
   ponder,
 }
@@ -37,9 +37,13 @@ export interface BridgeBaseConfigure {
   takeEachTime: number;
 }
 
+export interface Level0Indexer {
+  indexerType: Level0IndexerType;
+  url: string;
+}
+
 export interface PartnerT2 {
-  level0Indexer: number;
-  indexerUrl: string;
+  level0Indexers: Level0Indexer[];
   chainConfig: HelixChainConf;
 }
 

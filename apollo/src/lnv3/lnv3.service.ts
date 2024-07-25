@@ -1,12 +1,13 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
 import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { PartnerT2, RecordStatus, Level0Indexer } from '../base/TransferServiceT2';
+import { PartnerT2, RecordStatus, Level0IndexerType } from '../base/TransferServiceT2';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 import { ChainToken, ChainMessager, ChainCouple } from '@helixbridge/helixconf';
+import { Lnv3ThegraphService } from './source/thegraph.service';
+import { Lnv3PonderService } from './source/ponder.service';
 
 export enum RelayUpdateType {
   PROVIDER_UPDATE,
@@ -22,22 +23,31 @@ export class Lnv3Service implements OnModuleInit {
     latestRelayerInfoNonce: -1,
     latestFillInfoTimestamp: -1,
     isSyncingHistory: false,
+    waitingWithdrawInterval: 0,
+    waitingWithdrawRecords: [],
+    fetchProviderInfoInterval: 0,
   }));
 
   protected fetchSendDataInterval = 5000;
 
   private readonly takeEachTime = 2;
   private skip = new Array(this.transferService.transfers.length).fill(0);
+  private sourceServices = new Map();
 
   constructor(
     public configService: ConfigService,
     private aggregationService: AggregationService,
     private taskService: TasksService,
     private transferService: TransferService
-  ) {}
+  ) {
+    this.sourceServices.set(Level0IndexerType.thegraph, new Lnv3ThegraphService());
+    this.sourceServices.set(Level0IndexerType.ponder, new Lnv3PonderService());
+  }
 
   async onModuleInit() {
     this.transferService.transfers.forEach((item, index) => {
+      this.fetchCache[index].waitingWithdrawInterval = index * 3;
+      this.fetchCache[index].fetchProviderInfoInterval = index;
       this.taskService.addInterval(
         `${item.chainConfig.code}-lnv3-fetch_history_data`,
         this.fetchSendDataInterval,
@@ -50,6 +60,7 @@ export class Lnv3Service implements OnModuleInit {
           await this.fetchRecords(item, index);
           await this.batchFetchStatus(item, index);
           await this.fetchStatus(item, index);
+          await this.fetchWithdrawCacheStatus(item, index);
           this.fetchCache[index].isSyncingHistory = false;
         }
       );
@@ -81,90 +92,116 @@ export class Lnv3Service implements OnModuleInit {
   ): string {
     if (transferId.startsWith(`${fromChainId}-`)) {
       const rmvedChainId = transferId.replace(`${fromChainId}-`, '');
-      return `${transfer.chainConfig.code.split('-')[0]}-${fromChainId}-${toChainId}-lnv3-${rmvedChainId}`;
+      return `${
+        transfer.chainConfig.code.split('-')[0]
+      }-${fromChainId}-${toChainId}-lnv3-${rmvedChainId}`;
     } else {
-      return `${transfer.chainConfig.code.split('-')[0]}-${fromChainId}-${toChainId}-lnv3-${transferId}`;
+      return `${
+        transfer.chainConfig.code.split('-')[0]
+      }-${fromChainId}-${toChainId}-lnv3-${transferId}`;
     }
   }
 
   async queryRecordInfo(transfer: PartnerT2, latestNonce: number) {
-    if (transfer.level0Indexer === Level0Indexer.ponder) {
-      const url = this.transferService.ponderEndpoint;
-      const query = `query { lnv3TransferRecords(limit: 50, orderBy: "nonce", orderDirection: "asc", where: {localChainId: "${transfer.chainConfig.id}", nonce_gt: "${latestNonce}"}) { items { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }}`;
-      return await axios
-        .post(url, {
-          query: query,
-          variables: null,
-        })
-        .then((res) => res.data?.data?.lnv3TransferRecords.items);
-    } else {
-      const url = transfer.indexerUrl;
-      const query = `query { lnv3TransferRecords(first: 20, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }`;
-      return await axios
-        .post(url, {
-          query: query,
-          variables: null,
-        })
-        .then((res) => res.data?.data?.lnv3TransferRecords);
+    let result = [];
+    for (const level0Indexer of transfer.level0Indexers) {
+      const service = this.sourceServices.get(level0Indexer.indexerType);
+      try {
+        const response = await service.queryRecordInfo(
+          level0Indexer.url,
+          transfer.chainConfig.id,
+          latestNonce
+        );
+        if (response && response.length >= result.length) {
+          result = response;
+        }
+      } catch (err) {
+        this.logger.warn(
+          `try to get records failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
+        );
+      }
     }
+    return result;
   }
 
   async queryProviderInfo(transfer: PartnerT2, latestNonce: number) {
-    if (transfer.level0Indexer === Level0Indexer.ponder) {
-      const url = this.transferService.ponderEndpoint;
-      const query = `query { lnv3RelayUpdateRecords(limit: 50, orderBy: "nonce", orderDirection: "asc", where: {localChainId: "${transfer.chainConfig.id}", nonce_gt: "${latestNonce}"}) { items { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, penalty, baseFee, liquidityFeeRate, transferLimit, paused } }}`;
-
-      return await axios
-        .post(url, {
-          query: query,
-          variables: null,
-        })
-        .then((res) => res.data?.data?.lnv3RelayUpdateRecords.items);
-    } else {
-      const query = `query { lnv3RelayUpdateRecords(first: 50, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, penalty, baseFee, liquidityFeeRate, transferLimit, paused } }`;
-      return await axios
-        .post(transfer.indexerUrl, {
-          query: query,
-          variables: null,
-        })
-        .then((res) => res.data?.data?.lnv3RelayUpdateRecords);
+    let result = [];
+    for (const level0Indexer of transfer.level0Indexers) {
+      const service = this.sourceServices.get(level0Indexer.indexerType);
+      try {
+        const response = await service.queryProviderInfo(
+          level0Indexer.url,
+          transfer.chainConfig.id,
+          latestNonce
+        );
+        if (response && response.length >= result.length) {
+          result = response;
+        }
+      } catch (err) {
+        this.logger.warn(
+          `try to get provider infos failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
+        );
+      }
     }
+    return result;
   }
 
   async queryRecordRelayStatus(toChain: PartnerT2, transferId: string) {
-    const url =
-      toChain.level0Indexer === Level0Indexer.ponder
-        ? this.transferService.ponderEndpoint
-        : toChain.indexerUrl;
-    const id =
-      toChain.level0Indexer === Level0Indexer.ponder
-        ? `${toChain.chainConfig.id}-${transferId}`
-        : transferId;
-    const query = `query { lnv3RelayRecord(id: "${id}") { id, relayer, timestamp, transactionHash, slashed, requestWithdrawTimestamp, fee }}`;
-    return await axios
-      .post(url, {
-        query: query,
-        variables: null,
-      })
-      .then((res) => res.data?.data?.lnv3RelayRecord);
+    for (const level0Indexer of toChain.level0Indexers) {
+      const service = this.sourceServices.get(level0Indexer.indexerType);
+      try {
+        const response = await service.queryRelayStatus(
+          level0Indexer.url,
+          toChain.chainConfig.id,
+          transferId
+        );
+        if (response) {
+          return response;
+        }
+      } catch (err) {
+        this.logger.warn(
+          `try to get relay status failed, id ${toChain.chainConfig.id}, type ${level0Indexer.indexerType}, transferId ${transferId} err ${err}`
+        );
+      }
+    }
+  }
+
+  async queryMultiRecordRelayStatus(toChain: PartnerT2, transferIds: string[]) {
+    for (const level0Indexer of toChain.level0Indexers) {
+      const service = this.sourceServices.get(level0Indexer.indexerType);
+      try {
+        return await service.queryMultiRelayStatus(
+          level0Indexer.url,
+          toChain.chainConfig.id,
+          transferIds
+        );
+      } catch (err) {
+        this.logger.warn(
+          `try to get multi relay status failed, id ${toChain.chainConfig.id}, type ${level0Indexer.indexerType}, transferIds ${transferIds} err ${err}`
+        );
+        return [];
+      }
+    }
   }
 
   async queryRecordWithdrawStatus(transfer: PartnerT2, transferId: string) {
-    const url =
-      transfer.level0Indexer === Level0Indexer.ponder
-        ? this.transferService.ponderEndpoint
-        : transfer.indexerUrl;
-    const id =
-      transfer.level0Indexer === Level0Indexer.ponder
-        ? `${transfer.chainConfig.id}-${transferId}`
-        : transferId;
-    const query = `query { lnv3TransferRecord(id: "${id}") { id, hasWithdrawn }}`;
-    return await axios
-      .post(url, {
-        query: query,
-        variables: null,
-      })
-      .then((res) => res.data?.data?.lnv3TransferRecord);
+    for (const level0Indexer of transfer.level0Indexers) {
+      const service = this.sourceServices.get(level0Indexer.indexerType);
+      try {
+        const response = await service.queryWithdrawStatus(
+          level0Indexer.url,
+          transfer.chainConfig.id,
+          transferId
+        );
+        if (response) {
+          return response;
+        }
+      } catch (err) {
+        this.logger.warn(
+          `try to get withdraw status failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
+        );
+      }
+    }
   }
 
   async fetchRecords(transfer: PartnerT2, index: number) {
@@ -191,9 +228,6 @@ export class Lnv3Service implements OnModuleInit {
             this.logger.warn(`fetch record cannot find toChain, id ${record.remoteChainId}`);
             latestNonce += 1;
             this.fetchCache[index].latestNonce = latestNonce;
-            continue;
-          }
-          if (toChain.indexerUrl === null) {
             continue;
           }
           const fromToken = this.getTokenInfo(transfer, record.sourceToken);
@@ -256,25 +290,25 @@ export class Lnv3Service implements OnModuleInit {
 
   // batch get status from target chain on sycing historical phase
   async queryFillInfos(transfer: PartnerT2, latestTimestamp: number) {
-    if (transfer.level0Indexer === Level0Indexer.ponder) {
-      const url = this.transferService.ponderEndpoint;
-      const query = `query { lnv3RelayRecords(limit: 50, orderBy: "timestamp", orderDirection: "asc", where: {localChainId: "${transfer.chainConfig.id}", slashed: false, timestamp_gt: "${latestTimestamp}"}) { items { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }}`;
-      return await axios
-        .post(url, {
-          query: query,
-          variables: null,
-        })
-        .then((res) => res.data?.data?.lnv3RelayRecords.items);
-    } else {
-      const url = transfer.indexerUrl;
-      const query = `query { lnv3RelayRecords(first: 20, orderBy: timestamp, orderDirection: asc, where: {timestamp_gt: "${latestTimestamp}", slashed: false}) { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }`;
-      return await axios
-        .post(url, {
-          query: query,
-          variables: null,
-        })
-        .then((res) => res.data?.data?.lnv3RelayRecords);
+    let result = [];
+    for (const level0Indexer of transfer.level0Indexers) {
+      const service = this.sourceServices.get(level0Indexer.indexerType);
+      try {
+        const response = await service.batchQueryRelayStatus(
+          level0Indexer.url,
+          transfer.chainConfig.id,
+          latestTimestamp
+        );
+        if (response && response.length >= result.length) {
+          result = response;
+        }
+      } catch (err) {
+        this.logger.warn(
+          `try to batch get fill infos failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
+        );
+      }
     }
+    return result;
   }
 
   async batchFetchStatus(transfer: PartnerT2, index: number) {
@@ -314,13 +348,15 @@ export class Lnv3Service implements OnModuleInit {
         });
         // the record exist but not finished
         if (uncheckedRecord?.endTxHash === '') {
+          const endTxHash = uncheckedRecord.needWithdrawLiquidity
+            ? ''
+            : relayRecord.transactionHash;
           const updateData = {
             result: RecordStatus.success,
             responseTxHash: relayRecord.transactionHash,
-            endTxHash: relayRecord.transactionHash,
+            endTxHash: endTxHash,
             endTime: Number(relayRecord.timestamp),
             relayer: relayRecord.relayer.toLowerCase(),
-            needWithdrawLiquidity: false,
             lastRequestWithdraw: Number(relayRecord.requestWithdrawTimestamp),
           };
 
@@ -340,6 +376,55 @@ export class Lnv3Service implements OnModuleInit {
     } catch (error) {
       this.logger.warn(`batch fetch lnv3 status failed, error ${error}`);
     }
+  }
+
+  async fetchWithdrawCacheStatus(transfer: PartnerT2, index: number) {
+    const cache = this.fetchCache[index];
+    cache.waitingWithdrawInterval += 1;
+    if (cache.waitingWithdrawInterval < 60) {
+      return;
+    }
+    cache.waitingWithdrawInterval = 0;
+    const records = cache.waitingWithdrawRecords;
+    const transferIdMap = new Map<string, string[]>();
+    for (const record of records) {
+      const recordSplitted = record.id.split('-');
+      const transferId: string = last(recordSplitted);
+      const chainId = recordSplitted[2];
+      const transferIds = transferIdMap.get(chainId);
+      if (!transferIds) {
+        transferIdMap.set(chainId, [transferId]);
+      } else {
+        transferIds.push(transferId);
+      }
+    }
+    for (const [chainId, transferIds] of transferIdMap) {
+      const toChain = this.getDestChain(chainId);
+      const relayRecords = await this.queryMultiRecordRelayStatus(toChain, transferIds);
+      for (const relayRecord of relayRecords) {
+        const requestWithdrawTimestamp = Number(relayRecord.requestWithdrawTimestamp);
+        if (requestWithdrawTimestamp > 0) {
+          const transferRecord = await this.queryRecordWithdrawStatus(transfer, relayRecord.id);
+          if (transferRecord) {
+            const id = this.genID(
+              transfer,
+              transfer.chainConfig.id.toString(),
+              transferRecord.remoteChainId,
+              transferRecord.id
+            );
+            await this.aggregationService.updateHistoryRecord({
+              where: { id: id },
+              data: {
+                needWithdrawLiquidity: !transferRecord.hasWithdrawn,
+                endTxHash: transferRecord.hasWithdrawn ? relayRecord.transactionHash : '',
+                lastRequestWithdraw: requestWithdrawTimestamp,
+              },
+            });
+          }
+        }
+      }
+    }
+    cache.waitingWithdrawRecords = [];
   }
 
   async fetchStatus(transfer: PartnerT2, index: number) {
@@ -369,6 +454,18 @@ export class Lnv3Service implements OnModuleInit {
         const dstChainId = recordSplitted[2];
 
         if (record.endTxHash === '') {
+          // if record.result === RecordStatus.success, it must wait for withdraw liquidity
+          // then we need to reduce the frequency of requests
+          // push the request to the cache
+          if (record.result === RecordStatus.success && record.needWithdrawLiquidity) {
+            if (
+              !this.fetchCache[index].waitingWithdrawRecords.some((item) => item.id === record.id)
+            ) {
+              this.fetchCache[index].waitingWithdrawRecords.push(record);
+            }
+            continue;
+          }
+
           const toChain = this.getDestChain(dstChainId);
           const relayRecord = await this.queryRecordRelayStatus(toChain, transferId);
 
@@ -427,9 +524,9 @@ export class Lnv3Service implements OnModuleInit {
               });
 
               size += 1;
-              //this.logger.log(
-              //`lnv3 [${transfer.chain}->${toChain.chain}] new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
-              //);
+              this.logger.log(
+                `lnv3 [${transfer.chainConfig.code}->${toChain.chainConfig.code}] new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
+              );
             }
             // query withdrawLiquidity result
             if (needWithdrawLiquidity && requestWithdrawTimestamp > 0) {
@@ -444,7 +541,7 @@ export class Lnv3Service implements OnModuleInit {
                   where: { id: record.id },
                   data: {
                     needWithdrawLiquidity: !transferRecord.hasWithdrawn,
-                    endTxHash: transferRecord.responseTxHash,
+                    endTxHash: transferRecord.hasWithdrawn ? record.responseTxHash : '',
                     lastRequestWithdraw: requestWithdrawTimestamp,
                   },
                 });
@@ -498,6 +595,12 @@ export class Lnv3Service implements OnModuleInit {
   }
 
   async fetchProviderInfo(transfer: PartnerT2, index: number) {
+    const cache = this.fetchCache[index];
+    cache.fetchProviderInfoInterval += 1;
+    if (cache.fetchProviderInfoInterval <= 5) {
+      return;
+    }
+    cache.fetchProviderInfoInterval = 0;
     let latestNonce = this.fetchCache[index].latestRelayerInfoNonce;
     try {
       if (latestNonce == -1) {
@@ -514,7 +617,7 @@ export class Lnv3Service implements OnModuleInit {
       const records = await this.queryProviderInfo(transfer, latestNonce);
       // maybe this query is archived and can't access
       if (records === undefined) {
-        this.logger.warn(`query record failed, url: ${transfer.indexerUrl}`);
+        this.logger.warn(`query record failed, id: ${transfer.chainConfig.id}`);
         return;
       }
 
