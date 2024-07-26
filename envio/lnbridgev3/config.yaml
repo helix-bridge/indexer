@@ -27,3 +27,59 @@ networks:
     contracts:
       - name: HelixLnBridgeV3
         address: 0xbA5D580B18b6436411562981e02c8A9aA1776D10
+  - id: 43114
+    start_block: 48450393
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0xbA5D580B18b6436411562981e02c8A9aA1776D10
+  - id: 8453
+    start_block: 17592952
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0xbA5D580B18b6436411562981e02c8A9aA1776D10
+  - id: 56
+    start_block: 35684060
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0xbA5D580B18b6436411562981e02c8A9aA1776D10
+  - id: 100
+    start_block: 32215168
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0xbA5D580B18b6436411562981e02c8A9aA1776D10
+  - id: 59144
+    start_block: 1938417
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0xbA5D580B18b6436411562981e02c8A9aA1776D10
+  - id: 5000
+    start_block: 51738488
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0xbA5D580B18b6436411562981e02c8A9aA1776D10
+  - id: 1284
+    start_block: 6154143
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0xbA5D580B18b6436411562981e02c8A9aA1776D10
+  - id: 10
+    start_block: 115540206
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0xbA5D580B18b6436411562981e02c8A9aA1776D10
+  - id: 137
+    start_block: 52848029
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0xbA5D580B18b6436411562981e02c8A9aA1776D10
+  - id: 534352
+    start_block: 2932126
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0xbA5D580B18b6436411562981e02c8A9aA1776D10
+  - id: 46
+    start_block: 2013481
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0xbA5D580B18b6436411562981e02c8A9aA1776D10
+
