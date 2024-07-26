@@ -8,6 +8,7 @@ import { TransferService } from './transfer.service';
 import { ChainToken, ChainMessager, ChainCouple } from '@helixbridge/helixconf';
 import { Lnv3ThegraphService } from './source/thegraph.service';
 import { Lnv3PonderService } from './source/ponder.service';
+import { Lnv3EnvioService } from './source/envio.service';
 
 export enum RelayUpdateType {
   PROVIDER_UPDATE,
@@ -42,6 +43,7 @@ export class Lnv3Service implements OnModuleInit {
   ) {
     this.sourceServices.set(Level0IndexerType.thegraph, new Lnv3ThegraphService());
     this.sourceServices.set(Level0IndexerType.ponder, new Lnv3PonderService());
+    this.sourceServices.set(Level0IndexerType.envio, new Lnv3EnvioService());
   }
 
   async onModuleInit() {

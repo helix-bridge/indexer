@@ -8,6 +8,9 @@ import { AddressTokenMap } from '../base/AddressToken';
 export class TransferService extends BaseTransferServiceT2 {
   private readonly ethereumEndpoint = this.configService.get<string>('ETHEREUM_LNV3_ENDPOINT');
   private readonly arbitrumEndpoint = this.configService.get<string>('ARBITRUM_LNV3_ENDPOINT');
+  private readonly arbitrumEnvioEndpoint = this.configService.get<string>(
+    'ARBITRUM_LNV3_ENVIO_ENDPOINT'
+  );
   private readonly zksyncEndpoint = this.configService.get<string>('ZKSYNC_LNV3_ENDPOINT');
   private readonly polygonEndpoint = this.configService.get<string>('POLYGON_LNV3_ENDPOINT');
   private readonly bscEndpoint = this.configService.get<string>('BSC_LNV3_ENDPOINT');
@@ -42,6 +45,10 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           indexerType: Level0IndexerType.thegraph,
           url: this.arbitrumEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.envio,
+          url: this.arbitrumEnvioEndpoint,
         },
       ],
       chainConfig: HelixChain.arbitrum,

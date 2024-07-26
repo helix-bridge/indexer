@@ -22,6 +22,7 @@ export enum RecordStatus {
 export enum Level0IndexerType {
   thegraph,
   ponder,
+  envio,
 }
 
 export interface FetchCacheInfo {
