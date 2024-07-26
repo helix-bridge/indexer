@@ -1,0 +1,29 @@
+name: HelixLnBridgeV3
+description: HelixLnBridgeV3 indexer
+contracts:
+  - name: HelixLnBridgeV3
+    abi_file_path: ./abis/HelixLnBridgeV3.json
+    handler: ./src/EventHandlers.ts
+    events:
+      - event: TokenLocked
+        isAsync: true
+      - event: LnProviderUpdated
+        isAsync: true
+      - event: PenaltyReserveUpdated
+        isAsync: true
+      - event: SlashRequest
+        isAsync: true
+      - event: TransferFilled
+        isAsync: true
+      - event: LnProviderPaused
+        isAsync: true
+      - event: LiquidityWithdrawn
+        isAsync: true
+      - event: LiquidityWithdrawRequested
+        isAsync: true
+networks:
+  - id: 42161
+    start_block: 175050634
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0xbA5D580B18b6436411562981e02c8A9aA1776D10
