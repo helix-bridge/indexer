@@ -8,9 +8,6 @@ import { AddressTokenMap } from '../base/AddressToken';
 export class TransferService extends BaseTransferServiceT2 {
   private readonly ethereumEndpoint = this.configService.get<string>('ETHEREUM_LNV3_ENDPOINT');
   private readonly arbitrumEndpoint = this.configService.get<string>('ARBITRUM_LNV3_ENDPOINT');
-  private readonly arbitrumEnvioEndpoint = this.configService.get<string>(
-    'ARBITRUM_LNV3_ENVIO_ENDPOINT'
-  );
   private readonly zksyncEndpoint = this.configService.get<string>('ZKSYNC_LNV3_ENDPOINT');
   private readonly polygonEndpoint = this.configService.get<string>('POLYGON_LNV3_ENDPOINT');
   private readonly bscEndpoint = this.configService.get<string>('BSC_LNV3_ENDPOINT');
@@ -29,6 +26,7 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly moonbeamEndpoint = this.configService.get<string>('MOONBEAM_LNV3_ENDPOINT');
 
   public readonly ponderEndpoint = this.configService.get<string>('PONDER_LNV3_ENDPOINT');
+  private readonly dnvioEndpoint = this.configService.get<string>('LNV3_ENVIO_ENDPOINT');
 
   formalChainTransfers: PartnerT2[] = [
     {
@@ -36,6 +34,10 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           indexerType: Level0IndexerType.thegraph,
           url: this.polygonEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.envio,
+          url: this.dnvioEndpoint,
         },
       ],
       chainConfig: HelixChain.polygon,
@@ -48,7 +50,7 @@ export class TransferService extends BaseTransferServiceT2 {
         },
         {
           indexerType: Level0IndexerType.envio,
-          url: this.arbitrumEnvioEndpoint,
+          url: this.dnvioEndpoint,
         },
       ],
       chainConfig: HelixChain.arbitrum,
@@ -59,6 +61,10 @@ export class TransferService extends BaseTransferServiceT2 {
           indexerType: Level0IndexerType.thegraph,
           url: this.bscEndpoint,
         },
+        {
+          indexerType: Level0IndexerType.envio,
+          url: this.dnvioEndpoint,
+        },
       ],
       chainConfig: HelixChain.bsc,
     },
@@ -67,6 +73,10 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           indexerType: Level0IndexerType.thegraph,
           url: this.lineaEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.envio,
+          url: this.dnvioEndpoint,
         },
       ],
       chainConfig: HelixChain.linea,
@@ -77,6 +87,10 @@ export class TransferService extends BaseTransferServiceT2 {
           indexerType: Level0IndexerType.thegraph,
           url: this.opEndpoint,
         },
+        {
+          indexerType: Level0IndexerType.envio,
+          url: this.dnvioEndpoint,
+        },
       ],
       chainConfig: HelixChain.op,
     },
@@ -85,6 +99,10 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           indexerType: Level0IndexerType.thegraph,
           url: this.gnosisEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.envio,
+          url: this.dnvioEndpoint,
         },
       ],
       chainConfig: HelixChain.gnosis,
@@ -95,6 +113,10 @@ export class TransferService extends BaseTransferServiceT2 {
           indexerType: Level0IndexerType.thegraph,
           url: this.mantleEndpoint,
         },
+        {
+          indexerType: Level0IndexerType.envio,
+          url: this.dnvioEndpoint,
+        },
       ],
       chainConfig: HelixChain.mantle,
     },
@@ -104,6 +126,10 @@ export class TransferService extends BaseTransferServiceT2 {
           indexerType: Level0IndexerType.thegraph,
           url: this.scrollEndpoint,
         },
+        {
+          indexerType: Level0IndexerType.envio,
+          url: this.dnvioEndpoint,
+        },
       ],
       chainConfig: HelixChain.scroll,
     },
@@ -112,6 +138,10 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           indexerType: Level0IndexerType.thegraph,
           url: this.darwiniaEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.envio,
+          url: this.dnvioEndpoint,
         },
       ],
       chainConfig: HelixChain.darwiniaDvm,
@@ -140,8 +170,30 @@ export class TransferService extends BaseTransferServiceT2 {
           indexerType: Level0IndexerType.thegraph,
           url: this.moonbeamEndpoint,
         },
+        {
+          indexerType: Level0IndexerType.envio,
+          url: this.dnvioEndpoint,
+        },
       ],
       chainConfig: HelixChain.moonbeam,
+    },
+    {
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.envio,
+          url: this.dnvioEndpoint,
+        },
+      ],
+      chainConfig: HelixChain.avalanche,
+    },
+    {
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.envio,
+          url: this.dnvioEndpoint,
+        },
+      ],
+      chainConfig: HelixChain.base,
     },
   ];
 
