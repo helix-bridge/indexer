@@ -82,6 +82,6 @@ export class Lnv3EnvioService extends SourceService {
         query: query,
         variables: null,
       })
-      .then((res) => res.data?.data?.Lnv3TransferRecord);
+      .then((res) => res.data?.data?.Lnv3TransferRecord?.[0]);
   }
 }
