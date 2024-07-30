@@ -76,7 +76,7 @@ export class Lnv3ThegraphService extends SourceService {
     chainId: number,
     transferId: string
   ): Promise<Lnv3WithdrawStatus> {
-    const query = `query { lnv3TransferRecord(id: "${transferId}") { id, hasWithdrawn }}`;
+    const query = `query { lnv3TransferRecord(id: "${transferId}") { id, remoteChainId, hasWithdrawn }}`;
     return await axios
       .post(url, {
         query: query,
