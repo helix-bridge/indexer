@@ -176,7 +176,7 @@ export class Lnv3Service implements OnModuleInit {
           level0Indexer.url,
           toChain.chainConfig.id,
           transferIds
-        );
+        ) ?? [];
       } catch (err) {
         this.logger.warn(
           `try to get multi relay status failed, id ${toChain.chainConfig.id}, type ${level0Indexer.indexerType}, transferIds ${transferIds} err ${err}`
