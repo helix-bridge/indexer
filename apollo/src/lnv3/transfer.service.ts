@@ -24,6 +24,7 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly astarZkEVMEndpoint = this.configService.get<string>('ASTAR_ZKEVM_LNV3_ENDPOINT');
   private readonly morphEndpoint = this.configService.get<string>('MORPH_LNV3_ENDPOINT');
   private readonly moonbeamEndpoint = this.configService.get<string>('MOONBEAM_LNV3_ENDPOINT');
+  private readonly zircuitEndpoint = this.configService.get<string>('ZIRCUIT_LNV3_ENDPOINT');
 
   public readonly ponderEndpoint = this.configService.get<string>('PONDER_LNV3_ENDPOINT');
   private readonly dnvioEndpoint = this.configService.get<string>('LNV3_ENVIO_ENDPOINT');
@@ -229,7 +230,7 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.ponder,
-          url: this.taikoEndpoint,
+          url: this.ponderEndpoint,
         },
       ],
       chainConfig: HelixChain.taikoHekla,
@@ -260,6 +261,15 @@ export class TransferService extends BaseTransferServiceT2 {
         },
       ],
       chainConfig: HelixChain.baseSepolia,
+    },
+    {
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.zircuitEndpoint,
+        },
+      ],
+      chainConfig: HelixChain.zircuit,
     },
   ];
 

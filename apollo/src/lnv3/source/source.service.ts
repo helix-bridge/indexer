@@ -46,7 +46,7 @@ export interface Lnv3RelayRecord {
 export interface Lnv3WithdrawStatus {
   id: string;
   hasWithdrawn: boolean;
-  responseTxHash: string;
+  remoteChainId: number;
 }
 
 export abstract class SourceService {
