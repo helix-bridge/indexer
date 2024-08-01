@@ -172,11 +172,13 @@ export class Lnv3Service implements OnModuleInit {
     for (const level0Indexer of toChain.level0Indexers) {
       const service = this.sourceServices.get(level0Indexer.indexerType);
       try {
-        return await service.queryMultiRelayStatus(
-          level0Indexer.url,
-          toChain.chainConfig.id,
-          transferIds
-        ) ?? [];
+        return (
+          (await service.queryMultiRelayStatus(
+            level0Indexer.url,
+            toChain.chainConfig.id,
+            transferIds
+          )) ?? []
+        );
       } catch (err) {
         this.logger.warn(
           `try to get multi relay status failed, id ${toChain.chainConfig.id}, type ${level0Indexer.indexerType}, transferIds ${transferIds} err ${err}`

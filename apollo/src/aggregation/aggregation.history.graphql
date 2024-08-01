@@ -82,6 +82,11 @@ type SortedLnBridgeRelayInfos {
   records: [LnBridgeRelayInfo]
 }
 
+type TokenInfo {
+  tokenKey: String!
+  chains: [SupportChains]
+}
+
 type SupportChains {
   fromChain: String!
   toChains: [String]
@@ -104,6 +109,7 @@ type Query {
   queryLnBridgeRelayInfos(fromChain: String, toChain: String, version: String, bridge: String, relayer: String, row: Int, page: Int): LnBridgeRelayInfos
   sortedLnBridgeRelayInfos(fromChain: String, toChain: String, version: String, bridge: String, token: String, row: Int, amount: String, decimals: Int): SortedLnBridgeRelayInfos
   queryLnBridgeSupportChains(tokenKey: String): [SupportChains]
+  queryLnBridgeSupportedChains(tokenKey: String): [TokenInfo]
   queryMaxTransfer(fromChain: String, toChain: String, bridge: String, token: String, balance: String): BigInt
 }
 

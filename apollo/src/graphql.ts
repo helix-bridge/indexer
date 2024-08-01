@@ -88,6 +88,11 @@ export class SortedLnBridgeRelayInfos {
   records?: Nullable<Nullable<LnBridgeRelayInfo>[]>;
 }
 
+export class TokenInfo {
+  tokenKey: string;
+  chains?: Nullable<Nullable<SupportChains>[]>;
+}
+
 export class SupportChains {
   fromChain: string;
   toChains?: Nullable<Nullable<string>[]>;
@@ -186,6 +191,10 @@ export abstract class IQuery {
   abstract queryLnBridgeSupportChains(
     tokenKey?: Nullable<string>
   ): Nullable<Nullable<SupportChains>[]> | Promise<Nullable<Nullable<SupportChains>[]>>;
+
+  abstract queryLnBridgeSupportedChains(
+    tokenKey?: Nullable<string>
+  ): Nullable<Nullable<TokenInfo>[]> | Promise<Nullable<Nullable<TokenInfo>[]>>;
 
   abstract queryMaxTransfer(
     fromChain?: Nullable<string>,

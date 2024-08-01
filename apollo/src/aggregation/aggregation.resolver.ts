@@ -2,6 +2,7 @@ import { Args, Query, Mutation, Resolver } from '@nestjs/graphql';
 import { isEmpty, isNull, isUndefined } from 'lodash';
 import { AggregationService } from './aggregation.service';
 import { Prisma } from '@prisma/client';
+import { TokenInfo } from '../graphql';
 import * as ethUtil from 'ethereumjs-util';
 import Web3 from 'web3';
 
@@ -399,11 +400,19 @@ export class AggregationResolver {
 
   @Query()
   async queryLnBridgeSupportChains(@Args('tokenKey') tokenKey: string) {
+    const tokens = await this.queryLnBridgeSupportedChains(tokenKey);
+    return tokens?.find((e) => e.tokenKey === tokenKey)?.chains;
+  }
+
+  @Query()
+  async queryLnBridgeSupportedChains(@Args('tokenKey') tokenKey: string) {
     const baseFilters = {
-      tokenKey,
       paused: false,
       OR: [{ transferLimit: { not: '0' } }, { margin: { not: '0' } }],
     };
+    if (tokenKey.length > 0) {
+      baseFilters['tokenKey'] = tokenKey;
+    }
 
     const where = {
       ...baseFilters,
@@ -412,27 +421,30 @@ export class AggregationResolver {
     const records = await this.aggregationService.queryLnBridgeRelayInfos({
       where,
     });
-    const supportChains = new Map();
+
     const now = Math.floor(Date.now() / 1000);
-    for (const record of records.records) {
+    return records.records.reduce((result, record) => {
       if (record.heartbeatTimestamp + this.heartbeatTimeout < now) {
-        continue;
+        return result;
       }
 
-      const toChains = supportChains.get(record.fromChain);
-
-      if (!toChains) {
-        supportChains.set(record.fromChain, [record.toChain]);
-      } else {
-        if (!toChains.includes(record.toChain)) {
-          toChains.push(record.toChain);
-        }
+      let token = result.find((e) => e.tokenKey === record.tokenKey);
+      if (!token) {
+        token = { tokenKey: record.tokenKey, chains: [] };
+        result.push(token);
       }
-    }
-    return Array.from(supportChains, ([fromChain, toChains]) => ({
-      fromChain,
-      toChains,
-    }));
+
+      let chain = token.chains.find((chain) => chain.fromChain === record.fromChain);
+      if (!chain) {
+        chain = { fromChain: record.fromChain, toChains: [] };
+        token.chains.push(chain);
+      }
+
+      if (!chain.toChains.includes(record.toChain)) {
+        chain.toChains.push(record.toChain);
+      }
+      return result;
+    }, [] as TokenInfo[]);
   }
 
   @Query()
