@@ -1,0 +1,50 @@
+name: HelixLnBridgeV3
+description: HelixLnBridgeV3 indexer
+contracts:
+  - name: HelixLnBridgeV3
+    abi_file_path: ./abis/HelixLnBridgeV3.json
+    handler: ./src/EventHandlers.ts
+    events:
+      - event: TokenLocked
+        isAsync: true
+      - event: LnProviderUpdated
+        isAsync: true
+      - event: PenaltyReserveUpdated
+        isAsync: true
+      - event: SlashRequest
+        isAsync: true
+      - event: TransferFilled
+        isAsync: true
+      - event: LnProviderPaused
+        isAsync: true
+      - event: LiquidityWithdrawn
+        isAsync: true
+      - event: LiquidityWithdrawRequested
+        isAsync: true
+networks:
+  - id: 80084
+    start_block: 2862698
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0x5fc7BC9F21e5dAd364756CC92c43C1E553580107
+  - id: 2014
+    rpc_config:
+      url: https://rpc-testnet.nowscan.io
+    start_block: 571371
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0xE50bEBA1e495f9D8BBBFcAfB95bB2d7d8aD82295
+  - id: 2710
+    rpc_config:
+      url: https://rpc-testnet.morphl2.io
+    start_block: 1938140
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0xD476650e03a45E70202b0bcAfa04E1513920f83a
+  - id: 48899
+    rpc_config:
+      url: https://zircuit1.p2pify.com
+    start_block: 11253769
+    contracts:
+      - name: HelixLnBridgeV3
+        address: 0x369642b7b9cf4eAc16b07797F77e1C0907Ea62c1

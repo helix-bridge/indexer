@@ -1,0 +1,63 @@
+type LnNonceOrder @entity {
+  id: ID!
+  count: BigInt!
+}
+
+type Lnv3TransferRecord @entity {
+  id: ID!
+  nonce: BigInt!
+  messageNonce: BigInt!
+  localChainId: Int!
+  remoteChainId: BigInt!
+  provider: Bytes!
+  sourceToken: Bytes!
+  targetToken: Bytes!
+  sourceAmount: BigInt!
+  targetAmount: BigInt!
+  sender: Bytes!
+  receiver: Bytes!
+  timestamp: Int!
+  transactionHash: Bytes!
+  fee: BigInt
+  transferId: Bytes!
+  hasWithdrawn: Boolean
+}
+
+type Lnv3RelayRecord @entity {
+  id: ID!
+  localChainId: Int!
+  relayer: Bytes!
+  transactionHash: Bytes!
+  timestamp: Int!
+  fee: BigInt
+  slashed: Boolean!
+  requestWithdrawTimestamp: Int
+}
+
+type Lnv3RelayUpdateRecord @entity {
+  id: ID!
+  nonce: BigInt!
+  localChainId: Int!
+  remoteChainId: BigInt!
+  updateType: Int!
+  provider: Bytes!
+  sourceToken: Bytes!
+  targetToken: Bytes!
+  transactionHash: Bytes!
+  timestamp: Int!
+  penalty: BigInt
+  baseFee: BigInt
+  transferLimit: BigInt
+  liquidityFeeRate: BigInt
+  paused: Boolean
+}
+
+type Lnv3PenaltyReserve @entity {
+  id: ID!
+  localChainId: Int!
+  provider: Bytes!
+  sourceToken: Bytes!
+  penaltyReserved: BigInt
+}
+
+
