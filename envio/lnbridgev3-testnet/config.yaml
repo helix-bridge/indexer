@@ -23,6 +23,8 @@ contracts:
         isAsync: true
 networks:
   - id: 80084
+    rpc_config:
+      url: https://bartio.rpc.berachain.com
     start_block: 2862698
     contracts:
       - name: HelixLnBridgeV3
