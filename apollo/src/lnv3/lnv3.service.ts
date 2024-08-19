@@ -9,6 +9,7 @@ import { ChainToken, ChainMessager, ChainCouple } from '@helixbridge/helixconf';
 import { Lnv3ThegraphService } from './source/thegraph.service';
 import { Lnv3PonderService } from './source/ponder.service';
 import { Lnv3EnvioService } from './source/envio.service';
+import { Lnv3SuperService } from './source/super.service';
 
 export enum RelayUpdateType {
   PROVIDER_UPDATE,
@@ -44,6 +45,7 @@ export class Lnv3Service implements OnModuleInit {
     this.sourceServices.set(Level0IndexerType.thegraph, new Lnv3ThegraphService());
     this.sourceServices.set(Level0IndexerType.ponder, new Lnv3PonderService());
     this.sourceServices.set(Level0IndexerType.envio, new Lnv3EnvioService());
+    this.sourceServices.set(Level0IndexerType.superindex, new Lnv3SuperService());
   }
 
   async onModuleInit() {
@@ -236,6 +238,18 @@ export class Lnv3Service implements OnModuleInit {
           }
           const fromToken = this.getTokenInfo(transfer, record.sourceToken);
           const toToken = this.getTokenInfo(toChain, record.targetToken);
+          if (fromToken === null) {
+            this.logger.warn(
+              `cannot find fromToken symbol, fromToken ${record.sourceToken}, chain: ${transfer.chainConfig.code}`
+            );
+            continue;
+          }
+          if (toToken === null) {
+            this.logger.warn(
+              `cannot find fromToken symbol, toToken ${record.targetToken}, chain: ${toChain.chainConfig.code}`
+            );
+            continue;
+          }
 
           const responseHash = '';
           const result = RecordStatus.pending;

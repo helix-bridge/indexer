@@ -28,6 +28,7 @@ export class TransferService extends BaseTransferServiceT2 {
 
   public readonly ponderEndpoint = this.configService.get<string>('PONDER_LNV3_ENDPOINT');
   private readonly dnvioEndpoint = this.configService.get<string>('LNV3_ENVIO_ENDPOINT');
+  private readonly superindexEndpoint = this.configService.get<string>('LNV3_SUPER_ENDPOINT');
 
   formalChainTransfers: PartnerT2[] = [
     {
@@ -247,8 +248,8 @@ export class TransferService extends BaseTransferServiceT2 {
     {
       level0Indexers: [
         {
-          indexerType: Level0IndexerType.thegraph,
-          url: this.beraEndpoint,
+          indexerType: Level0IndexerType.superindex,
+          url: this.superindexEndpoint,
         },
       ],
       chainConfig: HelixChain.bera,
@@ -256,8 +257,8 @@ export class TransferService extends BaseTransferServiceT2 {
     {
       level0Indexers: [
         {
-          indexerType: Level0IndexerType.thegraph,
-          url: this.morphEndpoint,
+          indexerType: Level0IndexerType.superindex,
+          url: this.superindexEndpoint,
         },
       ],
       chainConfig: HelixChain.morph,
@@ -274,11 +275,11 @@ export class TransferService extends BaseTransferServiceT2 {
     {
       level0Indexers: [
         {
-          indexerType: Level0IndexerType.thegraph,
-          url: this.zircuitEndpoint,
+          indexerType: Level0IndexerType.superindex,
+          url: this.superindexEndpoint,
         },
       ],
-      chainConfig: HelixChain.zircuit,
+      chainConfig: HelixChain.zircuitSepolia,
     },
   ];
 

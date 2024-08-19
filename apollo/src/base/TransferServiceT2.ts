@@ -23,6 +23,7 @@ export enum Level0IndexerType {
   thegraph,
   ponder,
   envio,
+  superindex,
 }
 
 export interface FetchCacheInfo {
