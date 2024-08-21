@@ -51,24 +51,24 @@ jobs:
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/apollo:${{ steps.tag-name.outputs.tag }}
             ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/apollo:latest
 
-      - name: Build ponder with sha
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          context: ponder/lnv3
-          tags: |
-            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:sha-${{ steps.short-sha.outputs.sha }}
-            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:staging
+  #   - name: Build ponder with sha
+  #     uses: docker/build-push-action@v3
+  #     with:
+  #       push: true
+  #       context: ponder/lnv3
+  #       tags: |
+  #         ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:sha-${{ steps.short-sha.outputs.sha }}
+  #         ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:staging
 
-      - name: Build ponder with tag
-        uses: docker/build-push-action@v3
-        if: startsWith(github.ref, 'refs/tags/v')
-        with:
-          push: true
-          context: ponder/lnv3
-          tags: |
-            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:${{ steps.tag-name.outputs.tag }}
-            ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:latest
+  #   - name: Build ponder with tag
+  #     uses: docker/build-push-action@v3
+  #     if: startsWith(github.ref, 'refs/tags/v')
+  #     with:
+  #       push: true
+  #       context: ponder/lnv3
+  #       tags: |
+  #         ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:${{ steps.tag-name.outputs.tag }}
+  #         ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/ponder:latest
 
   # deploy-railway:
   #   name: Deploy railway
