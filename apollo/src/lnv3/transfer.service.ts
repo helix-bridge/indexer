@@ -19,7 +19,6 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly darwiniaEndpoint = this.configService.get<string>('DARWINIA_LNV3_ENDPOINT');
   private readonly blastEndpoint = this.configService.get<string>('BLAST_LNV3_ENDPOINT');
   private readonly baseEndpoint = this.configService.get<string>('BASE_LNV3_ENDPOINT');
-  private readonly beraEndpoint = this.configService.get<string>('BERA_LNV3_ENDPOINT');
   private readonly taikoEndpoint = this.configService.get<string>('TAIKO_LNV3_ENDPOINT');
   private readonly astarZkEVMEndpoint = this.configService.get<string>('ASTAR_ZKEVM_LNV3_ENDPOINT');
   private readonly morphEndpoint = this.configService.get<string>('MORPH_LNV3_ENDPOINT');
@@ -253,6 +252,15 @@ export class TransferService extends BaseTransferServiceT2 {
         },
       ],
       chainConfig: HelixChain.morph,
+    },
+    {
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.superindex,
+          url: this.superindexEndpoint,
+        },
+      ],
+      chainConfig: HelixChain.bera,
     },
     {
       level0Indexers: [

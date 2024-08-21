@@ -730,10 +730,10 @@
   dependencies:
     tslib "^2.4.0"
 
-"@helixbridge/helixconf@1.1.11":
-  version "1.1.11"
-  resolved "https://registry.yarnpkg.com/@helixbridge/helixconf/-/helixconf-1.1.11.tgz#f64330ceb2c1d7835b70873bae4d0e42c61bd366"
-  integrity sha512-qNtIzc0CUMhpOIO6DDpJRMTLOlKD3WHcVSkAJOERAQkv0f1RvJHF7TwpJEDcSSUCXHOiAX0DiFb5skGh16p7xA==
+"@helixbridge/helixconf@1.1.13":
+  version "1.1.13"
+  resolved "https://registry.yarnpkg.com/@helixbridge/helixconf/-/helixconf-1.1.13.tgz#69c1861fb4d36f5530a928098b127c881da3a21e"
+  integrity sha512-gF9bwHQJyvbimfRIFDBk3cefEZC4QCuOBb71IZlD5zDyGETarMZjWW19ITDuzT9895pYemrbW6OgRofZBBF7pg==
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
