@@ -21,6 +21,7 @@ export class AggregationResolver {
     '0x3b9e571adecb0c277486036d6097e9c2cccfa9d9': '0x0b425baaf0443275d40ce854734b06e7e976387d',
     '0x2fdec62e57e1a77db6984424c01a3c13fbca7cc1': '0x00000c377b096e0c904d7736be14e653e500481c',
   };
+  private invalidRelayerHeartbeat = new Map();
   constructor(private aggregationService: AggregationService) {}
 
   private ecrecover(hash: string, sig: string): string {
@@ -273,8 +274,11 @@ export class AggregationResolver {
         data: updateData,
       });
     } catch (e) {
-      console.log(`heart beat failed ${id}, exception: ${e}`);
-      return;
+      const saved = this.invalidRelayerHeartbeat.get(id);
+      if (!saved) {
+        console.log(`heart beat failed ${id}, exception: ${e}`);
+        this.invalidRelayerHeartbeat.set(id, true);
+      }
     }
   }
 
