@@ -14,7 +14,7 @@ export class Lnv3SuperService extends SourceService {
       .post(url, {
         query: query,
         variables: null,
-      })
+      }, { timeout: 10000 })
       .then((res) => res.data?.data?.lnv3TransferRecords);
   }
 
@@ -28,7 +28,7 @@ export class Lnv3SuperService extends SourceService {
       .post(url, {
         query: query,
         variables: null,
-      })
+      }, { timeout: 10000 })
       .then((res) => res.data?.data?.lnv3RelayUpdateRecords);
   }
   async queryRelayStatus(
@@ -41,7 +41,7 @@ export class Lnv3SuperService extends SourceService {
       .post(url, {
         query: query,
         variables: null,
-      })
+      }, { timeout: 10000 })
       .then((res) => res.data?.data?.lnv3RelayRecord);
   }
   async queryMultiRelayStatus(
@@ -55,7 +55,7 @@ export class Lnv3SuperService extends SourceService {
       .post(url, {
         query: query,
         variables: null,
-      })
+      }, { timeout: 10000 })
       .then((res) => res.data?.data?.lnv3RelayRecords);
   }
   async batchQueryRelayStatus(
@@ -69,7 +69,7 @@ export class Lnv3SuperService extends SourceService {
       .post(url, {
         query: query,
         variables: null,
-      })
+      }, { timeout: 10000 })
       .then((res) => res.data?.data?.lnv3RelayRecords);
   }
   async queryWithdrawStatus(
@@ -82,7 +82,7 @@ export class Lnv3SuperService extends SourceService {
       .post(url, {
         query: query,
         variables: null,
-      })
+      }, { timeout: 10000 })
       .then((res) => res.data?.data?.lnv3TransferRecord);
   }
 }

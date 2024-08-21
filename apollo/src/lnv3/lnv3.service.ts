@@ -57,7 +57,7 @@ export class Lnv3Service implements OnModuleInit {
         this.fetchSendDataInterval,
         async () => {
           if (this.fetchCache[index].isSyncingHistory) {
-            return;
+            return true;
           }
           this.fetchCache[index].isSyncingHistory = true;
           await this.fetchProviderInfo(item, index);
@@ -66,6 +66,7 @@ export class Lnv3Service implements OnModuleInit {
           await this.fetchStatus(item, index);
           await this.fetchWithdrawCacheStatus(item, index);
           this.fetchCache[index].isSyncingHistory = false;
+          return false;
         }
       );
     });

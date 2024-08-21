@@ -89,6 +89,7 @@ export class Lnv2Service implements OnModuleInit {
               index: 2 * index,
             };
             this.schedule(item, indexInfo);
+            return false;
           }
         );
       }
@@ -103,6 +104,7 @@ export class Lnv2Service implements OnModuleInit {
               index: 2 * index + 1,
             };
             this.schedule(item, indexInfo);
+            return false;
           }
         );
       }

@@ -91,6 +91,7 @@ export abstract class BaseServiceT1 {
         this.baseConfigure.fetchSendDataInterval,
         async () => {
           this.schedule(item, index);
+          return false;
         }
       );
     });

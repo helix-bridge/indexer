@@ -337,11 +337,11 @@ export class AggregationResolver {
   @Query()
   tasksHealthCheck(@Args('name') name: string) {
     const healthChecks = this.aggregationService.tasksHealthCheck();
-    if (name !== null) {
+    if (name) {
       return [
         {
           name: name,
-          callTimes: healthChecks[name],
+          callTimes: healthChecks.get(name),
         },
       ];
     }
