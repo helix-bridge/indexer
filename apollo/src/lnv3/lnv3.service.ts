@@ -34,6 +34,7 @@ export class Lnv3Service implements OnModuleInit {
 
   private readonly takeEachTime = 2;
   private skip = new Array(this.transferService.transfers.length).fill(0);
+  private skipForWithdrawLiquidity = new Array(this.transferService.transfers.length).fill(0);
   private sourceServices = new Map();
 
   constructor(
@@ -404,7 +405,27 @@ export class Lnv3Service implements OnModuleInit {
       return;
     }
     cache.waitingWithdrawInterval = 0;
-    const records = cache.waitingWithdrawRecords;
+
+    const records = await this.aggregationService
+      .queryHistoryRecords({
+        skip: this.skipForWithdrawLiquidity[index],
+        take: this.takeEachTime,
+        where: {
+          fromChain: transfer.chainConfig.code,
+          bridge: `lnv3`,
+          NOT: { result: RecordStatus.pending },
+          needWithdrawLiquidity: true,
+          endTxHash: '',
+        },
+      })
+      .then((result) => result.records);
+
+    if (records.length < this.takeEachTime) {
+      this.skipForWithdrawLiquidity[index] = 0;
+    } else {
+      this.skipForWithdrawLiquidity[index] += this.takeEachTime;
+    }
+
     const transferIdMap = new Map<string, string[]>();
     for (const record of records) {
       const recordSplitted = record.id.split('-');
@@ -443,7 +464,6 @@ export class Lnv3Service implements OnModuleInit {
         }
       }
     }
-    cache.waitingWithdrawRecords = [];
   }
 
   async fetchStatus(transfer: PartnerT2, index: number) {
@@ -455,6 +475,7 @@ export class Lnv3Service implements OnModuleInit {
           where: {
             fromChain: transfer.chainConfig.code,
             bridge: `lnv3`,
+            result: RecordStatus.pending,
             endTxHash: '',
           },
         })
@@ -471,104 +492,67 @@ export class Lnv3Service implements OnModuleInit {
         const recordSplitted = record.id.split('-');
         const transferId = last(recordSplitted);
         const dstChainId = recordSplitted[2];
+        const toChain = this.getDestChain(dstChainId);
+        const relayRecord = await this.queryRecordRelayStatus(toChain, transferId);
 
-        if (record.endTxHash === '') {
-          // if record.result === RecordStatus.success, it must wait for withdraw liquidity
-          // then we need to reduce the frequency of requests
-          // push the request to the cache
-          if (record.result === RecordStatus.success && record.needWithdrawLiquidity) {
-            if (
-              !this.fetchCache[index].waitingWithdrawRecords.some((item) => item.id === record.id)
-            ) {
-              this.fetchCache[index].waitingWithdrawRecords.push(record);
-            }
-            continue;
-          }
-
-          const toChain = this.getDestChain(dstChainId);
-          const relayRecord = await this.queryRecordRelayStatus(toChain, transferId);
-
-          if (relayRecord) {
-            let needWithdrawLiquidity = record.needWithdrawLiquidity;
-            const requestWithdrawTimestamp = Number(relayRecord.requestWithdrawTimestamp);
-            let endTxHash = record.endTxHash;
-            if (record.result !== RecordStatus.success) {
-              const providerId = this.genRelayInfoID(
-                transfer.chainConfig.id,
-                toChain.chainConfig.id,
-                record.relayer,
-                record.sendTokenAddress
-              );
-              const relayerInfo = await this.aggregationService.queryLnBridgeRelayInfoById({
-                id: providerId,
-              });
-              // waiting for relayer info update
-              if (!relayerInfo) {
-                this.logger.log(
-                  `lnv3 [${transfer.chainConfig.code}->${toChain.chainConfig.code}] waiting for relayer info update, id: ${providerId}`
-                );
-                continue;
-              }
-
-              if (relayRecord.slashed) {
-                needWithdrawLiquidity = false;
-              }
-              if (!needWithdrawLiquidity) {
-                endTxHash = relayRecord.transactionHash;
-              }
-              const updateData = {
-                result: RecordStatus.success,
-                responseTxHash: relayRecord.transactionHash,
-                endTxHash: endTxHash,
-                endTime: Number(relayRecord.timestamp),
-                relayer: relayRecord.relayer.toLowerCase(),
-                needWithdrawLiquidity: needWithdrawLiquidity,
-                lastRequestWithdraw: requestWithdrawTimestamp,
-              };
-
-              await this.aggregationService.updateHistoryRecord({
-                where: { id: record.id },
-                data: updateData,
-              });
-
-              const cost = relayRecord.slashed ? 0 : relayRecord.fee;
-              const profit = relayRecord.slashed ? 0 : record.fee;
-
-              await this.aggregationService.updateLnBridgeRelayInfo({
-                where: { id: providerId },
-                data: {
-                  cost: (BigInt(relayerInfo.cost) + BigInt(cost)).toString(),
-                  profit: (BigInt(relayerInfo.profit) + BigInt(profit)).toString(),
-                },
-              });
-
-              size += 1;
+        if (relayRecord) {
+          let needWithdrawLiquidity = record.needWithdrawLiquidity;
+          const requestWithdrawTimestamp = Number(relayRecord.requestWithdrawTimestamp);
+          let endTxHash = record.endTxHash;
+          if (record.result !== RecordStatus.success) {
+            const providerId = this.genRelayInfoID(
+              transfer.chainConfig.id,
+              toChain.chainConfig.id,
+              record.relayer,
+              record.sendTokenAddress
+            );
+            const relayerInfo = await this.aggregationService.queryLnBridgeRelayInfoById({
+              id: providerId,
+            });
+            // waiting for relayer info update
+            if (!relayerInfo) {
               this.logger.log(
-                `lnv3 [${transfer.chainConfig.code}->${toChain.chainConfig.code}] new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
+                `lnv3 [${transfer.chainConfig.code}->${toChain.chainConfig.code}] waiting for relayer info update, id: ${providerId}`
               );
+              continue;
             }
-            // query withdrawLiquidity result
-            if (needWithdrawLiquidity && requestWithdrawTimestamp > 0) {
-              // query result on source
-              const transferRecord = await this.queryRecordWithdrawStatus(transfer, transferId);
-              if (
-                transferRecord &&
-                (transferRecord.hasWithdrawn ||
-                  record.lastRequestWithdraw < requestWithdrawTimestamp)
-              ) {
-                await this.aggregationService.updateHistoryRecord({
-                  where: { id: record.id },
-                  data: {
-                    needWithdrawLiquidity: !transferRecord.hasWithdrawn,
-                    endTxHash: transferRecord.hasWithdrawn ? record.responseTxHash : '',
-                    lastRequestWithdraw: requestWithdrawTimestamp,
-                  },
-                });
-                this.logger.log(
-                  `lnv3 [${transfer.chainConfig.code}->${toChain.chainConfig.code}] tx withdrawn id: ${record.id}, time: ${requestWithdrawTimestamp}, done: ${transferRecord.hasWithdrawn}`
-                );
-              }
+
+            if (relayRecord.slashed) {
+              needWithdrawLiquidity = false;
             }
+            if (!needWithdrawLiquidity) {
+              endTxHash = relayRecord.transactionHash;
+            }
+            const updateData = {
+              result: RecordStatus.success,
+              responseTxHash: relayRecord.transactionHash,
+              endTxHash: endTxHash,
+              endTime: Number(relayRecord.timestamp),
+              relayer: relayRecord.relayer.toLowerCase(),
+              needWithdrawLiquidity: needWithdrawLiquidity,
+              lastRequestWithdraw: requestWithdrawTimestamp,
+            };
+
+            await this.aggregationService.updateHistoryRecord({
+              where: { id: record.id },
+              data: updateData,
+            });
+
+            const cost = relayRecord.slashed ? 0 : relayRecord.fee;
+            const profit = relayRecord.slashed ? 0 : record.fee;
+
+            await this.aggregationService.updateLnBridgeRelayInfo({
+              where: { id: providerId },
+              data: {
+                cost: (BigInt(relayerInfo.cost) + BigInt(cost)).toString(),
+                profit: (BigInt(relayerInfo.profit) + BigInt(profit)).toString(),
+              },
+            });
+
+            size += 1;
+            this.logger.log(
+              `lnv3 [${transfer.chainConfig.code}->${toChain.chainConfig.code}] new status id: ${record.id} relayed responseTxHash: ${relayRecord.transactionHash}`
+            );
           }
         }
       }

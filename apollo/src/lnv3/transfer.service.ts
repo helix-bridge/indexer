@@ -252,15 +252,6 @@ export class TransferService extends BaseTransferServiceT2 {
           url: this.superindexEndpoint,
         },
       ],
-      chainConfig: HelixChain.bera,
-    },
-    {
-      level0Indexers: [
-        {
-          indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
-        },
-      ],
       chainConfig: HelixChain.morph,
     },
     {

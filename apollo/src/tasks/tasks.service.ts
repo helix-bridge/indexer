@@ -16,7 +16,7 @@ export class TasksService {
       const callTimes: number = this.healthChecks.get(name);
       const busy = await callback();
       if (!busy) {
-          this.healthChecks.set(name, callTimes + 1);
+        this.healthChecks.set(name, callTimes + 1);
       }
     }, milliseconds);
     this.schedulerRegistry.addInterval(name, interval);
