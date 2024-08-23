@@ -16,6 +16,12 @@ export enum RelayUpdateType {
   PAUSE_UPDATE,
 }
 
+interface SkipInfo {
+  fromChain: string;
+  toChain: string;
+  skip: number;
+}
+
 @Injectable()
 export class Lnv3Service implements OnModuleInit {
   private readonly logger = new Logger('lnv3');
@@ -33,7 +39,7 @@ export class Lnv3Service implements OnModuleInit {
   protected fetchSendDataInterval = 5000;
 
   private readonly takeEachTime = 2;
-  private skip = new Array(this.transferService.transfers.length).fill(0);
+  private skip: SkipInfo[] = [];
   private skipForWithdrawLiquidity = new Array(this.transferService.transfers.length).fill(0);
   private sourceServices = new Map();
 
@@ -64,7 +70,7 @@ export class Lnv3Service implements OnModuleInit {
           await this.fetchProviderInfo(item, index);
           await this.fetchRecords(item, index);
           await this.batchFetchStatus(item, index);
-          await this.fetchStatus(item, index);
+          await this.fetchStatuses(item, index);
           await this.fetchWithdrawCacheStatus(item, index);
           this.fetchCache[index].isSyncingHistory = false;
           return false;
@@ -256,6 +262,17 @@ export class Lnv3Service implements OnModuleInit {
           const responseHash = '';
           const result = RecordStatus.pending;
           const endTime = 0;
+          const skip = this.skip.find(
+            (s) =>
+              s.fromChain === transfer.chainConfig.code && s.toChain === toChain.chainConfig.code
+          );
+          if (!skip) {
+            this.skip.push({
+              fromChain: transfer.chainConfig.code,
+              toChain: toChain.chainConfig.code,
+              skip: 0,
+            });
+          }
           await this.aggregationService.createHistoryRecord({
             id: this.genID(
               transfer,
@@ -466,14 +483,22 @@ export class Lnv3Service implements OnModuleInit {
     }
   }
 
-  async fetchStatus(transfer: PartnerT2, index: number) {
+  async fetchStatuses(transfer: PartnerT2, index: number) {
+    const skips = this.skip.filter((s) => s.fromChain === transfer.chainConfig.code);
+    for (const skip of skips) {
+      await this.fetchStatus(transfer, index, skip);
+    }
+  }
+
+  async fetchStatus(transfer: PartnerT2, index: number, skip: SkipInfo) {
     try {
       const uncheckedRecords = await this.aggregationService
         .queryHistoryRecords({
-          skip: this.skip[index],
+          skip: skip.skip,
           take: this.takeEachTime,
           where: {
             fromChain: transfer.chainConfig.code,
+            toChain: skip.toChain,
             bridge: `lnv3`,
             result: RecordStatus.pending,
             endTxHash: '',
@@ -482,9 +507,9 @@ export class Lnv3Service implements OnModuleInit {
         .then((result) => result.records);
 
       if (uncheckedRecords.length < this.takeEachTime) {
-        this.skip[index] = 0;
+        skip.skip = 0;
       } else {
-        this.skip[index] += this.takeEachTime;
+        skip.skip += this.takeEachTime;
       }
 
       let size = 0;
