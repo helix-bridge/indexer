@@ -229,6 +229,10 @@ export class TransferService extends BaseTransferServiceT2 {
     {
       level0Indexers: [
         {
+          indexerType: Level0IndexerType.superindex,
+          url: this.superindexEndpoint,
+        },
+        {
           indexerType: Level0IndexerType.thegraph,
           url: this.zksyncEndpoint,
         },
@@ -238,8 +242,8 @@ export class TransferService extends BaseTransferServiceT2 {
     {
       level0Indexers: [
         {
-          indexerType: Level0IndexerType.ponder,
-          url: this.ponderEndpoint,
+          indexerType: Level0IndexerType.superindex,
+          url: this.superindexEndpoint,
         },
       ],
       chainConfig: HelixChain.taikoHekla,
