@@ -76,6 +76,7 @@ export class LnBridgeRelayInfo {
   dynamicFee?: Nullable<string>;
   dynamicFeeExpire?: Nullable<string>;
   dynamicFeeSignature?: Nullable<string>;
+  signers?: Nullable<string>;
 }
 
 export class LnBridgeRelayInfos {

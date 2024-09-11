@@ -70,6 +70,7 @@ type LnBridgeRelayInfo {
   dynamicFee: String
   dynamicFeeExpire: String
   dynamicFeeSignature: String
+  signers: String
 }
 
 type LnBridgeRelayInfos {

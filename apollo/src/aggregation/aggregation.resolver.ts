@@ -23,6 +23,7 @@ export class AggregationResolver {
     '0x2fdec62e57e1a77db6984424c01a3c13fbca7cc1': '0x00000c377b096e0c904d7736be14e653e500481c',
   };
   private invalidRelayerHeartbeat = new Map();
+  private signerHeartbeatTimestamp = [];
   constructor(private aggregationService: AggregationService) {}
 
   private ecrecover(hash: string, sig: string): string {
@@ -57,6 +58,19 @@ export class AggregationResolver {
         { value: messageHash, type: 'bytes' }
       );
       const signer = this.ecrecover(dataHash, sig);
+      // cache the signer heartbeat timestamp
+      if (this.relayerProxy[signer] === relayer.toLowerCase()) {
+        const heartBeatSigner = this.signerHeartbeatTimestamp.find((s) => s.address === signer);
+        if (heartBeatSigner) {
+          heartBeatSigner.timestamp = timestamp;
+        } else {
+          this.signerHeartbeatTimestamp.push({
+            address: signer,
+            proxy: relayer.toLowerCase(),
+            timestamp: timestamp,
+          });
+        }
+      }
       return signer === relayer || this.relayerProxy[signer] === relayer;
     } catch {
       return false;
@@ -400,6 +414,14 @@ export class AggregationResolver {
       take,
       where,
     });
+    for (const record of records.records) {
+      const signers = this.signerHeartbeatTimestamp.filter(
+        (s) => s.proxy === record.relayer.toLowerCase()
+      );
+      if (signers.length > 0) {
+        record.signers = signers.map((s) => `${s.address}-${s.timestamp}`).join(',');
+      }
+    }
     return records;
   }
 
