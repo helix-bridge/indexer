@@ -141,6 +141,10 @@ export class TransferService extends BaseTransferServiceT2 {
           url: this.darwiniaEndpoint,
         },
         {
+          indexerType: Level0IndexerType.superindex,
+          url: this.superindexEndpoint,
+        },
+        {
           indexerType: Level0IndexerType.envio,
           url: this.dnvioEndpoint,
         },
