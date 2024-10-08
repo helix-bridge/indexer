@@ -65,11 +65,6 @@ export class TransferService extends BaseTransferServiceT3 {
       chainConfig: HelixChain.arbitrum,
     },
     {
-      defaultEndpoint: this.lnMantleDefaultEndpoint,
-      oppositeEndpoint: null,
-      chainConfig: HelixChain.mantle,
-    },
-    {
       defaultEndpoint: this.lnPolygonDefaultEndpoint,
       oppositeEndpoint: null,
       chainConfig: HelixChain.polygon,
@@ -88,11 +83,6 @@ export class TransferService extends BaseTransferServiceT3 {
       defaultEndpoint: this.lnDarwiniaDefaultEndpoint,
       oppositeEndpoint: this.lnDarwiniaOppositeEndpoint,
       chainConfig: HelixChain.darwiniaDvm,
-    },
-    {
-      defaultEndpoint: this.lnCrabDefaultEndpoint,
-      oppositeEndpoint: null,
-      chainConfig: HelixChain.crabDvm,
     },
     {
       defaultEndpoint: this.lnBscDefaultEndpoint,

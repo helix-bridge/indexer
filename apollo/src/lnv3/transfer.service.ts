@@ -190,6 +190,10 @@ export class TransferService extends BaseTransferServiceT2 {
     {
       level0Indexers: [
         {
+          indexerType: Level0IndexerType.thegraph,
+          url: this.baseEndpoint,
+        },
+        {
           indexerType: Level0IndexerType.superindex,
           url: this.superindexEndpoint,
         },
