@@ -418,7 +418,7 @@ export class Lnv3Service implements OnModuleInit {
   async fetchWithdrawCacheStatus(transfer: PartnerT2, index: number) {
     const cache = this.fetchCache[index];
     cache.waitingWithdrawInterval += 1;
-    if (cache.waitingWithdrawInterval < 60) {
+    if (cache.waitingWithdrawInterval < 6) {
       return;
     }
     cache.waitingWithdrawInterval = 0;
