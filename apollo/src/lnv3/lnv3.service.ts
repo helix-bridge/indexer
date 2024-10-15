@@ -6,6 +6,7 @@ import { PartnerT2, RecordStatus, Level0IndexerType } from '../base/TransferServ
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 import { ChainToken, ChainMessager, ChainCouple } from '@helixbridge/helixconf';
+import { Lnv3Record, Lnv3RelayRecord } from './source/source.service';
 import { Lnv3ThegraphService } from './source/thegraph.service';
 import { Lnv3PonderService } from './source/ponder.service';
 import { Lnv3EnvioService } from './source/envio.service';
@@ -22,18 +23,35 @@ interface SkipInfo {
   skip: number;
 }
 
+interface Lnv3RecordInfo {
+  lv0Type: Level0IndexerType;
+  cursor: bigint;
+  records: Lnv3Record[];
+}
+
+interface Lnv3RelayInfo {
+  lv0Type: Level0IndexerType;
+  cursor: bigint;
+  records: Lnv3RelayRecord[];
+}
+
+enum SyncStage {
+  SyncRecord,
+  SyncStatus,
+  SyncFinished,
+}
+
 @Injectable()
 export class Lnv3Service implements OnModuleInit {
   private readonly logger = new Logger('lnv3');
 
   private fetchCache = new Array(this.transferService.transfers.length).fill('').map((_) => ({
-    latestNonce: -1,
     latestRelayerInfoNonce: -1,
-    latestFillInfoTimestamp: -1,
     isSyncingHistory: false,
     waitingWithdrawInterval: 0,
     waitingWithdrawRecords: [],
     fetchProviderInfoInterval: 0,
+    syncingStage: SyncStage.SyncRecord,
   }));
 
   protected fetchSendDataInterval = 5000;
@@ -114,18 +132,51 @@ export class Lnv3Service implements OnModuleInit {
     }
   }
 
-  async queryRecordInfo(transfer: PartnerT2, latestNonce: number) {
-    let result = [];
+  lv0TransferRecordCursorId(chainId: bigint, indexerType: Level0IndexerType): string {
+    return `lnv3-lv0-tr-${chainId}-${indexerType}`;
+  }
+
+  lv0RelayRecordCursorId(chainId: bigint, indexerType: Level0IndexerType): string {
+    return `lnv3-lv0-rr-${chainId}-${indexerType}`;
+  }
+
+  async getLevel0TransferRecordCursor(
+    chainId: bigint,
+    indexerType: Level0IndexerType
+  ): Promise<bigint> {
+    const id = this.lv0TransferRecordCursorId(chainId, indexerType);
+    return await this.aggregationService.readCursor(id);
+  }
+
+  async getLevel0RelayRecordCursor(
+    chainId: bigint,
+    indexerType: Level0IndexerType
+  ): Promise<bigint> {
+    const id = this.lv0RelayRecordCursorId(chainId, indexerType);
+    return await this.aggregationService.readCursor(id);
+  }
+
+  async queryRecordInfo(transfer: PartnerT2, limit: number): Promise<Lnv3RecordInfo[]> {
+    let results = [];
     for (const level0Indexer of transfer.level0Indexers) {
       const service = this.sourceServices.get(level0Indexer.indexerType);
       try {
+        const cursor = await this.getLevel0TransferRecordCursor(
+          transfer.chainConfig.id,
+          level0Indexer.indexerType
+        );
         const response = await service.queryRecordInfo(
           level0Indexer.url,
           transfer.chainConfig.id,
-          latestNonce
+          cursor,
+          limit
         );
-        if (response && response.length >= result.length) {
-          result = response;
+        if (response && response.length > 0) {
+          results.push({
+            lv0Type: level0Indexer.indexerType,
+            cursor: cursor,
+            records: response,
+          });
         }
       } catch (err) {
         this.logger.warn(
@@ -133,7 +184,7 @@ export class Lnv3Service implements OnModuleInit {
         );
       }
     }
-    return result;
+    return results;
   }
 
   async queryProviderInfo(transfer: PartnerT2, latestNonce: number) {
@@ -218,126 +269,194 @@ export class Lnv3Service implements OnModuleInit {
     }
   }
 
-  async fetchRecords(transfer: PartnerT2, index: number) {
-    let latestNonce = this.fetchCache[index].latestNonce;
-    try {
-      if (latestNonce === -1) {
-        const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
-          {
-            fromChain: transfer.chainConfig.code,
-            bridge: `lnv3`,
-          },
-          { nonce: 'desc' }
+  async saveRecord(transfer: PartnerT2, recordInfo: Lnv3RecordInfo) {
+    const records = recordInfo.records;
+    let size = 0;
+    let cursor = recordInfo.cursor;
+    let lastTimestamp = '';
+    for (const record of records) {
+      cursor += BigInt(1);
+      const toChain = this.getDestChain(record.remoteChainId.toString());
+      if (toChain === null) {
+        this.logger.warn(`fetch record cannot find toChain, id ${record.remoteChainId}`);
+        continue;
+      }
+      const fromToken = this.getTokenInfo(transfer, record.sourceToken);
+      const toToken = this.getTokenInfo(toChain, record.targetToken);
+      if (fromToken === null) {
+        this.logger.warn(
+          `cannot find fromToken symbol, fromToken ${record.sourceToken}, chain: ${transfer.chainConfig.code}`
         );
-        latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
+        continue;
+      }
+      if (toToken === null) {
+        this.logger.warn(
+          `cannot find fromToken symbol, toToken ${record.targetToken}, chain: ${toChain.chainConfig.code}`
+        );
+        continue;
       }
 
-      const records = await this.queryRecordInfo(transfer, latestNonce);
+      lastTimestamp = record.timestamp;
+      const id = this.genID(
+        transfer,
+        transfer.chainConfig.id.toString(),
+        record.remoteChainId.toString(),
+        record.id
+      );
+      let createData = {
+        id: id,
+        relayer: record.provider.toLowerCase(),
+        fromChain: transfer.chainConfig.code,
+        toChain: toChain.chainConfig.code,
+        bridge: `lnv3`,
+        messageNonce: record.messageNonce,
+        nonce: 0,
+        requestTxHash: record.transactionHash,
+        sender: record.sender.toLowerCase(),
+        recipient: record.receiver.toLowerCase(),
+        sendToken: fromToken.symbol,
+        recvToken: toToken.symbol,
+        sendAmount: record.sourceAmount,
+        recvAmount: record.targetAmount,
+        startTime: Number(record.timestamp),
+        endTime: 0,
+        result: RecordStatus.pending,
+        fee: record.fee,
+        feeToken: fromToken.symbol,
+        responseTxHash: '',
+        reason: '',
+        sendTokenAddress: record.sourceToken.toLowerCase(),
+        recvTokenAddress: record.targetToken.toLowerCase(),
+        endTxHash: '',
+        confirmedBlocks: '',
+        needWithdrawLiquidity: !record.hasWithdrawn,
+        lastRequestWithdraw: 0,
+      };
+      const updateData = record.hasWithdrawn ? { needWithdrawLiquidity: false } : {};
+      await this.aggregationService.saveHistoryRecord({
+        where: { id: id },
+        dataCreate: createData,
+        dataUpdate: updateData,
+      });
+      size += 1;
+      const skip = this.skip.find(
+        (s) => s.fromChain === transfer.chainConfig.code && s.toChain === toChain.chainConfig.code
+      );
+      if (!skip) {
+        this.skip.push({
+          fromChain: transfer.chainConfig.code,
+          toChain: toChain.chainConfig.code,
+          skip: 0,
+        });
+      }
+      await this.aggregationService.writeCursor(
+        this.lv0TransferRecordCursorId(transfer.chainConfig.id, recordInfo.lv0Type),
+        cursor
+      );
+    }
+    if (size > 0) {
+      this.logger.log(
+        `lnv3 [${transfer.chainConfig.code}] save new send records succeeded: ${Level0IndexerType[recordInfo.lv0Type]}-${cursor}-${lastTimestamp}, size: ${size}`
+      );
+    }
+  }
 
-      if (records && records.length > 0) {
-        let size = 0;
-        for (const record of records) {
-          const toChain = this.getDestChain(record.remoteChainId.toString());
-          if (toChain === null) {
-            this.logger.warn(`fetch record cannot find toChain, id ${record.remoteChainId}`);
-            latestNonce += 1;
-            this.fetchCache[index].latestNonce = latestNonce;
-            continue;
-          }
-          const fromToken = this.getTokenInfo(transfer, record.sourceToken);
-          const toToken = this.getTokenInfo(toChain, record.targetToken);
-          if (fromToken === null) {
-            this.logger.warn(
-              `cannot find fromToken symbol, fromToken ${record.sourceToken}, chain: ${transfer.chainConfig.code}`
-            );
-            continue;
-          }
-          if (toToken === null) {
-            this.logger.warn(
-              `cannot find fromToken symbol, toToken ${record.targetToken}, chain: ${toChain.chainConfig.code}`
-            );
-            continue;
-          }
+  async saveRelayInfo(transfer: PartnerT2, relayInfo: Lnv3RelayInfo) {
+    const records = relayInfo.records;
+    let size = 0;
+    let cursor = relayInfo.cursor;
+    let lastTimestamp = '';
+    for (const relayRecord of records) {
+      cursor += BigInt(1);
+      lastTimestamp = relayRecord.timestamp;
+      // ignore slashed transfer
+      if (relayRecord.slashed) continue;
+      let rmvedTransferId = relayRecord.id;
+      if (rmvedTransferId.startsWith(`${transfer.chainConfig.id}-`)) {
+        rmvedTransferId = rmvedTransferId.replace(`${transfer.chainConfig.id}-`, '');
+      }
+      const uncheckedRecord = await this.aggregationService.queryHistoryRecordFirst({
+        id: {
+          endsWith: rmvedTransferId,
+        },
+      });
+      // the record exist but not finished
+      if (uncheckedRecord?.endTxHash === '') {
+        const endTxHash = uncheckedRecord.needWithdrawLiquidity ? '' : relayRecord.transactionHash;
+        const updateData = {
+          result: RecordStatus.success,
+          responseTxHash: relayRecord.transactionHash,
+          endTxHash: endTxHash,
+          endTime: Number(relayRecord.timestamp),
+          relayer: relayRecord.relayer.toLowerCase(),
+          lastRequestWithdraw: Number(relayRecord.requestWithdrawTimestamp),
+        };
 
-          const responseHash = '';
-          const result = RecordStatus.pending;
-          const endTime = 0;
-          const skip = this.skip.find(
-            (s) =>
-              s.fromChain === transfer.chainConfig.code && s.toChain === toChain.chainConfig.code
-          );
-          if (!skip) {
-            this.skip.push({
-              fromChain: transfer.chainConfig.code,
-              toChain: toChain.chainConfig.code,
-              skip: 0,
-            });
+        await this.aggregationService.updateHistoryRecord({
+          where: { id: uncheckedRecord.id },
+          data: updateData,
+        });
+        size += 1;
+      }
+      await this.aggregationService.writeCursor(
+        this.lv0RelayRecordCursorId(transfer.chainConfig.id, relayInfo.lv0Type),
+        cursor
+      );
+    }
+    if (records.length > 0) {
+      this.logger.log(
+        `lnv3 [${transfer.chainConfig.code}] save new relay records succeeded: ${Level0IndexerType[relayInfo.lv0Type]}-${cursor}-${lastTimestamp}, size: ${size}`
+      );
+    }
+  }
+
+  async fetchRecords(transfer: PartnerT2, index: number) {
+    try {
+      const cache = this.fetchCache[index];
+      const limit = cache.syncingStage === SyncStage.SyncRecord ? 500 : 10;
+      const recordList = await this.queryRecordInfo(transfer, limit);
+      for (const recordInfo of recordList) {
+        if (recordInfo.records && recordInfo.records.length > 0) {
+          try {
+            await this.saveRecord(transfer, recordInfo);
+          } catch (error) {
+            this.logger.warn(`save record failed, error ${error}`);
           }
-          await this.aggregationService.createHistoryRecord({
-            id: this.genID(
-              transfer,
-              transfer.chainConfig.id.toString(),
-              record.remoteChainId,
-              record.id
-            ),
-            relayer: record.provider.toLowerCase(),
-            fromChain: transfer.chainConfig.code,
-            toChain: toChain.chainConfig.code,
-            bridge: `lnv3`,
-            messageNonce: record.messageNonce,
-            nonce: latestNonce + 1,
-            requestTxHash: record.transactionHash,
-            sender: record.sender.toLowerCase(),
-            recipient: record.receiver.toLowerCase(),
-            sendToken: fromToken.symbol,
-            recvToken: toToken.symbol,
-            sendAmount: record.sourceAmount,
-            recvAmount: record.targetAmount,
-            startTime: Number(record.timestamp),
-            endTime: endTime,
-            result: result,
-            fee: record.fee,
-            feeToken: fromToken.symbol,
-            responseTxHash: responseHash,
-            reason: '',
-            sendTokenAddress: record.sourceToken.toLowerCase(),
-            recvTokenAddress: record.targetToken.toLowerCase(),
-            endTxHash: '',
-            confirmedBlocks: '',
-            needWithdrawLiquidity: !record.hasWithdrawn,
-            lastRequestWithdraw: 0,
-          });
-          latestNonce += 1;
-          size += 1;
         }
-        if (size > 0) {
-          this.logger.log(
-            `lnv3 [${transfer.chainConfig.code}] save new send records succeeded nonce: ${latestNonce}, size: ${size}`
-          );
-        }
-
-        this.fetchCache[index].latestNonce = latestNonce;
+      }
+      if (recordList.length === 0 && cache.syncingStage === SyncStage.SyncRecord) {
+        this.logger.log(`lnv3 [${transfer.chainConfig.code}->] sync records finished`);
+        cache.syncingStage = SyncStage.SyncStatus;
       }
     } catch (error) {
       this.logger.warn(
-        `lnv3 [${transfer.chainConfig.code}->] save new send record failed ${latestNonce}, ${error}`
+        `lnv3 [${transfer.chainConfig.code}->] save new send record failed ${error}`
       );
     }
   }
 
   // batch get status from target chain on sycing historical phase
-  async queryFillInfos(transfer: PartnerT2, latestTimestamp: number) {
-    let result = [];
+  async queryFillInfos(transfer: PartnerT2, limit: number): Promise<Lnv3RelayInfo[]> {
+    let results = [];
     for (const level0Indexer of transfer.level0Indexers) {
       const service = this.sourceServices.get(level0Indexer.indexerType);
       try {
+        const cursor = await this.getLevel0RelayRecordCursor(
+          transfer.chainConfig.id,
+          level0Indexer.indexerType
+        );
         const response = await service.batchQueryRelayStatus(
           level0Indexer.url,
           transfer.chainConfig.id,
-          latestTimestamp
+          cursor,
+          limit
         );
-        if (response && response.length >= result.length) {
-          result = response;
+        if (response && response.length > 0) {
+          results.push({
+            lv0Type: level0Indexer.indexerType,
+            cursor: cursor,
+            records: response,
+          });
         }
       } catch (err) {
         this.logger.warn(
@@ -345,70 +464,29 @@ export class Lnv3Service implements OnModuleInit {
         );
       }
     }
-    return result;
+    return results;
   }
 
   async batchFetchStatus(transfer: PartnerT2, index: number) {
+    for (const cache of this.fetchCache) {
+      if (cache.syncingStage === SyncStage.SyncRecord) {
+        return;
+      }
+    }
     try {
-      let latestTimestamp = this.fetchCache[index].latestFillInfoTimestamp;
-      // stop sync history when timestamp set to zero
-      if (latestTimestamp === 0) {
-        return;
-      } else if (latestTimestamp === -1) {
-        const firstRecord = await this.aggregationService.queryHistoryRecordFirst(
-          {
-            toChain: transfer.chainConfig.code,
-            bridge: `lnv3`,
-          },
-          { nonce: 'desc' }
-        );
-        latestTimestamp = firstRecord ? firstRecord.endTime : -1;
-      }
-      const relayRecords = await this.queryFillInfos(transfer, latestTimestamp);
-      if (relayRecords.length === 0) {
-        this.fetchCache[index].latestFillInfoTimestamp = 0;
-        this.logger.log(`the batch sync end, chain: ${transfer.chainConfig.code}`);
-        return;
-      }
+      const cache = this.fetchCache[index];
+      const limit = cache.syncingStage === SyncStage.SyncFinished ? 10 : 500;
+      const relayList = await this.queryFillInfos(transfer, limit);
       let size = 0;
-      for (const relayRecord of relayRecords) {
-        // ignore slashed transfer
-        if (relayRecord.slashed) continue;
-        let rmvedTransferId = relayRecord.id;
-        if (rmvedTransferId.startsWith(`${transfer.chainConfig.id}-`)) {
-          rmvedTransferId = rmvedTransferId.replace(`${transfer.chainConfig.id}-`, '');
-        }
-        const uncheckedRecord = await this.aggregationService.queryHistoryRecordFirst({
-          id: {
-            endsWith: rmvedTransferId,
-          },
-        });
-        // the record exist but not finished
-        if (uncheckedRecord?.endTxHash === '') {
-          const endTxHash = uncheckedRecord.needWithdrawLiquidity
-            ? ''
-            : relayRecord.transactionHash;
-          const updateData = {
-            result: RecordStatus.success,
-            responseTxHash: relayRecord.transactionHash,
-            endTxHash: endTxHash,
-            endTime: Number(relayRecord.timestamp),
-            relayer: relayRecord.relayer.toLowerCase(),
-            lastRequestWithdraw: Number(relayRecord.requestWithdrawTimestamp),
-          };
-
-          await this.aggregationService.updateHistoryRecord({
-            where: { id: uncheckedRecord.id },
-            data: updateData,
-          });
-          this.fetchCache[index].latestFillInfoTimestamp = updateData.endTime;
-          size += 1;
-        } else if (uncheckedRecord) {
-          this.fetchCache[index].latestFillInfoTimestamp = Number(relayRecord.timestamp);
+      for (const relayInfo of relayList) {
+        if (relayInfo.records && relayInfo.records.length > 0) {
+          await this.saveRelayInfo(transfer, relayInfo);
         }
       }
-      if (size > 0) {
-        this.logger.log(`lnv3 [${transfer.chainConfig.code}] batch fetch status, size: ${size}`);
+
+      if (relayList.length === 0 && cache.syncingStage !== SyncStage.SyncFinished) {
+        this.logger.log(`lnv3 [${transfer.chainConfig.code}->] sync status finished`);
+        cache.syncingStage = SyncStage.SyncFinished;
       }
     } catch (error) {
       this.logger.warn(`batch fetch lnv3 status failed, error ${error}`);
@@ -484,6 +562,11 @@ export class Lnv3Service implements OnModuleInit {
   }
 
   async fetchStatuses(transfer: PartnerT2, index: number) {
+    for (const cache of this.fetchCache) {
+      if (cache.syncingStage !== SyncStage.SyncFinished) {
+        return;
+      }
+    }
     const skips = this.skip.filter((s) => s.fromChain === transfer.chainConfig.code);
     for (const skip of skips) {
       await this.fetchStatus(transfer, index, skip);

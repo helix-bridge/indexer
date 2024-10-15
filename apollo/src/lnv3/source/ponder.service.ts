@@ -8,8 +8,13 @@ import {
 } from './source.service';
 
 export class Lnv3PonderService extends SourceService {
-  async queryRecordInfo(url: string, localId: number, latestNonce: number): Promise<Lnv3Record[]> {
-    const query = `query { lnv3TransferRecords(limit: 20, orderBy: "nonce", orderDirection: "asc", where: {localChainId: "${localId}", nonce_gt: "${latestNonce}"}) { items { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }}`;
+  async queryRecordInfo(
+    url: string,
+    localId: number,
+    latestNonce: number,
+    limit: number
+  ): Promise<Lnv3Record[]> {
+    const query = `query { lnv3TransferRecords(limit: ${limit}, orderBy: "nonce", orderDirection: "asc", where: {localChainId: "${localId}", nonce_gt: "${latestNonce}"}) { items { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }}`;
     return await axios
       .post(url, {
         query: query,
@@ -51,7 +56,7 @@ export class Lnv3PonderService extends SourceService {
     localId: number,
     transferIds: string[]
   ): Promise<Lnv3RelayRecord[]> {
-    const query = `query { lnv3RelayRecords(limit: 20, orderBy: "timestamp", orderDirection: "asc", where: {localChainId: "${localId}", id_in: ${transferIds} }) { items { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }}`;
+    const query = `query { lnv3RelayRecords(limit: 50, orderBy: "timestamp", orderDirection: "asc", where: {localChainId: "${localId}", id_in: ${transferIds} }) { items { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }}`;
     return await axios
       .post(url, {
         query: query,
@@ -62,9 +67,10 @@ export class Lnv3PonderService extends SourceService {
   async batchQueryRelayStatus(
     url: string,
     localId: number,
-    latestTimestamp: number
+    cursor: bigint,
+    limit: number
   ): Promise<Lnv3RelayRecord[]> {
-    const query = `query { lnv3RelayRecords(limit: 20, orderBy: "timestamp", orderDirection: "asc", where: {localChainId: "${localId}", slashed: false, timestamp_gt: "${latestTimestamp}"}) { items { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }}`;
+    const query = `query { lnv3RelayRecords(limit: ${limit}, orderBy: "timestamp", orderDirection: "asc", where: {localChainId: "${localId}", slashed: false, nonce_gt: "${cursor}"}) { items { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }}`;
     return await axios
       .post(url, {
         query: query,

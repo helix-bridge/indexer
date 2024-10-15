@@ -46,6 +46,11 @@ model HistoryRecord {
   extData String?
 }
 
+model ScanCursor {
+  id String @id
+  cursor BigInt
+}
+
 model LnBridgeRelayInfo {
   id String @id
   version String

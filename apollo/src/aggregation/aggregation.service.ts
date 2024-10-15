@@ -28,6 +28,25 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     });
   }
 
+  async writeCursor(id: string, cursor: bigint) {
+    return await this.scanCursor.upsert({
+      where: { id: id },
+      update: { cursor: cursor },
+      create: { id: id, cursor: cursor },
+    });
+  }
+
+  async readCursor(id: string): Promise<bigint> {
+    const cursor = await this.scanCursor.findUnique({
+      where: { id: id },
+    });
+    if (cursor) {
+      return cursor.cursor;
+    } else {
+      return BigInt(0);
+    }
+  }
+
   async createHistoryRecord(data: Prisma.HistoryRecordCreateInput): Promise<HistoryRecord> {
     return this.historyRecord.create({
       data,
@@ -48,6 +67,19 @@ export class AggregationService extends PrismaClient implements OnModuleInit {
     return this.historyRecord.update({
       data,
       where,
+    });
+  }
+
+  async saveHistoryRecord(params: {
+    where: Prisma.HistoryRecordWhereUniqueInput;
+    dataCreate: Prisma.HistoryRecordCreateInput;
+    dataUpdate: Prisma.HistoryRecordUpdateInput;
+  }): Promise<HistoryRecord> {
+    const { where, dataCreate, dataUpdate } = params;
+    return await this.historyRecord.upsert({
+      where: where,
+      update: dataUpdate,
+      create: dataCreate,
     });
   }
 

@@ -53,7 +53,8 @@ export abstract class SourceService {
   abstract queryRecordInfo(
     url: string,
     chainId: number,
-    latestNonce: number
+    latestNonce: number,
+    limit: number
   ): Promise<Lnv3Record[]>;
   abstract queryProviderInfo(
     url: string,
@@ -74,7 +75,8 @@ export abstract class SourceService {
   abstract batchQueryRelayStatus(
     url: string,
     chainId: number,
-    latestTimestamp: number
+    cursor: bigint,
+    limit: number
   ): Promise<Lnv3RelayRecord[]>;
   abstract queryWithdrawStatus(
     url: string,
