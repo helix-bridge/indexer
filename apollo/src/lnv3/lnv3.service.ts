@@ -48,7 +48,6 @@ export class Lnv3Service implements OnModuleInit {
   private fetchCache = new Array(this.transferService.transfers.length).fill('').map((_) => ({
     latestRelayerInfoNonce: -1,
     isSyncingHistory: false,
-    waitingWithdrawInterval: 0,
     waitingWithdrawRecords: [],
     fetchProviderInfoInterval: 0,
     syncingStage: SyncStage.SyncRecord,
@@ -75,7 +74,6 @@ export class Lnv3Service implements OnModuleInit {
 
   async onModuleInit() {
     this.transferService.transfers.forEach((item, index) => {
-      this.fetchCache[index].waitingWithdrawInterval = index * 3;
       this.fetchCache[index].fetchProviderInfoInterval = index;
       this.taskService.addInterval(
         `${item.chainConfig.code}-lnv3-fetch_history_data`,
@@ -494,13 +492,6 @@ export class Lnv3Service implements OnModuleInit {
   }
 
   async fetchWithdrawCacheStatus(transfer: PartnerT2, index: number) {
-    const cache = this.fetchCache[index];
-    cache.waitingWithdrawInterval += 1;
-    if (cache.waitingWithdrawInterval < 6) {
-      return;
-    }
-    cache.waitingWithdrawInterval = 0;
-
     const records = await this.aggregationService
       .queryHistoryRecords({
         skip: this.skipForWithdrawLiquidity[index],
