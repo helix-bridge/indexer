@@ -8,13 +8,22 @@ import {
 } from './source.service';
 
 export class Lnv3ThegraphService extends SourceService {
-  async queryRecordInfo(url: string, chainId: number, latestNonce: number): Promise<Lnv3Record[]> {
-    const query = `query { lnv3TransferRecords(first: 20, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }`;
+  async queryRecordInfo(
+    url: string,
+    chainId: number,
+    latestNonce: number,
+    limit: number
+  ): Promise<Lnv3Record[]> {
+    const query = `query { lnv3TransferRecords(first: ${limit}, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, nonce, messageNonce, remoteChainId, provider, sourceToken, targetToken, sourceAmount, targetAmount, sender, receiver, timestamp, transactionHash, fee, transferId, hasWithdrawn } }`;
     return await axios
-      .post(url, {
-        query: query,
-        variables: null,
-      })
+      .post(
+        url,
+        {
+          query: query,
+          variables: null,
+        },
+        { timeout: 10000 }
+      )
       .then((res) => res.data?.data?.lnv3TransferRecords);
   }
 
@@ -25,10 +34,14 @@ export class Lnv3ThegraphService extends SourceService {
   ): Promise<Lnv3UpdateRecords[]> {
     const query = `query { lnv3RelayUpdateRecords(first: 20, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, penalty, baseFee, liquidityFeeRate, transferLimit, paused } }`;
     return await axios
-      .post(url, {
-        query: query,
-        variables: null,
-      })
+      .post(
+        url,
+        {
+          query: query,
+          variables: null,
+        },
+        { timeout: 10000 }
+      )
       .then((res) => res.data?.data?.lnv3RelayUpdateRecords);
   }
   async queryRelayStatus(
@@ -38,10 +51,14 @@ export class Lnv3ThegraphService extends SourceService {
   ): Promise<Lnv3RelayRecord> {
     const query = `query { lnv3RelayRecord(id: "${transferId}") { id, relayer, timestamp, transactionHash, slashed, requestWithdrawTimestamp, fee }}`;
     return await axios
-      .post(url, {
-        query: query,
-        variables: null,
-      })
+      .post(
+        url,
+        {
+          query: query,
+          variables: null,
+        },
+        { timeout: 10000 }
+      )
       .then((res) => res.data?.data?.lnv3RelayRecord);
   }
   async queryMultiRelayStatus(
@@ -50,25 +67,34 @@ export class Lnv3ThegraphService extends SourceService {
     transferIds: string[]
   ): Promise<Lnv3RelayRecord[]> {
     const idArray = '["' + transferIds.join('","') + '"]';
-    const query = `query { lnv3RelayRecords(first: 20, where: {id_in: ${idArray}}) { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }`;
+    const query = `query { lnv3RelayRecords(first: 50, where: {id_in: ${idArray}}) { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }`;
     return await axios
-      .post(url, {
-        query: query,
-        variables: null,
-      })
+      .post(
+        url,
+        {
+          query: query,
+          variables: null,
+        },
+        { timeout: 10000 }
+      )
       .then((res) => res.data?.data?.lnv3RelayRecords);
   }
   async batchQueryRelayStatus(
     url: string,
     chainId: number,
-    latestTimestamp: number
+    cursor: bigint,
+    limit: number
   ): Promise<Lnv3RelayRecord[]> {
-    const query = `query { lnv3RelayRecords(first: 20, orderBy: timestamp, orderDirection: asc, where: {timestamp_gt: "${latestTimestamp}", slashed: false}) { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }`;
+    const query = `query { lnv3RelayRecords(first: ${limit}, skip: ${cursor}, orderBy: timestamp, orderDirection: asc, where: {slashed: false}) { id, timestamp, requestWithdrawTimestamp, relayer, transactionHash, slashed, fee } }`;
     return await axios
-      .post(url, {
-        query: query,
-        variables: null,
-      })
+      .post(
+        url,
+        {
+          query: query,
+          variables: null,
+        },
+        { timeout: 10000 }
+      )
       .then((res) => res.data?.data?.lnv3RelayRecords);
   }
   async queryWithdrawStatus(
@@ -78,10 +104,14 @@ export class Lnv3ThegraphService extends SourceService {
   ): Promise<Lnv3WithdrawStatus> {
     const query = `query { lnv3TransferRecord(id: "${transferId}") { id, remoteChainId, hasWithdrawn }}`;
     return await axios
-      .post(url, {
-        query: query,
-        variables: null,
-      })
+      .post(
+        url,
+        {
+          query: query,
+          variables: null,
+        },
+        { timeout: 10000 }
+      )
       .then((res) => res.data?.data?.lnv3TransferRecord);
   }
 }
