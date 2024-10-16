@@ -475,7 +475,6 @@ export class Lnv3Service implements OnModuleInit {
       const cache = this.fetchCache[index];
       const limit = cache.syncingStage === SyncStage.SyncFinished ? 10 : 500;
       const relayList = await this.queryFillInfos(transfer, limit);
-      let size = 0;
       for (const relayInfo of relayList) {
         if (relayInfo.records && relayInfo.records.length > 0) {
           await this.saveRelayInfo(transfer, relayInfo);
