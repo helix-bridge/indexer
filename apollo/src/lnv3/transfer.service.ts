@@ -253,6 +253,15 @@ export class TransferService extends BaseTransferServiceT2 {
       ],
       chainConfig: HelixChain.zircuit,
     },
+    {
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.superindex,
+          url: this.superindexEndpoint,
+        },
+      ],
+      chainConfig: HelixChain.morph,
+    },
   ];
 
   testChainTransfers: PartnerT2[] = [
