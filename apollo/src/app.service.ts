@@ -7,7 +7,7 @@ export class AppService extends PrismaClient {
     return 'Hello World!';
   }
 
-  async questNUsedHelix(where: Prisma.HistoryRecordWhereInput, times: number) {
+  async questUsedHelix(where: Prisma.HistoryRecordWhereInput, times: number) {
     const total = await this.historyRecord.count({
       where,
     });

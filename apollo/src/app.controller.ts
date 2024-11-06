@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Param } from '@nestjs/common';
 import { AppService } from './app.service';
 
 @Controller()
@@ -10,9 +10,9 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('questn/used')
-  async questNUsedHelix(@Query('address') address: string) {
-    return await this.appService.questNUsedHelix(
+  @Get('quest/used')
+  async questUsedHelix(@Query('address') address: string) {
+    return await this.appService.questUsedHelix(
       {
         sender: address.toLowerCase(),
       },
@@ -20,21 +20,15 @@ export class AppController {
     );
   }
 
-  @Get('questn/usedafter')
-  async questNUsedAfter(@Query('address') address: string) {
+  @Get('quest/after/:timestamp/times/:times')
+  async questUsedAfterAnd3Times(
+      @Param('timestamp') timestamp: number,
+      @Param('times') times: number,
+      @Query('address') address: string) {
     const where = {
       sender: address.toLowerCase(),
-      startTime: { gt: 1729428516 },
+      startTime: { gt: timestamp },
     };
-    return await this.appService.questNUsedHelix(where, 1);
-  }
-
-  @Get('questn/afterand3times')
-  async questNUsedAfterAnd3Times(@Query('address') address: string) {
-    const where = {
-      sender: address.toLowerCase(),
-      startTime: { gt: 1729428516 },
-    };
-    return await this.appService.questNUsedHelix(where, 3);
+    return await this.appService.questUsedHelix(where, times);
   }
 }
