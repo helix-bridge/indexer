@@ -22,13 +22,13 @@ export class AppController {
 
   @Get('quest/after/:timestamp/times/:times')
   async questUsedAfterAnd3Times(
-      @Param('timestamp') timestamp: number,
-      @Param('times') times: number,
+      @Param('timestamp') timestamp: string,
+      @Param('times') times: string,
       @Query('address') address: string) {
     const where = {
       sender: address.toLowerCase(),
-      startTime: { gt: timestamp },
+      startTime: { gt: Number(timestamp) },
     };
-    return await this.appService.questUsedHelix(where, times);
+    return await this.appService.questUsedHelix(where, Number(times));
   }
 }
