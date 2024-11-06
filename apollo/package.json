@@ -29,7 +29,7 @@
     "generate:schema": "ts-node generate-typings.ts && cp src/graphql.schema.ts src/graphql.ts"
   },
   "dependencies": {
-    "@helixbridge/helixconf": "1.1.18",
+    "@helixbridge/helixconf": "1.2.0-beta",
     "@nestjs/apollo": "^10.0.9",
     "@nestjs/common": "^8.4.6",
     "@nestjs/config": "^2.1.0",

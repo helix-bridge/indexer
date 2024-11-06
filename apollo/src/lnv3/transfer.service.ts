@@ -312,7 +312,7 @@ export class TransferService extends BaseTransferServiceT2 {
           url: this.superindexEndpoint,
         },
       ],
-      chainConfig: HelixChain.morph,
+      chainConfig: HelixChain.morphTestnet,
     },
     {
       level0Indexers: [
@@ -340,6 +340,15 @@ export class TransferService extends BaseTransferServiceT2 {
         },
       ],
       chainConfig: HelixChain.zircuitSepolia,
+    },
+    {
+      level0Indexers: [
+        {
+          indexerType: Level0IndexerType.superindex,
+          url: this.superindexEndpoint,
+        },
+      ],
+      chainConfig: HelixChain.celoTestnet,
     },
   ];
 
