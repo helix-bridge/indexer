@@ -26,7 +26,6 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly zircuitEndpoint = this.configService.get<string>('ZIRCUIT_LNV3_ENDPOINT');
 
   public readonly ponderEndpoint = this.configService.get<string>('PONDER_LNV3_ENDPOINT');
-  private readonly dnvioEndpoint = this.configService.get<string>('LNV3_ENVIO_ENDPOINT');
   private readonly superindexEndpoint = this.configService.get<string>('LNV3_SUPER_ENDPOINT');
 
   formalChainTransfers: PartnerT2[] = [
@@ -35,10 +34,6 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           indexerType: Level0IndexerType.superindex,
           url: this.superindexEndpoint,
-        },
-        {
-          indexerType: Level0IndexerType.envio,
-          url: this.dnvioEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
@@ -54,10 +49,6 @@ export class TransferService extends BaseTransferServiceT2 {
           url: this.superindexEndpoint,
         },
         {
-          indexerType: Level0IndexerType.envio,
-          url: this.dnvioEndpoint,
-        },
-        {
           indexerType: Level0IndexerType.thegraph,
           url: this.arbitrumEndpoint,
         },
@@ -66,10 +57,6 @@ export class TransferService extends BaseTransferServiceT2 {
     },
     {
       level0Indexers: [
-        {
-          indexerType: Level0IndexerType.envio,
-          url: this.dnvioEndpoint,
-        },
         {
           indexerType: Level0IndexerType.thegraph,
           url: this.bscEndpoint,
@@ -82,10 +69,6 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           indexerType: Level0IndexerType.superindex,
           url: this.superindexEndpoint,
-        },
-        {
-          indexerType: Level0IndexerType.envio,
-          url: this.dnvioEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
@@ -101,10 +84,6 @@ export class TransferService extends BaseTransferServiceT2 {
           url: this.superindexEndpoint,
         },
         {
-          indexerType: Level0IndexerType.envio,
-          url: this.dnvioEndpoint,
-        },
-        {
           indexerType: Level0IndexerType.thegraph,
           url: this.opEndpoint,
         },
@@ -116,10 +95,6 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           indexerType: Level0IndexerType.superindex,
           url: this.superindexEndpoint,
-        },
-        {
-          indexerType: Level0IndexerType.envio,
-          url: this.dnvioEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
@@ -135,10 +110,6 @@ export class TransferService extends BaseTransferServiceT2 {
           url: this.superindexEndpoint,
         },
         {
-          indexerType: Level0IndexerType.envio,
-          url: this.dnvioEndpoint,
-        },
-        {
           indexerType: Level0IndexerType.thegraph,
           url: this.mantleEndpoint,
         },
@@ -152,10 +123,6 @@ export class TransferService extends BaseTransferServiceT2 {
           url: this.superindexEndpoint,
         },
         {
-          indexerType: Level0IndexerType.envio,
-          url: this.dnvioEndpoint,
-        },
-        {
           indexerType: Level0IndexerType.thegraph,
           url: this.scrollEndpoint,
         },
@@ -167,10 +134,6 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           indexerType: Level0IndexerType.superindex,
           url: this.superindexEndpoint,
-        },
-        {
-          indexerType: Level0IndexerType.envio,
-          url: this.dnvioEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
@@ -204,10 +167,6 @@ export class TransferService extends BaseTransferServiceT2 {
           url: this.superindexEndpoint,
         },
         {
-          indexerType: Level0IndexerType.envio,
-          url: this.dnvioEndpoint,
-        },
-        {
           indexerType: Level0IndexerType.thegraph,
           url: this.moonbeamEndpoint,
         },
@@ -217,8 +176,8 @@ export class TransferService extends BaseTransferServiceT2 {
     {
       level0Indexers: [
         {
-          indexerType: Level0IndexerType.envio,
-          url: this.dnvioEndpoint,
+          indexerType: Level0IndexerType.superindex,
+          url: this.superindexEndpoint,
         },
       ],
       chainConfig: HelixChain.avalanche,
@@ -228,10 +187,6 @@ export class TransferService extends BaseTransferServiceT2 {
         {
           indexerType: Level0IndexerType.superindex,
           url: this.superindexEndpoint,
-        },
-        {
-          indexerType: Level0IndexerType.envio,
-          url: this.dnvioEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
