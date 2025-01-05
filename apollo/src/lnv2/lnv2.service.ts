@@ -274,7 +274,7 @@ export class Lnv2Service implements OnModuleInit {
         );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
-      const query = `query { lnv2TransferRecords(first: 30, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, remoteChainId, nonce, provider, sender, receiver, sourceToken, targetToken, amount, transactionHash, timestamp, fee } }`;
+      const query = `query { lnv2TransferRecords(first: 30, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}, where: {localChainId: ${transfer.chainConfig.id}}) { id, remoteChainId, nonce, provider, sender, receiver, sourceToken, targetToken, amount, transactionHash, timestamp, fee } }`;
 
       const records = await axios
         .post(indexInfo.url, {
@@ -364,9 +364,9 @@ export class Lnv2Service implements OnModuleInit {
   }
 
   // batch get status from target chain on sycing historical phase
-  async queryFillInfos(indexInfo: BridgeIndexInfo, latestTimestamp: number) {
+  async queryFillInfos(localChainId: number, indexInfo: BridgeIndexInfo, latestTimestamp: number) {
     const url = indexInfo.url;
-    const query = `query { lnv2RelayRecords(first: 30, orderBy: timestamp, orderDirection: asc, where: {timestamp_gt: "${latestTimestamp}", slasher: null}) { id, timestamp, transactionHash, fee } }`;
+    const query = `query { lnv2RelayRecords(first: 30, orderBy: timestamp, orderDirection: asc, where: {localChainId: ${localChainId}, timestamp_gt: ${latestTimestamp}, slasher: null}) { id, timestamp, transactionHash, fee } }`;
     return await axios
       .post(url, {
         query: query,
@@ -392,7 +392,7 @@ export class Lnv2Service implements OnModuleInit {
         );
         latestTimestamp = firstRecord ? firstRecord.endTime : -1;
       }
-      const relayRecords = await this.queryFillInfos(indexInfo, latestTimestamp);
+      const relayRecords = await this.queryFillInfos(Number(transfer.chainConfig.id), indexInfo, latestTimestamp);
       if (relayRecords.length === 0) {
         this.fetchCache[indexInfo.index].latestFillInfoTimestamp = 0;
         this.logger.log(
@@ -637,7 +637,7 @@ export class Lnv2Service implements OnModuleInit {
         );
         latestNonce = firstRecord ? Number(firstRecord.targetNonce) : 0;
       }
-      const query = `query { lnv2RelayUpdateRecords(first: 30, orderBy: nonce, orderDirection: asc, where: {updateType_in: [${RelayUpdateType.SLASH}, ${RelayUpdateType.WITHDRAW}]}, skip: ${latestNonce}) { id, remoteChainId, provider, margin, updateType, withdrawNonce, transactionHash, timestamp, sourceToken, targetToken } }`;
+      const query = `query { lnv2RelayUpdateRecords(first: 30, orderBy: nonce, orderDirection: asc, where: {localChainId: ${transfer.chainConfig.id}, updateType_in: [${RelayUpdateType.SLASH}, ${RelayUpdateType.WITHDRAW}]}, skip: ${latestNonce}) { id, remoteChainId, provider, margin, updateType, withdrawNonce, transactionHash, timestamp, sourceToken, targetToken } }`;
       const records = await axios
         .post(indexInfo.url, {
           query: query,
@@ -761,7 +761,7 @@ export class Lnv2Service implements OnModuleInit {
         );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
-      const query = `query { lnv2RelayUpdateRecords(first: 30, orderBy: nonce, orderDirection: asc, where: {updateType: ${RelayUpdateType.PROVIDER_UPDATE}}, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, baseFee, liquidityFeeRate } }`;
+      const query = `query { lnv2RelayUpdateRecords(first: 30, orderBy: nonce, orderDirection: asc, where: {localChainId: ${transfer.chainConfig.id}, updateType: ${RelayUpdateType.PROVIDER_UPDATE}}, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, baseFee, liquidityFeeRate } }`;
 
       const records = await axios
         .post(indexInfo.url, {
@@ -876,7 +876,7 @@ export class Lnv2Service implements OnModuleInit {
         );
         latestNonce = firstRecord ? Number(firstRecord.nonce) : 0;
       }
-      const query = `query { lnv2RelayUpdateRecords(first: 30, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, margin, baseFee, liquidityFeeRate } }`;
+      const query = `query { lnv2RelayUpdateRecords(first: 30, orderBy: nonce, orderDirection: asc, skip: ${latestNonce}, where: {localChainId: ${transfer.chainConfig.id}}) { id, updateType, remoteChainId, provider, transactionHash, timestamp, sourceToken, targetToken, margin, baseFee, liquidityFeeRate } }`;
 
       const records = await axios
         .post(indexInfo.url, {

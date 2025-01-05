@@ -11,18 +11,6 @@ export class TransferService extends BaseTransferServiceT3 {
   private readonly lnEthereumOppositeEndpoint = this.configService.get<string>(
     'LN_ETHEREUM_OPPOSITE_ENDPOINT'
   );
-  private readonly lnLineaDefaultEndpoint = this.configService.get<string>(
-    'LN_LINEA_DEFAULT_ENDPOINT'
-  );
-  private readonly lnLineaOppositeEndpoint = this.configService.get<string>(
-    'LN_LINEA_OPPOSITE_ENDPOINT'
-  );
-  private readonly lnMantleDefaultEndpoint = this.configService.get<string>(
-    'LN_MANTLE_DEFAULT_ENDPOINT'
-  );
-  private readonly lnMantleOppositeEndpoint = this.configService.get<string>(
-    'LN_MANTLE_OPPOSITE_ENDPOINT'
-  );
   private readonly lnArbitrumDefaultEndpoint = this.configService.get<string>(
     'LN_ARBITRUM_DEFAULT_ENDPOINT'
   );
@@ -32,77 +20,30 @@ export class TransferService extends BaseTransferServiceT3 {
   private readonly lnZkSyncDefaultEndpoint = this.configService.get<string>(
     'LN_ZKSYNC_DEFAULT_ENDPOINT'
   );
-  private readonly lnPolygonDefaultEndpoint = this.configService.get<string>(
-    'LN_POLYGON_DEFAULT_ENDPOINT'
-  );
-  private readonly lnScrollDefaultEndpoint = this.configService.get<string>(
-    'LN_SCROLL_DEFAULT_ENDPOINT'
-  );
-  private readonly lnBaseDefaultEndpoint = this.configService.get<string>(
-    'LN_BASE_DEFAULT_ENDPOINT'
-  );
-  private readonly lnDarwiniaDefaultEndpoint = this.configService.get<string>(
-    'LN_DARWINIA_DEFAULT_ENDPOINT'
-  );
-  private readonly lnDarwiniaOppositeEndpoint = this.configService.get<string>(
-    'LN_DARWINIA_OPPOSITE_ENDPOINT'
-  );
-  private readonly lnCrabDefaultEndpoint = this.configService.get<string>(
-    'LN_CRAB_DEFAULT_ENDPOINT'
-  );
-  private readonly lnBscDefaultEndpoint = this.configService.get<string>('LN_BSC_DEFAULT_ENDPOINT');
-  private readonly lnOpDefaultEndpoint = this.configService.get<string>('LN_OP_DEFAULT_ENDPOINT');
+
+  private readonly lnv2DefaultEndpoint = this.configService.get<string>('LNV2_DEFAULT_ENDPOINT');
+  private readonly lnv2OppositeEndpoint = this.configService.get<string>('LNV2_OPPOSITE_ENDPOINT');
 
   formalChainTransfers: PartnerT3[] = [
     {
-      defaultEndpoint: this.lnEthereumDefaultEndpoint,
-      oppositeEndpoint: this.lnEthereumOppositeEndpoint,
+      defaultEndpoint: this.lnv2DefaultEndpoint,
+      oppositeEndpoint: this.lnv2OppositeEndpoint,
       chainConfig: HelixChain.ethereum,
     },
     {
-      defaultEndpoint: this.lnArbitrumDefaultEndpoint,
-      oppositeEndpoint: this.lnArbitrumOppositeEndpoint,
+      defaultEndpoint: this.lnv2DefaultEndpoint,
+      oppositeEndpoint: this.lnv2OppositeEndpoint,
       chainConfig: HelixChain.arbitrum,
     },
     {
-      defaultEndpoint: this.lnPolygonDefaultEndpoint,
+      defaultEndpoint: this.lnv2DefaultEndpoint,
       oppositeEndpoint: null,
       chainConfig: HelixChain.polygon,
     },
     {
-      defaultEndpoint: this.lnZkSyncDefaultEndpoint,
-      oppositeEndpoint: null,
-      chainConfig: HelixChain.zksync,
-    },
-    {
-      defaultEndpoint: this.lnScrollDefaultEndpoint,
-      oppositeEndpoint: null,
-      chainConfig: HelixChain.scroll,
-    },
-    {
-      defaultEndpoint: this.lnDarwiniaDefaultEndpoint,
-      oppositeEndpoint: this.lnDarwiniaOppositeEndpoint,
+      defaultEndpoint: this.lnv2DefaultEndpoint,
+      oppositeEndpoint: this.lnv2OppositeEndpoint,
       chainConfig: HelixChain.darwiniaDvm,
-    },
-    {
-      defaultEndpoint: this.lnBscDefaultEndpoint,
-      oppositeEndpoint: null,
-      chainConfig: HelixChain.bsc,
-    },
-    {
-      defaultEndpoint: this.lnBaseDefaultEndpoint,
-      oppositeEndpoint: null,
-      chainConfig: HelixChain.base,
-    },
-    {
-      defaultEndpoint: this.lnOpDefaultEndpoint,
-      oppositeEndpoint: null,
-      chainConfig: HelixChain.op,
-    },
-    {
-      defaultEndpoint: this.lnLineaDefaultEndpoint,
-      oppositeEndpoint: null,
-      chainConfig: HelixChain.linea,
     },
   ];
 
