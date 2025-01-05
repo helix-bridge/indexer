@@ -307,7 +307,7 @@ export class Lnv3Service implements OnModuleInit {
         fromChain: transfer.chainConfig.code,
         toChain: toChain.chainConfig.code,
         bridge: `lnv3`,
-        messageNonce: record.messageNonce,
+        messageNonce: record.messageNonce.toString(),
         nonce: 0,
         requestTxHash: record.transactionHash,
         sender: record.sender.toLowerCase(),
