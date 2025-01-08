@@ -239,8 +239,8 @@ export class Lnv2Service implements OnModuleInit {
             feeToken: firstPendingRecord.feeToken,
             responseTxHash: '',
             reason: '',
-            sendTokenAddress: record.sourceToken,
-            recvTokenAddress: firstPendingRecord.recvTokenAddress,
+            sendTokenAddress: record.sourceToken.toLowerCase(),
+            recvTokenAddress: firstPendingRecord.recvTokenAddress.toLowerCase(),
             endTxHash: '',
             confirmedBlocks: '',
           });
@@ -332,8 +332,8 @@ export class Lnv2Service implements OnModuleInit {
             feeToken: tokenPair.fromSymbol,
             responseTxHash: '',
             reason: '',
-            sendTokenAddress: record.sourceToken,
-            recvTokenAddress: record.targetToken,
+            sendTokenAddress: record.sourceToken.toLowerCase(),
+            recvTokenAddress: record.targetToken.toLowerCase(),
             endTxHash: '',
             confirmedBlocks: '',
           });
