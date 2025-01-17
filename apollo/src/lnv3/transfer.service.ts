@@ -58,6 +58,10 @@ export class TransferService extends BaseTransferServiceT2 {
     {
       level0Indexers: [
         {
+          indexerType: Level0IndexerType.superindex,
+          url: this.superindexEndpoint,
+        },
+        {
           indexerType: Level0IndexerType.thegraph,
           url: this.bscEndpoint,
         },
@@ -145,6 +149,10 @@ export class TransferService extends BaseTransferServiceT2 {
     {
       level0Indexers: [
         {
+          indexerType: Level0IndexerType.superindex,
+          url: this.superindexEndpoint,
+        },
+        {
           indexerType: Level0IndexerType.thegraph,
           url: this.blastEndpoint,
         },
@@ -153,6 +161,10 @@ export class TransferService extends BaseTransferServiceT2 {
     },
     {
       level0Indexers: [
+        {
+          indexerType: Level0IndexerType.superindex,
+          url: this.superindexEndpoint,
+        },
         {
           indexerType: Level0IndexerType.thegraph,
           url: this.astarZkEVMEndpoint,
