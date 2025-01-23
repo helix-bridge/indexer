@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { PartnerT2, RecordStatus, Level0IndexerType } from '../base/TransferServiceT2';
+import { PartnerT2, RecordStatus, Level0IndexerType, Level0Indexer } from '../base/TransferServiceT2';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 import { ChainToken, ChainMessager, ChainCouple } from '@helixbridge/helixconf';
@@ -24,13 +24,13 @@ interface SkipInfo {
 }
 
 interface Lnv3RecordInfo {
-  lv0Type: Level0IndexerType;
+  lv0Indexer: Level0Indexer;
   cursor: bigint;
   records: Lnv3Record[];
 }
 
 interface Lnv3RelayInfo {
-  lv0Type: Level0IndexerType;
+  lv0Indexer: Level0Indexer;
   cursor: bigint;
   records: Lnv3RelayRecord[];
 }
@@ -133,27 +133,27 @@ export class Lnv3Service implements OnModuleInit {
     }
   }
 
-  lv0TransferRecordCursorId(chainId: bigint, indexerType: Level0IndexerType): string {
-    return `lnv3-lv0-tr-${chainId}-${indexerType}`;
+  lv0TransferRecordCursorId(chainId: bigint, lv0: Level0Indexer): string {
+    return `lnv3-lv0-tr-${chainId}-${lv0.label}`;
   }
 
-  lv0RelayRecordCursorId(chainId: bigint, indexerType: Level0IndexerType): string {
-    return `lnv3-lv0-rr-${chainId}-${indexerType}`;
+  lv0RelayRecordCursorId(chainId: bigint, lv0: Level0Indexer): string {
+    return `lnv3-lv0-rr-${chainId}-${lv0.label}`;
   }
 
   async getLevel0TransferRecordCursor(
     chainId: bigint,
-    indexerType: Level0IndexerType
+    lv0Indexer: Level0Indexer
   ): Promise<bigint> {
-    const id = this.lv0TransferRecordCursorId(chainId, indexerType);
+    const id = this.lv0TransferRecordCursorId(chainId, lv0Indexer);
     return await this.aggregationService.readCursor(id);
   }
 
   async getLevel0RelayRecordCursor(
     chainId: bigint,
-    indexerType: Level0IndexerType
+    lv0Indexer: Level0Indexer
   ): Promise<bigint> {
-    const id = this.lv0RelayRecordCursorId(chainId, indexerType);
+    const id = this.lv0RelayRecordCursorId(chainId, lv0Indexer);
     return await this.aggregationService.readCursor(id);
   }
 
@@ -164,7 +164,7 @@ export class Lnv3Service implements OnModuleInit {
       try {
         const cursor = await this.getLevel0TransferRecordCursor(
           transfer.chainConfig.id,
-          level0Indexer.indexerType
+          level0Indexer
         );
         const response = await service.queryRecordInfo(
           level0Indexer.url,
@@ -174,7 +174,7 @@ export class Lnv3Service implements OnModuleInit {
         );
         if (response && response.length > 0) {
           results.push({
-            lv0Type: level0Indexer.indexerType,
+            lv0Indexer: level0Indexer,
             cursor: cursor,
             records: response,
           });
@@ -182,7 +182,7 @@ export class Lnv3Service implements OnModuleInit {
       } catch (err) {
         if (typeof err !== 'object' || err === null || (err.message !== this.requestTooManyError && err.message !== this.hangUpError)) {
           this.logger.warn(
-            `try to get records failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
+            `try to get records failed, id ${transfer.chainConfig.id}, indexer ${level0Indexer.label}, err ${err}`
           );
         }
       }
@@ -361,13 +361,13 @@ export class Lnv3Service implements OnModuleInit {
         });
       }
       await this.aggregationService.writeCursor(
-        this.lv0TransferRecordCursorId(transfer.chainConfig.id, recordInfo.lv0Type),
+        this.lv0TransferRecordCursorId(transfer.chainConfig.id, recordInfo.lv0Indexer),
         cursor
       );
     }
     if (size > 0) {
       this.logger.log(
-        `lnv3 [${transfer.chainConfig.code}] save new send records succeeded: ${Level0IndexerType[recordInfo.lv0Type]}-${cursor}-${lastTimestamp}, size: ${size}`
+        `lnv3 [${transfer.chainConfig.code}] new records succeeded: ${recordInfo.lv0Indexer.label}, cursor: ${cursor}, timestamp: ${lastTimestamp}, size: ${size}`
       );
     }
   }
@@ -410,13 +410,13 @@ export class Lnv3Service implements OnModuleInit {
         size += 1;
       }
       await this.aggregationService.writeCursor(
-        this.lv0RelayRecordCursorId(transfer.chainConfig.id, relayInfo.lv0Type),
+        this.lv0RelayRecordCursorId(transfer.chainConfig.id, relayInfo.lv0Indexer),
         cursor
       );
     }
     if (records.length > 0) {
       this.logger.log(
-        `lnv3 [${transfer.chainConfig.code}] save new relay records succeeded: ${Level0IndexerType[relayInfo.lv0Type]}-${cursor}-${lastTimestamp}, size: ${size}`
+        `lnv3 [${transfer.chainConfig.code}] new relay records succeeded: ${relayInfo.lv0Indexer.label}, cursor:${cursor}, timestamp: ${lastTimestamp}, size: ${size}`
       );
     }
   }
@@ -454,7 +454,7 @@ export class Lnv3Service implements OnModuleInit {
       try {
         const cursor = await this.getLevel0RelayRecordCursor(
           transfer.chainConfig.id,
-          level0Indexer.indexerType
+          level0Indexer
         );
         const response = await service.batchQueryRelayStatus(
           level0Indexer.url,
@@ -464,7 +464,7 @@ export class Lnv3Service implements OnModuleInit {
         );
         if (response && response.length > 0) {
           results.push({
-            lv0Type: level0Indexer.indexerType,
+            lv0Indexer: level0Indexer,
             cursor: cursor,
             records: response,
           });

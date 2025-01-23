@@ -26,17 +26,25 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly zircuitEndpoint = this.configService.get<string>('ZIRCUIT_LNV3_ENDPOINT');
 
   public readonly ponderEndpoint = this.configService.get<string>('PONDER_LNV3_ENDPOINT');
-  private readonly superindexEndpoint = this.configService.get<string>('LNV3_SUPER_ENDPOINT');
+  private readonly fastIndexEndpoint = this.configService.get<string>('LNV3_SUPER_ENDPOINT');
+  private readonly finalizedIndexEndpoint = this.configService.get<string>('LNV3_FINALIZED_ENDPOINT');
 
   formalChainTransfers: PartnerT2[] = [
     {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.polygonEndpoint,
         },
       ],
@@ -46,10 +54,17 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.arbitrumEndpoint,
         },
       ],
@@ -59,10 +74,17 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.bscEndpoint,
         },
       ],
@@ -72,10 +94,17 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.lineaEndpoint,
         },
       ],
@@ -85,10 +114,17 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.opEndpoint,
         },
       ],
@@ -98,10 +134,17 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.gnosisEndpoint,
         },
       ],
@@ -111,10 +154,17 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.mantleEndpoint,
         },
       ],
@@ -124,10 +174,17 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.scrollEndpoint,
         },
       ],
@@ -137,10 +194,17 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.darwiniaEndpoint,
         },
       ],
@@ -150,10 +214,17 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.blastEndpoint,
         },
       ],
@@ -163,10 +234,17 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.astarZkEVMEndpoint,
         },
       ],
@@ -176,10 +254,17 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.moonbeamEndpoint,
         },
       ],
@@ -189,7 +274,13 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
       ],
       chainConfig: HelixChain.avalanche,
@@ -198,10 +289,17 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.baseEndpoint,
         },
       ],
@@ -211,10 +309,17 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.zircuitEndpoint,
         },
       ],
@@ -224,7 +329,13 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
+        },
+        {
+          indexerType: Level0IndexerType.superindex,
+          label: "finalized",
+          url: this.finalizedIndexEndpoint,
         },
       ],
       chainConfig: HelixChain.morph,
@@ -236,6 +347,7 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.ethereumEndpoint,
         },
       ],
@@ -245,6 +357,7 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.arbitrumEndpoint,
         },
       ],
@@ -254,10 +367,12 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
         },
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.zksyncEndpoint,
         },
       ],
@@ -267,7 +382,8 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
         },
       ],
       chainConfig: HelixChain.taikoHekla,
@@ -276,7 +392,8 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
         },
       ],
       chainConfig: HelixChain.morphTestnet,
@@ -285,7 +402,8 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
         },
       ],
       chainConfig: HelixChain.bera,
@@ -294,6 +412,7 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.thegraph,
+          label: "thegraph",
           url: this.baseEndpoint,
         },
       ],
@@ -303,7 +422,8 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
         },
       ],
       chainConfig: HelixChain.zircuitSepolia,
@@ -312,7 +432,8 @@ export class TransferService extends BaseTransferServiceT2 {
       level0Indexers: [
         {
           indexerType: Level0IndexerType.superindex,
-          url: this.superindexEndpoint,
+          label: "fast",
+          url: this.fastIndexEndpoint,
         },
       ],
       chainConfig: HelixChain.celoTestnet,

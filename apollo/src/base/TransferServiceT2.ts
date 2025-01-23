@@ -41,6 +41,7 @@ export interface BridgeBaseConfigure {
 
 export interface Level0Indexer {
   indexerType: Level0IndexerType;
+  label: string;
   url: string;
 }
 
