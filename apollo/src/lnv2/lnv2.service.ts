@@ -392,7 +392,11 @@ export class Lnv2Service implements OnModuleInit {
         );
         latestTimestamp = firstRecord ? firstRecord.endTime : -1;
       }
-      const relayRecords = await this.queryFillInfos(Number(transfer.chainConfig.id), indexInfo, latestTimestamp);
+      const relayRecords = await this.queryFillInfos(
+        Number(transfer.chainConfig.id),
+        indexInfo,
+        latestTimestamp
+      );
       if (relayRecords.length === 0) {
         this.fetchCache[indexInfo.index].latestFillInfoTimestamp = 0;
         this.logger.log(
@@ -716,7 +720,8 @@ export class Lnv2Service implements OnModuleInit {
             nonce: 0,
             withdrawNonce: Number(record.withdrawNonce),
             relayer: record.provider.toLowerCase(),
-            sendToken: record.sourceToken,
+            sendToken: record.sourceToken.toLowerCase(),
+            recvToken: record.targetToken.toLowerCase(),
             tokenKey: tokenPair.key,
             transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),
@@ -815,7 +820,8 @@ export class Lnv2Service implements OnModuleInit {
             nonce: latestNonce + 1,
             withdrawNonce: 0,
             relayer: record.provider.toLowerCase(),
-            sendToken: record.sourceToken,
+            sendToken: record.sourceToken.toLowerCase(),
+            recvToken: record.targetToken.toLowerCase(),
             tokenKey: tokenPair.key,
             transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),
@@ -929,7 +935,8 @@ export class Lnv2Service implements OnModuleInit {
             bridge: this.bridgeName(indexInfo),
             nonce: latestNonce,
             relayer: record.provider.toLowerCase(),
-            sendToken: record.sourceToken,
+            sendToken: record.sourceToken.toLowerCase(),
+            recvToken: record.targetToken.toLowerCase(),
             tokenKey: tokenPair.key,
             transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),

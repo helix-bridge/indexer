@@ -2,7 +2,7 @@ import { Args, Query, Mutation, Resolver } from '@nestjs/graphql';
 import { isEmpty, isNull, isUndefined } from 'lodash';
 import { AggregationService } from './aggregation.service';
 import { Prisma } from '@prisma/client';
-import { TokenInfo } from '../graphql';
+import { TokenInfo, TokenInfoV2 } from '../graphql';
 import * as ethUtil from 'ethereumjs-util';
 import Web3 from 'web3';
 
@@ -472,6 +472,50 @@ export class AggregationResolver {
       }
       return result;
     }, [] as TokenInfo[]);
+  }
+
+  @Query()
+  async queryLnBridgeSupportedChainsV2(@Args('tokenKey') tokenKey: string) {
+    const baseFilters = {
+      paused: false,
+      OR: [{ transferLimit: { not: '0' } }, { margin: { not: '0' } }],
+    };
+    if (tokenKey.length > 0) {
+      baseFilters['tokenKey'] = tokenKey;
+    }
+
+    const where = {
+      ...baseFilters,
+    };
+
+    const records = await this.aggregationService.queryLnBridgeRelayInfos({
+      where,
+    });
+
+    const now = Math.floor(Date.now() / 1000);
+    return records.records.reduce((result, record) => {
+      if (record.heartbeatTimestamp + this.heartbeatTimeout < now) {
+        return result;
+      }
+
+      let token = result.find((e) => e.tokenKey === record.tokenKey);
+      if (!token) {
+        token = { tokenKey: record.tokenKey, chains: [] };
+        result.push(token);
+      }
+
+      let chain = token.chains.find((chain) => chain.from.chain === record.fromChain);
+      if (!chain) {
+        chain = { from: { chain: record.fromChain, token: record.sendToken }, toChains: [] };
+        token.chains.push(chain);
+      }
+
+      let toChain = chain.toChains.find((c) => c.chain === record.toChain);
+      if (!toChain) {
+        chain.toChains.push({ chain: record.toChain, token: record.recvToken });
+      }
+      return result;
+    }, [] as TokenInfoV2[]);
   }
 
   @Query()

@@ -2,7 +2,12 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { PartnerT2, RecordStatus, Level0IndexerType, Level0Indexer } from '../base/TransferServiceT2';
+import {
+  PartnerT2,
+  RecordStatus,
+  Level0IndexerType,
+  Level0Indexer,
+} from '../base/TransferServiceT2';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 import { ChainToken, ChainMessager, ChainCouple } from '@helixbridge/helixconf';
@@ -141,18 +146,12 @@ export class Lnv3Service implements OnModuleInit {
     return `lnv3-lv0-rr-${chainId}-${lv0.label}`;
   }
 
-  async getLevel0TransferRecordCursor(
-    chainId: bigint,
-    lv0Indexer: Level0Indexer
-  ): Promise<bigint> {
+  async getLevel0TransferRecordCursor(chainId: bigint, lv0Indexer: Level0Indexer): Promise<bigint> {
     const id = this.lv0TransferRecordCursorId(chainId, lv0Indexer);
     return await this.aggregationService.readCursor(id);
   }
 
-  async getLevel0RelayRecordCursor(
-    chainId: bigint,
-    lv0Indexer: Level0Indexer
-  ): Promise<bigint> {
+  async getLevel0RelayRecordCursor(chainId: bigint, lv0Indexer: Level0Indexer): Promise<bigint> {
     const id = this.lv0RelayRecordCursorId(chainId, lv0Indexer);
     return await this.aggregationService.readCursor(id);
   }
@@ -180,7 +179,11 @@ export class Lnv3Service implements OnModuleInit {
           });
         }
       } catch (err) {
-        if (typeof err !== 'object' || err === null || (err.message !== this.requestTooManyError && err.message !== this.hangUpError)) {
+        if (
+          typeof err !== 'object' ||
+          err === null ||
+          (err.message !== this.requestTooManyError && err.message !== this.hangUpError)
+        ) {
           this.logger.warn(
             `try to get records failed, id ${transfer.chainConfig.id}, indexer ${level0Indexer.label}, err ${err}`
           );
@@ -204,7 +207,11 @@ export class Lnv3Service implements OnModuleInit {
           result = response;
         }
       } catch (err) {
-        if (typeof err !== 'object' || err === null || (err.message !== this.requestTooManyError && err.message !== this.hangUpError)) {
+        if (
+          typeof err !== 'object' ||
+          err === null ||
+          (err.message !== this.requestTooManyError && err.message !== this.hangUpError)
+        ) {
           this.logger.warn(
             `try to get provider infos failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
           );
@@ -227,7 +234,11 @@ export class Lnv3Service implements OnModuleInit {
           return response;
         }
       } catch (err) {
-        if (typeof err !== 'object' || err === null || (err.message !== this.requestTooManyError && err.message !== this.hangUpError)) {
+        if (
+          typeof err !== 'object' ||
+          err === null ||
+          (err.message !== this.requestTooManyError && err.message !== this.hangUpError)
+        ) {
           this.logger.warn(
             `try to get relay status failed, id ${toChain.chainConfig.id}, type ${level0Indexer.indexerType}, transferId ${transferId} err ${err}`
           );
@@ -248,7 +259,11 @@ export class Lnv3Service implements OnModuleInit {
           )) ?? []
         );
       } catch (err) {
-        if (typeof err !== 'object' || err === null || (err.message !== this.requestTooManyError && err.message !== this.hangUpError)) {
+        if (
+          typeof err !== 'object' ||
+          err === null ||
+          (err.message !== this.requestTooManyError && err.message !== this.hangUpError)
+        ) {
           this.logger.warn(
             `try to get multi relay status failed, id ${toChain.chainConfig.id}, type ${level0Indexer.indexerType}, transferIds ${transferIds} err ${err}`
           );
@@ -271,7 +286,11 @@ export class Lnv3Service implements OnModuleInit {
           return response;
         }
       } catch (err) {
-        if (typeof err !== 'object' || err === null || (err.message !== this.requestTooManyError && err.message !== this.hangUpError)) {
+        if (
+          typeof err !== 'object' ||
+          err === null ||
+          (err.message !== this.requestTooManyError && err.message !== this.hangUpError)
+        ) {
           this.logger.warn(
             `try to get withdraw status failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
           );
@@ -470,7 +489,11 @@ export class Lnv3Service implements OnModuleInit {
           });
         }
       } catch (err) {
-        if (typeof err !== 'object' || err === null || (err.message !== this.requestTooManyError && err.message !== this.hangUpError)) {
+        if (
+          typeof err !== 'object' ||
+          err === null ||
+          (err.message !== this.requestTooManyError && err.message !== this.hangUpError)
+        ) {
           this.logger.warn(
             `try to batch get fill infos failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
           );
@@ -501,7 +524,11 @@ export class Lnv3Service implements OnModuleInit {
         cache.syncingStage = SyncStage.SyncFinished;
       }
     } catch (error) {
-      if (typeof error !== 'object' || error === null || (error.message !== this.requestTooManyError && error.message !== this.hangUpError)) {
+      if (
+        typeof error !== 'object' ||
+        error === null ||
+        (error.message !== this.requestTooManyError && error.message !== this.hangUpError)
+      ) {
         this.logger.warn(`batch fetch lnv3 status failed, error ${error}`);
       }
     }
@@ -679,7 +706,11 @@ export class Lnv3Service implements OnModuleInit {
         this.logger.log(`lnv3 [${transfer.chainConfig.code}] update record status, size: ${size}`);
       }
     } catch (error) {
-      if (typeof error !== 'object' || error === null || (error.message !== this.requestTooManyError && error.message !== this.hangUpError)) {
+      if (
+        typeof error !== 'object' ||
+        error === null ||
+        (error.message !== this.requestTooManyError && error.message !== this.hangUpError)
+      ) {
         this.logger.warn(`fetch lnv3 status failed, error ${error}`);
       }
     }
@@ -786,6 +817,7 @@ export class Lnv3Service implements OnModuleInit {
             nonce: latestNonce + 1,
             relayer: record.provider.toLowerCase(),
             sendToken: record.sourceToken.toLowerCase(),
+            recvToken: record.targetToken.toLowerCase(),
             tokenKey: couple.category,
             transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),
@@ -838,7 +870,11 @@ export class Lnv3Service implements OnModuleInit {
         this.logger.log(`lnv3 [${transfer.chainConfig.code}] update relayer info, size: ${size}`);
       }
     } catch (error) {
-      if (typeof error !== 'object' || error === null || (error.message !== this.requestTooManyError && error.message !== this.hangUpError)) {
+      if (
+        typeof error !== 'object' ||
+        error === null ||
+        (error.message !== this.requestTooManyError && error.message !== this.hangUpError)
+      ) {
         this.logger.warn(`fetch lnv3bridge relayer records failed, error ${error}`);
       }
     }
