@@ -2,7 +2,12 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { last } from 'lodash';
 import { AggregationService } from '../aggregation/aggregation.service';
-import { PartnerT2, RecordStatus, Level0IndexerType } from '../base/TransferServiceT2';
+import {
+  PartnerT2,
+  RecordStatus,
+  Level0IndexerType,
+  Level0Indexer,
+} from '../base/TransferServiceT2';
 import { TasksService } from '../tasks/tasks.service';
 import { TransferService } from './transfer.service';
 import { ChainToken, ChainMessager, ChainCouple } from '@helixbridge/helixconf';
@@ -24,13 +29,13 @@ interface SkipInfo {
 }
 
 interface Lnv3RecordInfo {
-  lv0Type: Level0IndexerType;
+  lv0Indexer: Level0Indexer;
   cursor: bigint;
   records: Lnv3Record[];
 }
 
 interface Lnv3RelayInfo {
-  lv0Type: Level0IndexerType;
+  lv0Indexer: Level0Indexer;
   cursor: bigint;
   records: Lnv3RelayRecord[];
 }
@@ -44,6 +49,8 @@ enum SyncStage {
 @Injectable()
 export class Lnv3Service implements OnModuleInit {
   private readonly logger = new Logger('lnv3');
+  private readonly requestTooManyError = 'Request failed with status code 429';
+  private readonly hangUpError = 'socket hang up';
 
   private fetchCache = new Array(this.transferService.transfers.length).fill('').map((_) => ({
     latestRelayerInfoNonce: -1,
@@ -55,7 +62,8 @@ export class Lnv3Service implements OnModuleInit {
 
   protected fetchSendDataInterval = 5000;
 
-  private readonly takeEachTime = 2;
+  private readonly takeEachTime = 20;
+  private readonly takeWithdrawStatusEachTime = 50;
   private skip: SkipInfo[] = [];
   private skipForWithdrawLiquidity = new Array(this.transferService.transfers.length).fill(0);
   private sourceServices = new Map();
@@ -130,27 +138,21 @@ export class Lnv3Service implements OnModuleInit {
     }
   }
 
-  lv0TransferRecordCursorId(chainId: bigint, indexerType: Level0IndexerType): string {
-    return `lnv3-lv0-tr-${chainId}-${indexerType}`;
+  lv0TransferRecordCursorId(chainId: bigint, lv0: Level0Indexer): string {
+    return `lnv3-lv0-tr-${chainId}-${lv0.label}`;
   }
 
-  lv0RelayRecordCursorId(chainId: bigint, indexerType: Level0IndexerType): string {
-    return `lnv3-lv0-rr-${chainId}-${indexerType}`;
+  lv0RelayRecordCursorId(chainId: bigint, lv0: Level0Indexer): string {
+    return `lnv3-lv0-rr-${chainId}-${lv0.label}`;
   }
 
-  async getLevel0TransferRecordCursor(
-    chainId: bigint,
-    indexerType: Level0IndexerType
-  ): Promise<bigint> {
-    const id = this.lv0TransferRecordCursorId(chainId, indexerType);
+  async getLevel0TransferRecordCursor(chainId: bigint, lv0Indexer: Level0Indexer): Promise<bigint> {
+    const id = this.lv0TransferRecordCursorId(chainId, lv0Indexer);
     return await this.aggregationService.readCursor(id);
   }
 
-  async getLevel0RelayRecordCursor(
-    chainId: bigint,
-    indexerType: Level0IndexerType
-  ): Promise<bigint> {
-    const id = this.lv0RelayRecordCursorId(chainId, indexerType);
+  async getLevel0RelayRecordCursor(chainId: bigint, lv0Indexer: Level0Indexer): Promise<bigint> {
+    const id = this.lv0RelayRecordCursorId(chainId, lv0Indexer);
     return await this.aggregationService.readCursor(id);
   }
 
@@ -161,7 +163,7 @@ export class Lnv3Service implements OnModuleInit {
       try {
         const cursor = await this.getLevel0TransferRecordCursor(
           transfer.chainConfig.id,
-          level0Indexer.indexerType
+          level0Indexer
         );
         const response = await service.queryRecordInfo(
           level0Indexer.url,
@@ -171,15 +173,21 @@ export class Lnv3Service implements OnModuleInit {
         );
         if (response && response.length > 0) {
           results.push({
-            lv0Type: level0Indexer.indexerType,
+            lv0Indexer: level0Indexer,
             cursor: cursor,
             records: response,
           });
         }
       } catch (err) {
-        this.logger.warn(
-          `try to get records failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
-        );
+        if (
+          typeof err !== 'object' ||
+          err === null ||
+          (err.message !== this.requestTooManyError && err.message !== this.hangUpError)
+        ) {
+          this.logger.warn(
+            `try to get records failed, id ${transfer.chainConfig.id}, indexer ${level0Indexer.label}, err ${err}`
+          );
+        }
       }
     }
     return results;
@@ -199,9 +207,15 @@ export class Lnv3Service implements OnModuleInit {
           result = response;
         }
       } catch (err) {
-        this.logger.warn(
-          `try to get provider infos failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
-        );
+        if (
+          typeof err !== 'object' ||
+          err === null ||
+          (err.message !== this.requestTooManyError && err.message !== this.hangUpError)
+        ) {
+          this.logger.warn(
+            `try to get provider infos failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
+          );
+        }
       }
     }
     return result;
@@ -220,9 +234,15 @@ export class Lnv3Service implements OnModuleInit {
           return response;
         }
       } catch (err) {
-        this.logger.warn(
-          `try to get relay status failed, id ${toChain.chainConfig.id}, type ${level0Indexer.indexerType}, transferId ${transferId} err ${err}`
-        );
+        if (
+          typeof err !== 'object' ||
+          err === null ||
+          (err.message !== this.requestTooManyError && err.message !== this.hangUpError)
+        ) {
+          this.logger.warn(
+            `try to get relay status failed, id ${toChain.chainConfig.id}, type ${level0Indexer.indexerType}, transferId ${transferId} err ${err}`
+          );
+        }
       }
     }
   }
@@ -239,9 +259,15 @@ export class Lnv3Service implements OnModuleInit {
           )) ?? []
         );
       } catch (err) {
-        this.logger.warn(
-          `try to get multi relay status failed, id ${toChain.chainConfig.id}, type ${level0Indexer.indexerType}, transferIds ${transferIds} err ${err}`
-        );
+        if (
+          typeof err !== 'object' ||
+          err === null ||
+          (err.message !== this.requestTooManyError && err.message !== this.hangUpError)
+        ) {
+          this.logger.warn(
+            `try to get multi relay status failed, id ${toChain.chainConfig.id}, type ${level0Indexer.indexerType}, transferIds ${transferIds} err ${err}`
+          );
+        }
         return [];
       }
     }
@@ -260,9 +286,15 @@ export class Lnv3Service implements OnModuleInit {
           return response;
         }
       } catch (err) {
-        this.logger.warn(
-          `try to get withdraw status failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
-        );
+        if (
+          typeof err !== 'object' ||
+          err === null ||
+          (err.message !== this.requestTooManyError && err.message !== this.hangUpError)
+        ) {
+          this.logger.warn(
+            `try to get withdraw status failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
+          );
+        }
       }
     }
   }
@@ -307,7 +339,7 @@ export class Lnv3Service implements OnModuleInit {
         fromChain: transfer.chainConfig.code,
         toChain: toChain.chainConfig.code,
         bridge: `lnv3`,
-        messageNonce: record.messageNonce,
+        messageNonce: record.messageNonce.toString(),
         nonce: 0,
         requestTxHash: record.transactionHash,
         sender: record.sender.toLowerCase(),
@@ -348,13 +380,13 @@ export class Lnv3Service implements OnModuleInit {
         });
       }
       await this.aggregationService.writeCursor(
-        this.lv0TransferRecordCursorId(transfer.chainConfig.id, recordInfo.lv0Type),
+        this.lv0TransferRecordCursorId(transfer.chainConfig.id, recordInfo.lv0Indexer),
         cursor
       );
     }
     if (size > 0) {
       this.logger.log(
-        `lnv3 [${transfer.chainConfig.code}] save new send records succeeded: ${Level0IndexerType[recordInfo.lv0Type]}-${cursor}-${lastTimestamp}, size: ${size}`
+        `lnv3 [${transfer.chainConfig.code}] new records succeeded: ${recordInfo.lv0Indexer.label}, cursor: ${cursor}, timestamp: ${lastTimestamp}, size: ${size}`
       );
     }
   }
@@ -397,13 +429,13 @@ export class Lnv3Service implements OnModuleInit {
         size += 1;
       }
       await this.aggregationService.writeCursor(
-        this.lv0RelayRecordCursorId(transfer.chainConfig.id, relayInfo.lv0Type),
+        this.lv0RelayRecordCursorId(transfer.chainConfig.id, relayInfo.lv0Indexer),
         cursor
       );
     }
     if (records.length > 0) {
       this.logger.log(
-        `lnv3 [${transfer.chainConfig.code}] save new relay records succeeded: ${Level0IndexerType[relayInfo.lv0Type]}-${cursor}-${lastTimestamp}, size: ${size}`
+        `lnv3 [${transfer.chainConfig.code}] new relay records succeeded: ${relayInfo.lv0Indexer.label}, cursor:${cursor}, timestamp: ${lastTimestamp}, size: ${size}`
       );
     }
   }
@@ -441,7 +473,7 @@ export class Lnv3Service implements OnModuleInit {
       try {
         const cursor = await this.getLevel0RelayRecordCursor(
           transfer.chainConfig.id,
-          level0Indexer.indexerType
+          level0Indexer
         );
         const response = await service.batchQueryRelayStatus(
           level0Indexer.url,
@@ -451,15 +483,21 @@ export class Lnv3Service implements OnModuleInit {
         );
         if (response && response.length > 0) {
           results.push({
-            lv0Type: level0Indexer.indexerType,
+            lv0Indexer: level0Indexer,
             cursor: cursor,
             records: response,
           });
         }
       } catch (err) {
-        this.logger.warn(
-          `try to batch get fill infos failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
-        );
+        if (
+          typeof err !== 'object' ||
+          err === null ||
+          (err.message !== this.requestTooManyError && err.message !== this.hangUpError)
+        ) {
+          this.logger.warn(
+            `try to batch get fill infos failed, id ${transfer.chainConfig.id}, type ${level0Indexer.indexerType}, err ${err}`
+          );
+        }
       }
     }
     return results;
@@ -486,7 +524,13 @@ export class Lnv3Service implements OnModuleInit {
         cache.syncingStage = SyncStage.SyncFinished;
       }
     } catch (error) {
-      this.logger.warn(`batch fetch lnv3 status failed, error ${error}`);
+      if (
+        typeof error !== 'object' ||
+        error === null ||
+        (error.message !== this.requestTooManyError && error.message !== this.hangUpError)
+      ) {
+        this.logger.warn(`batch fetch lnv3 status failed, error ${error}`);
+      }
     }
   }
 
@@ -494,7 +538,7 @@ export class Lnv3Service implements OnModuleInit {
     const records = await this.aggregationService
       .queryHistoryRecords({
         skip: this.skipForWithdrawLiquidity[index],
-        take: this.takeEachTime,
+        take: this.takeWithdrawStatusEachTime,
         where: {
           fromChain: transfer.chainConfig.code,
           bridge: `lnv3`,
@@ -505,10 +549,10 @@ export class Lnv3Service implements OnModuleInit {
       })
       .then((result) => result.records);
 
-    if (records.length < this.takeEachTime) {
+    if (records.length < this.takeWithdrawStatusEachTime) {
       this.skipForWithdrawLiquidity[index] = 0;
     } else {
-      this.skipForWithdrawLiquidity[index] += this.takeEachTime;
+      this.skipForWithdrawLiquidity[index] += this.takeWithdrawStatusEachTime;
     }
 
     const transferIdMap = new Map<string, string[]>();
@@ -545,6 +589,9 @@ export class Lnv3Service implements OnModuleInit {
                 lastRequestWithdraw: requestWithdrawTimestamp,
               },
             });
+            if (transferRecord.hasWithdrawn) {
+              this.logger.log(`withdrawLiquidity find one finished, id ${id}, chain ${chainId}`);
+            }
           }
         }
       }
@@ -659,7 +706,13 @@ export class Lnv3Service implements OnModuleInit {
         this.logger.log(`lnv3 [${transfer.chainConfig.code}] update record status, size: ${size}`);
       }
     } catch (error) {
-      this.logger.warn(`fetch lnv3 status failed, error ${error}`);
+      if (
+        typeof error !== 'object' ||
+        error === null ||
+        (error.message !== this.requestTooManyError && error.message !== this.hangUpError)
+      ) {
+        this.logger.warn(`fetch lnv3 status failed, error ${error}`);
+      }
     }
   }
 
@@ -764,6 +817,7 @@ export class Lnv3Service implements OnModuleInit {
             nonce: latestNonce + 1,
             relayer: record.provider.toLowerCase(),
             sendToken: record.sourceToken.toLowerCase(),
+            recvToken: record.targetToken.toLowerCase(),
             tokenKey: couple.category,
             transactionHash: record.transactionHash,
             timestamp: Number(record.timestamp),
@@ -816,7 +870,13 @@ export class Lnv3Service implements OnModuleInit {
         this.logger.log(`lnv3 [${transfer.chainConfig.code}] update relayer info, size: ${size}`);
       }
     } catch (error) {
-      this.logger.warn(`fetch lnv3bridge relayer records failed, error ${error}`);
+      if (
+        typeof error !== 'object' ||
+        error === null ||
+        (error.message !== this.requestTooManyError && error.message !== this.hangUpError)
+      ) {
+        this.logger.warn(`fetch lnv3bridge relayer records failed, error ${error}`);
+      }
     }
   }
 }

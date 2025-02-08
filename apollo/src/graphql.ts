@@ -56,6 +56,7 @@ export class LnBridgeRelayInfo {
   bridge: string;
   relayer: string;
   sendToken?: Nullable<string>;
+  recvToken?: Nullable<string>;
   tokenKey?: Nullable<string>;
   transactionHash: string;
   timestamp: number;
@@ -97,6 +98,21 @@ export class TokenInfo {
 export class SupportChains {
   fromChain: string;
   toChains?: Nullable<Nullable<string>[]>;
+}
+
+export class ChainTokenInfo {
+  chain: string;
+  token?: Nullable<string>;
+}
+
+export class SupportChainsV2 {
+  from: ChainTokenInfo;
+  toChains?: Nullable<Nullable<ChainTokenInfo>[]>;
+}
+
+export class TokenInfoV2 {
+  tokenKey: string;
+  chains?: Nullable<Nullable<SupportChainsV2>[]>;
 }
 
 export class HealthInfo {
@@ -196,6 +212,10 @@ export abstract class IQuery {
   abstract queryLnBridgeSupportedChains(
     tokenKey?: Nullable<string>
   ): Nullable<Nullable<TokenInfo>[]> | Promise<Nullable<Nullable<TokenInfo>[]>>;
+
+  abstract queryLnBridgeSupportedChainsV2(
+    tokenKey?: Nullable<string>
+  ): Nullable<Nullable<TokenInfoV2>[]> | Promise<Nullable<Nullable<TokenInfoV2>[]>>;
 
   abstract queryMaxTransfer(
     fromChain?: Nullable<string>,

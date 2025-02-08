@@ -50,6 +50,7 @@ type LnBridgeRelayInfo {
   bridge: String!
   relayer: String!
   sendToken: String
+  recvToken: String
   tokenKey: String
   transactionHash: String!
   timestamp: Int!
@@ -93,6 +94,21 @@ type SupportChains {
   toChains: [String]
 }
 
+type ChainTokenInfo {
+  chain: String!
+  token: String
+}
+
+type SupportChainsV2 {
+  from: ChainTokenInfo!
+  toChains: [ChainTokenInfo]
+}
+
+type TokenInfoV2 {
+  tokenKey: String!
+  chains: [SupportChainsV2]
+}
+
 type HealthInfo {
   name: String
   callTimes: Int
@@ -111,6 +127,7 @@ type Query {
   sortedLnBridgeRelayInfos(fromChain: String, toChain: String, version: String, bridge: String, token: String, row: Int, amount: String, decimals: Int): SortedLnBridgeRelayInfos
   queryLnBridgeSupportChains(tokenKey: String): [SupportChains]
   queryLnBridgeSupportedChains(tokenKey: String): [TokenInfo]
+  queryLnBridgeSupportedChainsV2(tokenKey: String): [TokenInfoV2]
   queryMaxTransfer(fromChain: String, toChain: String, bridge: String, token: String, balance: String): BigInt
 }
 
