@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { HistoryRecord, Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class AppService extends PrismaClient {
