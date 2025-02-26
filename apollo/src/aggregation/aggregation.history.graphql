@@ -114,6 +114,14 @@ type HealthInfo {
   callTimes: Int
 }
 
+type SafeConfirmation {
+  owner: String
+  signature: String
+  signatureType: String
+  transactionHash: String
+  confirmationType: String
+}
+
 type Query {
   historyRecordById(id: String): HistoryRecord
   previousHistoryRecord(fromChain: String, toChain: String, bridge: String, relayer: String, token: String, nonce: Int): HistoryRecord
@@ -129,11 +137,13 @@ type Query {
   queryLnBridgeSupportedChains(tokenKey: String): [TokenInfo]
   queryLnBridgeSupportedChainsV2(tokenKey: String): [TokenInfoV2]
   queryMaxTransfer(fromChain: String, toChain: String, bridge: String, token: String, balance: String): BigInt
+  getTransactionConfirmations(safeTxHash: String): [SafeConfirmation]
 }
 
 type Mutation {
   signConfirmedBlock(id: String, relayer: String, block: String, timestamp: Int, signature: String): String
   signHeartBeat(fromChainId: String, toChainId: String, version: String, relayer: String, tokenAddress: String, softTransferLimit: String, timestamp: Int, signature: String): String
   signDynamicFee(fromChainId: String, toChainId: String, version: String, relayer: String, tokenAddress: String, dynamicFee: String, dynamicFeeExpire: String, dynamicFeeSignature: String, timestamp: Int, signature: String): String
+  proposeSafeTransaction(owner: String, safeAddress: String, chainId: Int, signature: String, signatureType: String, transactionHash: String, nonce: Int, confirmationType: String): String
 }
 
