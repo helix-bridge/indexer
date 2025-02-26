@@ -24,6 +24,7 @@ export class AggregationResolver {
   };
   private invalidRelayerHeartbeat = new Map();
   private signerHeartbeatTimestamp = [];
+  private safeTransactions = [];
   constructor(private aggregationService: AggregationService) {}
 
   private ecrecover(hash: string, sig: string): string {
@@ -35,6 +36,14 @@ export class AggregationResolver {
       sigObj.s
     );
     return ethUtil.bufferToHex(ethUtil.publicToAddress(pubkey)).toLowerCase();
+  }
+
+  private standardEcrecover(hash: string, sig: string): string {
+    const dataHash = this.web3.utils.soliditySha3(
+      { value: '\x19Ethereum Signed Message:\n32', type: 'string' },
+      { value: hash, type: 'bytes' }
+    );
+    return this.ecrecover(dataHash, sig);
   }
 
   private checkMessageSender(
@@ -53,11 +62,7 @@ export class AggregationResolver {
         { value: `${timestamp}`, type: 'uint256' },
         { value: message, type: 'string' }
       );
-      const dataHash = this.web3.utils.soliditySha3(
-        { value: '\x19Ethereum Signed Message:\n32', type: 'string' },
-        { value: messageHash, type: 'bytes' }
-      );
-      const signer = this.ecrecover(dataHash, sig);
+      const signer = this.standardEcrecover(messageHash, sig);
       // cache the signer heartbeat timestamp
       if (this.relayerProxy[signer] === relayer.toLowerCase()) {
         const heartBeatSigner = this.signerHeartbeatTimestamp.find((s) => s.address === signer);
@@ -221,6 +226,51 @@ export class AggregationResolver {
   }
 
   @Mutation()
+  async proposeSafeTransaction(
+    @Args('owner') owner: string,
+    @Args('safeAddress') safeAddress: string,
+    @Args('chainId') chainId: number,
+    @Args('signature') signature: string,
+    @Args('signatureType') signatureType: string,
+    @Args('transactionHash') transactionHash: string,
+    @Args('nonce') nonce: number,
+    @Args('confirmationType') confirmationType: string
+  ) {
+    let signatureV: number = parseInt(signature.slice(-2), 16);
+    if (signatureV !== 31 && signatureV !== 32) {
+      return false;
+    }
+    signatureV -= 4;
+    const normalizedSignature =
+      signature.slice(0, -2) + signatureV.toString(16);
+
+    const signer = this.standardEcrecover(transactionHash, normalizedSignature);
+    if (signer !== owner.toLowerCase()) {
+      return;
+    }
+    if (this.relayerProxy[signer] !== safeAddress.toLowerCase()) {
+      return;
+    }
+    // only need to cache the tx
+    const exist = this.safeTransactions.find(s => s.chainId === chainId && s.signature === signature && s.transactionHash === transactionHash);
+    if (exist) return;
+    this.safeTransactions.push({
+      safeAddress,
+      owner,
+      chainId,
+      signature,
+      signatureType,
+      transactionHash,
+      nonce,
+      confirmationType
+    });
+
+    this.safeTransactions = this.safeTransactions.filter(
+      s => s.safeAddress !== safeAddress || s.chainId != chainId || s.nonce >= nonce
+    );
+  }
+
+  @Mutation()
   async signConfirmedBlock(
     @Args('id') id: string,
     @Args('relayer') relayer: string,
@@ -334,6 +384,25 @@ export class AggregationResolver {
     } catch (e) {
       return;
     }
+  }
+
+  @Query()
+  getTransactionConfirmations(
+    @Args('safeTxHash') safeTxHash: string
+  ) {
+    return this.safeTransactions.filter(
+      s => s.transactionHash === safeTxHash
+    ).map(
+      s => {
+        return {
+          owner: s.owner,
+          signature: s.signature,
+          signatureType: s.signatureType,
+          transactionHash: s.transactionHash,
+          confirmationType: s.confirmationType,
+        };
+      }
+    );
   }
 
   @Query()
