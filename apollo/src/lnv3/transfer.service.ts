@@ -11,19 +11,15 @@ export class TransferService extends BaseTransferServiceT2 {
   private readonly zksyncEndpoint = this.configService.get<string>('ZKSYNC_LNV3_ENDPOINT');
   private readonly polygonEndpoint = this.configService.get<string>('POLYGON_LNV3_ENDPOINT');
   private readonly bscEndpoint = this.configService.get<string>('BSC_LNV3_ENDPOINT');
-  private readonly lineaEndpoint = this.configService.get<string>('LINEA_LNV3_ENDPOINT');
   private readonly opEndpoint = this.configService.get<string>('OP_LNV3_ENDPOINT');
   private readonly gnosisEndpoint = this.configService.get<string>('GNOSIS_LNV3_ENDPOINT');
-  private readonly mantleEndpoint = this.configService.get<string>('MANTLE_LNV3_ENDPOINT');
   private readonly scrollEndpoint = this.configService.get<string>('SCROLL_LNV3_ENDPOINT');
-  private readonly darwiniaEndpoint = this.configService.get<string>('DARWINIA_LNV3_ENDPOINT');
   private readonly blastEndpoint = this.configService.get<string>('BLAST_LNV3_ENDPOINT');
   private readonly baseEndpoint = this.configService.get<string>('BASE_LNV3_ENDPOINT');
   private readonly taikoEndpoint = this.configService.get<string>('TAIKO_LNV3_ENDPOINT');
   private readonly astarZkEVMEndpoint = this.configService.get<string>('ASTAR_ZKEVM_LNV3_ENDPOINT');
   private readonly morphEndpoint = this.configService.get<string>('MORPH_LNV3_ENDPOINT');
   private readonly moonbeamEndpoint = this.configService.get<string>('MOONBEAM_LNV3_ENDPOINT');
-  private readonly zircuitEndpoint = this.configService.get<string>('ZIRCUIT_LNV3_ENDPOINT');
 
   public readonly ponderEndpoint = this.configService.get<string>('PONDER_LNV3_ENDPOINT');
   private readonly fastIndexEndpoint = this.configService.get<string>('LNV3_SUPER_ENDPOINT');
@@ -103,11 +99,6 @@ export class TransferService extends BaseTransferServiceT2 {
           label: 'finalized',
           url: this.finalizedIndexEndpoint,
         },
-        {
-          indexerType: Level0IndexerType.thegraph,
-          label: 'thegraph',
-          url: this.lineaEndpoint,
-        },
       ],
       chainConfig: HelixChain.linea,
     },
@@ -163,11 +154,6 @@ export class TransferService extends BaseTransferServiceT2 {
           label: 'finalized',
           url: this.finalizedIndexEndpoint,
         },
-        {
-          indexerType: Level0IndexerType.thegraph,
-          label: 'thegraph',
-          url: this.mantleEndpoint,
-        },
       ],
       chainConfig: HelixChain.mantle,
     },
@@ -202,11 +188,6 @@ export class TransferService extends BaseTransferServiceT2 {
           indexerType: Level0IndexerType.superindex,
           label: 'finalized',
           url: this.finalizedIndexEndpoint,
-        },
-        {
-          indexerType: Level0IndexerType.thegraph,
-          label: 'thegraph',
-          url: this.darwiniaEndpoint,
         },
       ],
       chainConfig: HelixChain.darwiniaDvm,
@@ -317,11 +298,6 @@ export class TransferService extends BaseTransferServiceT2 {
           indexerType: Level0IndexerType.superindex,
           label: 'finalized',
           url: this.finalizedIndexEndpoint,
-        },
-        {
-          indexerType: Level0IndexerType.thegraph,
-          label: 'thegraph',
-          url: this.zircuitEndpoint,
         },
       ],
       chainConfig: HelixChain.zircuit,
